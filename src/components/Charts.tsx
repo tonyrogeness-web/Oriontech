@@ -26,8 +26,8 @@ export default function Charts({ history = [] }: ChartsProps) {
   };
 
   const formatCurrency = (val: number) => {
-    if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
-    return `$${val}`;
+    if (val >= 1000) return `${(val / 1000).toFixed(0)}k USC`;
+    return `${val} USC`;
   };
 
   // 1. Chart Data for Performance History (Last 30 Days)
@@ -92,7 +92,7 @@ export default function Charts({ history = [] }: ChartsProps) {
                       color: "var(--text-primary)",
                       fontFamily: "var(--font-primary)",
                     }}
-                    formatter={(value: any) => [`$${value.toLocaleString()}`, "Saldo"]}
+                    formatter={(value: any) => [`${value.toLocaleString("pt-BR")} USC`, "Saldo"]}
                   />
                   <Area
                     type="monotone"

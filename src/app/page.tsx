@@ -12,6 +12,45 @@ export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [brlRate, setBrlRate] = useState(5.45);
+
+  // Fetch USD/BRL rate on mount
+  useEffect(() => {
+    async function fetchBrlRate() {
+      try {
+        const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.USDBRL && json.USDBRL.bid) {
+            const val = parseFloat(json.USDBRL.bid);
+            if (!isNaN(val) && val > 0) {
+              setBrlRate(val);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Falha ao buscar taxa no AwesomeAPI, tentando fallback...", e);
+      }
+
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.rates && json.rates.BRL) {
+            const val = parseFloat(json.rates.BRL);
+            if (!isNaN(val) && val > 0) {
+              setBrlRate(val);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Falha ao buscar taxa em todos os serviços", e);
+      }
+    }
+
+    fetchBrlRate();
+  }, []);
 
   // Poll database every 5 seconds for real-time update feel
   useEffect(() => {
@@ -115,6 +154,7 @@ export default function DashboardPage() {
         accountNumber={activeAccount.account}
         status={activeAccount.status}
         isMock={data?.isMock}
+        brlRate={brlRate}
       />
 
       {/* 2. Key Metrics Panel & Cards */}
@@ -128,6 +168,7 @@ export default function DashboardPage() {
         status={activeAccount.status}
         accountNumber={activeAccount.account}
         history={history}
+        brlRate={brlRate}
       />
 
       {/* 3. Main Dashboard Layout (Charts on left, Controls on right) */}

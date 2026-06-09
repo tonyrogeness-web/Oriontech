@@ -18,11 +18,12 @@ interface TradesTableProps {
 
 export default function TradesTable({ trades = [] }: TradesTableProps) {
   const formatCurrency = (val: number) => {
-    return val.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "USD",
+    const sign = val < 0 ? "-" : "";
+    const formatted = Math.abs(val).toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
+    return `${sign}USC ${formatted}`;
   };
 
   const getAssetDetails = (symbol: string) => {

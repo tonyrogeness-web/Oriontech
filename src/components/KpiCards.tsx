@@ -14,6 +14,7 @@ interface KpiCardsProps {
   status: string;
   accountNumber: string;
   history: any[];
+  brlRate?: number;
 }
 
 export default function KpiCards({
@@ -26,13 +27,26 @@ export default function KpiCards({
   status = "RUNNING",
   accountNumber = "",
   history = [],
+  brlRate = 5.45,
 }: KpiCardsProps) {
   const formatCurrency = (val: number) => {
-    return val.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "USD",
+    const sign = val < 0 ? "-" : "";
+    const formatted = Math.abs(val).toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
+    return `${sign}USC ${formatted}`;
+  };
+
+  const formatBRL = (uscVal: number) => {
+    const usdVal = uscVal / 100;
+    const brlVal = usdVal * brlRate;
+    const sign = brlVal < 0 ? "-" : "";
+    const formatted = Math.abs(brlVal).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `${sign}R$ ${formatted} BRL`;
   };
 
   const isRobotActive = status === "RUNNING";
@@ -63,12 +77,14 @@ export default function KpiCards({
           <div className={styles.balanceColumn}>
             <span className={styles.balanceLabel}>Saldo da Conta</span>
             <span className={styles.balanceValue}>{formatCurrency(balance)}</span>
+            <span className={styles.brlSubValue}>{formatBRL(balance)}</span>
           </div>
 
           {/* Equity Column */}
           <div className={styles.balanceColumn}>
             <span className={styles.balanceLabel}>Patrimônio (Equity)</span>
             <span className={styles.equityValue}>{formatCurrency(equity)}</span>
+            <span className={styles.brlSubValue}>{formatBRL(equity)}</span>
             
             {/* Sparkline & P/L Changes */}
             <div className={styles.equityGrowthWrapper}>
@@ -113,8 +129,11 @@ export default function KpiCards({
         {/* Lucro Diário */}
         <div className={`${styles.kpiCard} ${styles.kpiDailyCard}`}>
           <span className={styles.kpiLabel}>Lucro Diário</span>
-          <span className={`${styles.kpiValue} ${styles.valuePositive}`}>
+          <span className={`${styles.kpiValue} ${dailyProfit >= 0 ? styles.valuePositive : styles.valueNegative}`}>
             {dailyProfit >= 0 ? "+" : ""}{formatCurrency(dailyProfit)}
+          </span>
+          <span className={styles.brlKpiValue}>
+            {dailyProfit >= 0 ? "+" : ""}{formatBRL(dailyProfit)}
           </span>
         </div>
 
@@ -124,13 +143,19 @@ export default function KpiCards({
           <span className={`${styles.kpiValue} ${floatingPl >= 0 ? styles.valuePositive : styles.valueNegative}`}>
             {floatingPl >= 0 ? "+" : ""}{formatCurrency(floatingPl)}
           </span>
+          <span className={styles.brlKpiValue}>
+            {floatingPl >= 0 ? "+" : ""}{formatBRL(floatingPl)}
+          </span>
         </div>
 
         {/* Lucro Total */}
         <div className={`${styles.kpiCard} ${styles.kpiTotalCard}`}>
           <span className={styles.kpiLabel}>Lucro Total</span>
-          <span className={styles.kpiValue}>
+          <span className={`${styles.kpiValue} ${totalProfit >= 0 ? styles.valuePositive : styles.valueNegative}`}>
             {totalProfit >= 0 ? "+" : ""}{formatCurrency(totalProfit)}
+          </span>
+          <span className={styles.brlKpiValue}>
+            {totalProfit >= 0 ? "+" : ""}{formatBRL(totalProfit)}
           </span>
         </div>
 

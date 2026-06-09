@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Play, Pause, AlertOctagon, RefreshCw, Layers } from "lucide-react";
+import { Play, Pause, AlertOctagon, RefreshCw, Layers, ChevronDown, ChevronUp } from "lucide-react";
 import styles from "./components.module.css";
 
 interface ControlsProps {
@@ -20,6 +20,7 @@ export default function Controls({
   const [loading, setLoading] = useState<string | null>(null);
   const [confirmPanicGlobal, setConfirmPanicGlobal] = useState(false);
   const [confirmPanicLocal, setConfirmPanicLocal] = useState<string | null>(null);
+  const [isLocalPanicCollapsed, setIsLocalPanicCollapsed] = useState(true);
 
   // Global Panic timer
   useEffect(() => {
@@ -152,40 +153,54 @@ export default function Controls({
       {/* Local Panic Group */}
       {activeSymbols.length > 0 && (
         <div className={styles.controlGroup}>
-          <span className={styles.controlGroupTitle}>Pânico Local por Ativo</span>
-          <div className={styles.controlButtons}>
-            {activeSymbols.map((symbol) => {
-              const isConfirming = confirmPanicLocal === symbol;
-              return (
-                <button
-                  key={symbol}
-                  className="btn btn-secondary"
-                  onClick={() => handlePanicLocal(symbol)}
-                  disabled={loading !== null}
-                  style={{
-                    width: "100%",
-                    justifyContent: "space-between",
-                    borderColor: isConfirming ? "var(--neon-amber)" : "var(--border-light)",
-                    color: isConfirming ? "var(--neon-amber)" : "var(--text-primary)",
-                  }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Layers size={14} />
-                    {symbol}
-                  </span>
-                  <span>
-                    {loading === `PANIC_LOCAL_${symbol}` ? (
-                      <RefreshCw className="spin" size={12} />
-                    ) : isConfirming ? (
-                      "Confirmar?"
-                    ) : (
-                      "Zerar Par"
-                    )}
-                  </span>
-                </button>
-              );
-            })}
+          <div 
+            className={styles.collapsibleHeader}
+            onClick={() => setIsLocalPanicCollapsed(!isLocalPanicCollapsed)}
+          >
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span className={styles.controlGroupTitle}>Pânico Local por Ativo</span>
+              <span className={styles.badgeCount}>{activeSymbols.length}</span>
+            </div>
+            <span className={styles.collapseIcon}>
+              {isLocalPanicCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </span>
           </div>
+
+          {!isLocalPanicCollapsed && (
+            <div className={styles.controlButtons}>
+              {activeSymbols.map((symbol) => {
+                const isConfirming = confirmPanicLocal === symbol;
+                return (
+                  <button
+                    key={symbol}
+                    className="btn btn-secondary"
+                    onClick={() => handlePanicLocal(symbol)}
+                    disabled={loading !== null}
+                    style={{
+                      width: "100%",
+                      justifyContent: "space-between",
+                      borderColor: isConfirming ? "var(--neon-amber)" : "var(--border-light)",
+                      color: isConfirming ? "var(--neon-amber)" : "var(--text-primary)",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Layers size={14} />
+                      {symbol}
+                    </span>
+                    <span>
+                      {loading === `PANIC_LOCAL_${symbol}` ? (
+                        <RefreshCw className="spin" size={12} />
+                      ) : isConfirming ? (
+                        "Confirmar?"
+                      ) : (
+                        "Zerar Par"
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

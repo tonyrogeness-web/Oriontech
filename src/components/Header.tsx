@@ -6,9 +6,10 @@ interface HeaderProps {
   accountNumber: string;
   status: string;
   isMock?: boolean;
+  brlRate: number;
 }
 
-export default function Header({ accountNumber, status, isMock }: HeaderProps) {
+export default function Header({ accountNumber, status, isMock, brlRate }: HeaderProps) {
   const isActive = status === "RUNNING";
 
   return (
@@ -27,6 +28,24 @@ export default function Header({ accountNumber, status, isMock }: HeaderProps) {
 
       {/* Right side connection info */}
       <div className={styles.rightHeader}>
+        {/* Exchange rate indicator */}
+        <div 
+          className={styles.desktopOnly} 
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "0.4rem", 
+            background: "rgba(255, 255, 255, 0.03)", 
+            padding: "0.25rem 0.6rem", 
+            borderRadius: "8px", 
+            border: "1px solid var(--border-light)" 
+          }}
+          title="Cotação em tempo real obtida via API AwesomeAPI"
+        >
+          <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>USD/BRL</span>
+          <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
+        </div>
+
         {/* Notification Bell */}
         <div style={{ position: "relative", cursor: "pointer" }}>
           <Bell size={20} style={{ color: "var(--text-secondary)" }} />
