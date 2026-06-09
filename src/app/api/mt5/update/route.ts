@@ -157,6 +157,18 @@ export async function POST(request: Request) {
       },
     });
 
+    if (pendingCommands.length > 0) {
+      await prisma.commandQueue.updateMany({
+        where: {
+          id: { in: pendingCommands.map((c) => c.id) },
+        },
+        data: {
+          status: "EXECUTED",
+          executedAt: new Date(),
+        },
+      });
+    }
+
     return NextResponse.json({
       status: "success",
       commands: pendingCommands.map((c) => ({
