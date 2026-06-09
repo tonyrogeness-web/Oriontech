@@ -19,7 +19,7 @@ export default function DashboardPage() {
 
     async function fetchData() {
       try {
-        const response = await fetch("/api/dashboard/data");
+        const response = await fetch("/api/dashboard/data", { cache: "no-store" });
         if (!response.ok) {
           throw new Error("Falha ao carregar dados do servidor.");
         }

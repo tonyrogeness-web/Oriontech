@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 function getMockData() {
   const mockAccount = {
     account: "88812345 (DEMO - DB OFFLINE)",
