@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AccountState {
+  id            Int      @id @default(autoincrement())
+  account       String   @unique
+  balance       Float
+  equity        Float
+  dailyProfit   Float
+  floatingPl    Float
+  totalProfit   Float
+  maxDrawdown   Float
+  status        String   // "RUNNING" or "PAUSED"
+  lastUpdated   DateTime @updatedAt
+}
+
+model ActiveTrade {
+  id            Int      @id @default(autoincrement())
+  account       String
+  ticket        String   @unique
+  symbol        String
+  type          String   // "BUY" or "SELL"
+  volume        Float
+  entryPrice    Float
+  currentPrice  Float
+  currentProfit Float
+  magicNumber   Int
+  createdAt     DateTime @default(now())
+}
+
+model PerformanceHistory {
+  id            Int      @id @default(autoincrement())
+  account       String
+  date          DateTime
+  profit        Float
+  balance       Float
+
+  @@unique([account, date])
+}
+
+model CommandQueue {
+  id            Int       @id @default(autoincrement())
+  account       String
+  command       String    // "PAUSE", "RESUME", "PANIC_LOCAL", "PANIC_GLOBAL"
+  symbol        String    // e.g. "EURUSD" or ""
+  status        String    // "PENDING", "EXECUTED"
+  createdAt     DateTime  @default(now())
+  executedAt    DateTime?
+}
