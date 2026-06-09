@@ -1,6 +1,6 @@
-# Aura-FX Web Mobile Dashboard
+# Orion Hedge Dashboard
 
-Painel web mobile de monitoramento e execução em tempo real integrado ao robô Orion U2 Hedge (MQL5).
+Painel web mobile de monitoramento e execução em tempo real integrado ao robô Orion Hedge (MQL5).
 
 ---
 

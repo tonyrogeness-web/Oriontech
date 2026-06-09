@@ -144,7 +144,7 @@ export default function DashboardPage() {
 
       {/* 5. Footer version info */}
       <footer className={styles.footerSection}>
-        <span>Aura-FX Web System v1.0.0</span>
+        <span>Orion Hedge Web System v1.0.0</span>
         <span>Sincronização Ativa • MetaTrader 5</span>
       </footer>
     </div>

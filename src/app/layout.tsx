@@ -2,9 +2,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Aura-FX Dashboard | Real-Time Orion EA Monitor",
+  title: "Orion Hedge Dashboard | Real-Time Monitor",
   description:
-    "Premium real-time mobile monitoring and execution dashboard for the Orion U2 EA.",
+    "Premium real-time mobile monitoring and execution dashboard for the Orion Hedge EA.",
   icons: {
     icon: "/favicon.ico",
   },

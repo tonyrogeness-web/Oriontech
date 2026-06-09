@@ -16,7 +16,7 @@ export default function Header({ accountNumber, status, isMock }: HeaderProps) {
       {/* Left logo section */}
       <div className={styles.brand}>
         <Activity size={24} className={styles.logoAccent} />
-        <span className={styles.logoText}>AURA-FX</span>
+        <span className={styles.logoText}>ORION HEDGE</span>
         {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MOCK</span>}
       </div>
 
