@@ -4,11 +4,11 @@ import React from "react";
 import styles from "./components.module.css";
 
 interface RiskManagementProps {
-  floatingPl: number;
-  maxDrawdown: number;
-  tradesCount: number;
-  softStopLimit?: number;
-  balance?: number;
+  floatingPl: number;   // P&L flutuante global (USC) — pode ser negativo
+  maxDrawdown: number;  // Drawdown atual em % (0–100)
+  tradesCount: number;  // Total de posições abertas
+  softStopLimit?: number; // Limite do SoftStop (USC)
+  balance?: number;     // Saldo da conta (USC)
 }
 
 export default function RiskManagement({
@@ -18,51 +18,60 @@ export default function RiskManagement({
   softStopLimit = 400.0,
   balance = 0,
 }: RiskManagementProps) {
-  const fmt2 = (val: number) =>
-    Math.abs(val).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // ── 1. P&L Flutuante Global ──────────────────────────────────────
-  const isPnlPositive = floatingPl >= 0;
-  // % do SoftStop usado em perda (barra indica quão perto do limite)
-  const pnlBarPct = Math.min(100, (Math.abs(floatingPl) / softStopLimit) * 100);
+  /* ── helpers ──────────────────────────────────────────────────── */
+  const fmt2 = (v: number) =>
+    Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // ── 2. Drawdown em 3 zonas (0-10% verde, 10-20% amarelo, 20-40% vermelho) ──
-  const ddCapPct = Math.min(100, (maxDrawdown / 40) * 100);
-  const ddZoneColor =
-    maxDrawdown >= 20
-      ? "var(--neon-red)"
-      : maxDrawdown >= 10
-      ? "var(--neon-gold)"
-      : "var(--neon-green)";
+  /* clamp 0–100 */
+  const pct = (val: number, max: number) =>
+    max > 0 ? Math.min(100, Math.max(0, (val / max) * 100)) : 0;
 
-  // Marcadores de zona (10% = 25% da barra, 20% = 50%)
-  const zone10 = (10 / 40) * 100; // = 25%
-  const zone20 = (20 / 40) * 100; // = 50%
+  /* ── 1. P&L Flutuante Global ──────────────────────────────────── */
+  // Barra mostra a perda atual vs o SoftStop. Verde = lucro, Vermelho = perda.
+  const plLoss   = Math.abs(Math.min(0, floatingPl));          // só perda
+  const plGain   = Math.max(0, floatingPl);
+  const isProfit = floatingPl >= 0;
+  // % em relação ao SoftStop (cap 100%)
+  const plBarPct = isProfit
+    ? pct(plGain, softStopLimit)   // lucro: verde crescendo
+    : pct(plLoss, softStopLimit);  // perda: vermelho crescendo
+  const plColor  = isProfit ? "var(--neon-green)" : "var(--neon-red)";
+  const plGlow   = isProfit ? "var(--neon-green-glow)" : "var(--neon-red-glow)";
 
-  // ── 3. SoftStop ──────────────────────────────────────────────────
-  const softLoss = Math.abs(Math.min(0, floatingPl));
-  const softUsedPct = Math.min(100, Math.round((softLoss / softStopLimit) * 100));
-  const softColor =
-    softUsedPct >= 80
-      ? "var(--neon-red)"
-      : softUsedPct >= 50
-      ? "var(--neon-gold)"
-      : "var(--neon-green)";
-  const softLabel = softUsedPct >= 80 ? "CRÍTICO" : softUsedPct >= 50 ? "ALERTA" : "OK";
+  /* ── 2. Drawdown (3 zonas: 0-10 verde / 10-20 amarelo / 20-40 vermelho) */
+  const ddBarPct = pct(maxDrawdown, 40);
+  const ddColor  = maxDrawdown >= 20 ? "var(--neon-red)"
+                 : maxDrawdown >= 10 ? "var(--neon-gold)"
+                 : "var(--neon-green)";
+  const ddLabel  = maxDrawdown >= 20 ? "ZONA VERMELHA"
+                 : maxDrawdown >= 10 ? "ZONA AMARELA"
+                 : "ZONA VERDE";
+  // marcadores em px% dentro da barra
+  const zone10px = (10 / 40) * 100; // 25%
+  const zone20px = (20 / 40) * 100; // 50%
 
-  // ── 4. Ordens Abertas (max 36 slots = 6 pares × 6 níveis) ────────
-  const maxSlots = 36;
-  const slotsPct = Math.min(100, (tradesCount / maxSlots) * 100);
-  const slotsColor =
-    tradesCount >= 30
-      ? "var(--neon-red)"
-      : tradesCount >= 20
-      ? "var(--neon-gold)"
-      : "var(--neon-green)";
+  /* ── 3. SoftStop: quanto da "margem de perda" já foi usada ──── */
+  const ssUsedPct = pct(plLoss, softStopLimit);
+  const ssColor   = ssUsedPct >= 80 ? "var(--neon-red)"
+                  : ssUsedPct >= 50 ? "var(--neon-gold)"
+                  : "var(--neon-green)";
+  const ssLabel   = ssUsedPct >= 80 ? "CRÍTICO"
+                  : ssUsedPct >= 50 ? "ALERTA"
+                  : "OK";
 
-  // ── 5. Uso de Capital (equity relativo ao saldo) ─────────────────
-  const capitalPct = balance > 0 ? Math.min(100, Math.abs(floatingPl / balance) * 100) : 0;
-  const capitalColor = isPnlPositive ? "var(--neon-green)" : "var(--neon-red)";
+  /* ── 4. Ordens Abertas (max 36 slots = 6 pares × 6 níveis) ─── */
+  const maxSlots  = 36;
+  const slotsBarPct = pct(tradesCount, maxSlots);
+  const slotsColor  = tradesCount >= 28 ? "var(--neon-red)"
+                    : tradesCount >= 18 ? "var(--neon-gold)"
+                    : "var(--neon-green)";
+
+  /* ── 5. Capital em risco: % do saldo que é o floatingPl de perda */
+  const capPct   = balance > 0 ? pct(plLoss, balance) : 0;
+  const capColor = capPct >= 5 ? "var(--neon-red)"
+                 : capPct >= 2 ? "var(--neon-gold)"
+                 : "var(--neon-green)";
 
   return (
     <div className={styles.riskManagementCard}>
@@ -70,155 +79,158 @@ export default function RiskManagement({
 
       <div className={styles.riskItemList}>
 
-        {/* ── 1. P&L Flutuante Global ── */}
-        <div className={styles.riskItem}>
-          <div className={styles.riskHeaderRow}>
-            <span className={styles.riskLabel}>P&L Flutuante Global</span>
-            <span
-              className={styles.riskItemValue}
-              style={{ color: isPnlPositive ? "var(--neon-green)" : "var(--neon-red)" }}
-            >
-              {isPnlPositive ? "+" : "-"}USC {fmt2(floatingPl)}
+        {/* 1. P&L Flutuante Global */}
+        <RiskBar
+          label="P&L Flutuante Global"
+          valueNode={
+            <span style={{ color: plColor, fontWeight: 700 }}>
+              {isProfit ? "+" : "-"}USC {fmt2(floatingPl)}
             </span>
-          </div>
-          <div className={styles.progressBarOuter}>
-            {/* barra sempre cresce da esquerda; vermelha = perda, verde = lucro */}
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, pnlBarPct)}%`,
-                background: isPnlPositive
-                  ? "linear-gradient(90deg, var(--neon-green), #00ff88)"
-                  : "linear-gradient(90deg, var(--neon-red), #ff4d6d)",
-                boxShadow: isPnlPositive
-                  ? "0 0 8px var(--neon-green-glow)"
-                  : "0 0 8px var(--neon-red-glow)",
-              }}
-            />
-          </div>
-        </div>
+          }
+          barPct={plBarPct}
+          barColor={plColor}
+          barGlow={plGlow}
+        />
 
-        {/* ── 2. Drawdown (3 zonas) ── */}
-        <div className={styles.riskItem}>
-          <div className={styles.riskHeaderRow}>
-            <span className={styles.riskLabel}>Drawdown (Zona 3 faixas)</span>
-            <span className={styles.riskItemValue} style={{ color: ddZoneColor }}>
-              {maxDrawdown.toFixed(1)}% / 40%
+        {/* 2. Drawdown */}
+        <RiskBar
+          label="Drawdown (Zona 3 faixas)"
+          valueNode={
+            <span style={{ color: ddColor, fontWeight: 700 }}>
+              {maxDrawdown.toFixed(2)}% / 40%{" "}
+              <small style={{ color: "var(--text-muted)", fontWeight: 500 }}>· {ddLabel}</small>
             </span>
-          </div>
-          {/* Barra com marcadores de zona */}
-          <div className={styles.progressBarOuter} style={{ position: "relative" }}>
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, ddCapPct)}%`,
-                background: `linear-gradient(90deg, var(--neon-green), ${ddZoneColor})`,
-                boxShadow: `0 0 8px ${ddZoneColor}`,
-              }}
-            />
-            {/* Marcador Zona Amarela (10% = 25%) */}
-            <div
-              style={{
-                position: "absolute",
-                left: `${zone10}%`,
-                top: 0,
-                bottom: 0,
-                width: "1px",
-                background: "rgba(255,179,0,0.4)",
-              }}
-            />
-            {/* Marcador Zona Vermelha (20% = 50%) */}
-            <div
-              style={{
-                position: "absolute",
-                left: `${zone20}%`,
-                top: 0,
-                bottom: 0,
-                width: "1px",
-                background: "rgba(255,23,68,0.4)",
-              }}
-            />
-          </div>
-          <div className={styles.riskScale}>
-            <span>0%</span>
-            <span style={{ color: "var(--neon-gold)" }}>10%</span>
-            <span style={{ color: "var(--neon-red)" }}>20%</span>
-            <span>40%</span>
-          </div>
-        </div>
+          }
+          barPct={ddBarPct}
+          barColor={ddColor}
+          barGlow={ddColor}
+          scaleLabels={["0%", "10%", "20%", "40%"]}
+          markers={[zone10px, zone20px]}
+          markerColors={["rgba(255,179,0,0.5)", "rgba(255,23,68,0.5)"]}
+        />
 
-        {/* ── 3. SoftStop Global ── */}
-        <div className={styles.riskItem}>
-          <div className={styles.riskHeaderRow}>
-            <span className={styles.riskLabel}>SoftStop Global</span>
-            <span className={styles.riskItemValue}>
+        {/* 3. SoftStop Global */}
+        <RiskBar
+          label="SoftStop Global"
+          valueNode={
+            <span style={{ fontWeight: 700 }}>
               USC {softStopLimit.toFixed(0)} ·{" "}
-              <span style={{ color: softColor }}>
-                {softUsedPct}% usado · {softLabel}
-              </span>
+              <span style={{ color: ssColor }}>{ssUsedPct.toFixed(0)}% usado · {ssLabel}</span>
             </span>
-          </div>
-          <div className={styles.progressBarOuter}>
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, softUsedPct)}%`,
-                background: `linear-gradient(90deg, var(--neon-green), ${softColor})`,
-                boxShadow: `0 0 8px ${softColor}55`,
-              }}
-            />
-          </div>
-        </div>
+          }
+          barPct={ssUsedPct}
+          barColor={ssColor}
+          barGlow={ssColor}
+        />
 
-        {/* ── 4. Ordens Abertas ── */}
-        <div className={styles.riskItem}>
-          <div className={styles.riskHeaderRow}>
-            <span className={styles.riskLabel}>Ordens Abertas</span>
-            <span className={styles.riskItemValue} style={{ color: slotsColor }}>
+        {/* 4. Ordens Abertas */}
+        <RiskBar
+          label="Ordens Abertas"
+          valueNode={
+            <span style={{ color: slotsColor, fontWeight: 700 }}>
               {tradesCount} / {maxSlots} slots
             </span>
-          </div>
-          <div className={styles.progressBarOuter}>
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, slotsPct)}%`,
-                background: `linear-gradient(90deg, var(--neon-green), ${slotsColor})`,
-                boxShadow: `0 0 6px ${slotsColor}55`,
-              }}
-            />
-          </div>
-        </div>
+          }
+          barPct={slotsBarPct}
+          barColor={slotsColor}
+          barGlow={slotsColor}
+        />
 
-        {/* ── 5. Capital em Risco ── */}
-        <div className={styles.riskItem}>
-          <div className={styles.riskHeaderRow}>
-            <span className={styles.riskLabel}>Capital em Risco</span>
-            <span
-              className={styles.riskItemValue}
-              style={{ color: capitalColor }}
-            >
-              {capitalPct.toFixed(2)}%{" "}
-              <span style={{ fontWeight: 400, color: "var(--text-muted)", fontSize: "0.7rem" }}>
+        {/* 5. Capital em Risco */}
+        <RiskBar
+          label="Capital em Risco"
+          valueNode={
+            <span style={{ color: capColor, fontWeight: 700 }}>
+              {capPct.toFixed(2)}%{" "}
+              <small style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: "0.68rem" }}>
                 do saldo
-              </span>
+              </small>
             </span>
-          </div>
-          <div className={styles.progressBarOuter}>
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, capitalPct)}%`,
-                background: `linear-gradient(90deg, ${capitalColor}, ${
-                  isPnlPositive ? "#00ff88" : "#ff4d6d"
-                })`,
-                boxShadow: `0 0 6px ${capitalColor}55`,
-              }}
-            />
-          </div>
-        </div>
+          }
+          barPct={capPct}
+          barColor={capColor}
+          barGlow={capColor}
+        />
 
       </div>
+    </div>
+  );
+}
+
+/* ── Sub-componente de barra individual ─────────────────────────── */
+interface RiskBarProps {
+  label: string;
+  valueNode: React.ReactNode;
+  barPct: number;       // 0–100
+  barColor: string;
+  barGlow?: string;
+  scaleLabels?: string[];
+  markers?: number[];   // posições % dos marcadores de zona
+  markerColors?: string[];
+}
+
+function RiskBar({
+  label,
+  valueNode,
+  barPct,
+  barColor,
+  barGlow,
+  scaleLabels,
+  markers = [],
+  markerColors = [],
+}: RiskBarProps) {
+  return (
+    <div className={styles.riskItem}>
+      <div className={styles.riskHeaderRow}>
+        <span className={styles.riskLabel}>{label}</span>
+        <span className={styles.riskItemValue}>{valueNode}</span>
+      </div>
+
+      {/* barra */}
+      <div className={styles.progressBarOuter} style={{ position: "relative" }}>
+        <div
+          className={styles.progressBarInner}
+          style={{
+            width: `${Math.max(barPct > 0 ? 2 : 0, barPct)}%`,
+            background: barColor,
+            boxShadow: barGlow ? `0 0 7px ${barGlow}` : undefined,
+            transition: "width 0.6s ease",
+          }}
+        />
+        {/* marcadores de zona */}
+        {markers.map((m, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: `${m}%`,
+              top: 0,
+              bottom: 0,
+              width: "1px",
+              background: markerColors[i] ?? "rgba(255,255,255,0.2)",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* escala */}
+      {scaleLabels && (
+        <div className={styles.riskScale}>
+          {scaleLabels.map((s, i) => (
+            <span
+              key={i}
+              style={{
+                color:
+                  i === 1 ? "var(--neon-gold)"
+                  : i === 2 ? "var(--neon-red)"
+                  : undefined,
+              }}
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1070,6 +1070,25 @@
   color: var(--text-muted);
 }
 
+/* Mini-lista de posições individuais dentro do cesto */
+.basketPositions {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.basketPositionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.1rem 0.25rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
 .controlsGrid2x2 {
   display: grid;
   grid-template-columns: 1fr 1fr;

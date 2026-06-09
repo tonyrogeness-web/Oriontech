@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { ChevronUp, ChevronDown, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronUp, ChevronDown, AlertTriangle } from "lucide-react";
 import styles from "./components.module.css";
 
+/* ── Tipos ───────────────────────────────────────────────────────── */
 interface Trade {
   id: number;
   ticket: string;
@@ -14,28 +15,28 @@ interface Trade {
   currentPrice: number;
   currentProfit: number;
   magicNumber: number;
+  tp?: number;   // opcional: preço TP real da posição (enviado pelo robô v3.39+)
+  sl?: number;   // opcional: SL real
 }
 
 interface ActiveBasketsProps {
   trades: Trade[];
-  brlRate?: number;
 }
 
+/* ── Lógica de agrupamento ─────────────────────────────────────── */
 interface Basket {
   symbol: string;
   direction: "COMPRA" | "VENDA";
-  profit: number;
-  volume: number;
-  level: number;
-  maxLevels: number;
-  pm: number;
+  trades: Trade[];
+  // campos calculados
+  totalProfit: number;
+  totalVolume: number;
+  pm: number;           // Preço médio ponderado por volume
   currentPrice: number;
-  tp: number;
-  tpPoints: number;
-  rcPrice: number;
-  rcPoints: number;
-  progress: number;
+  tpPrice: number | null;   // TP real (se disponível) — 0 = sem TP
   digits: number;
+  pipValue: number;     // valor de 1 pip
+  distPips: number;     // distância do PM ao preço atual em pips (+ = favor, - = contra)
 }
 
 function buildBaskets(trades: Trade[]): Basket[] {
@@ -44,68 +45,55 @@ function buildBaskets(trades: Trade[]): Basket[] {
   trades.forEach((t) => {
     const isBuy = t.type.toUpperCase() === "BUY" || t.type === "0";
     const dir = isBuy ? "COMPRA" : "VENDA";
-    // Remove trailing 'c' for cent accounts (e.g. EURUSDc → EURUSD)
     const sym = t.symbol.replace(/c$/i, "").toUpperCase();
     const key = `${sym}_${dir}`;
     if (!map[key]) map[key] = { symbol: sym, direction: dir, trades: [] };
     map[key].trades.push(t);
   });
 
-  return Object.values(map).map((b) => {
+  return Object.values(map).map((b): Basket => {
+    const isBuy = b.direction === "COMPRA";
     const totalVol = b.trades.reduce((s, t) => s + t.volume, 0);
     const totalProfit = b.trades.reduce((s, t) => s + t.currentProfit, 0);
-    const pm =
-      totalVol > 0
-        ? b.trades.reduce((s, t) => s + t.entryPrice * t.volume, 0) / totalVol
-        : 0;
+
+    // Preço médio ponderado
+    const pm = totalVol > 0
+      ? b.trades.reduce((s, t) => s + t.entryPrice * t.volume, 0) / totalVol
+      : 0;
+
+    // Preço atual (usa o mais recente = trade[0], pois o robô envia por posição)
     const currentPrice = b.trades[0]?.currentPrice ?? pm;
-    const isBuy = b.direction === "COMPRA";
+
+    // TP: pega o TP do PRIMEIRO trade que tiver TP != 0
+    const tpTrade = b.trades.find((t) => t.tp && t.tp > 0);
+    const tpPrice = tpTrade?.tp ?? null;
 
     const isJpy = b.symbol.includes("JPY");
     const digits = isJpy ? 3 : 5;
-    const pipSize = isJpy ? 0.001 : 0.00001;
+    const pipValue = isJpy ? 0.001 : 0.00001;
 
-    // Target is estimated based on the robot's typical TP (InpTakeProfitDinheiro / volume)
-    const avgVol = totalVol / b.trades.length;
-    const tpPoints = Math.round(1.5 / (avgVol * (isJpy ? 0.01 : 0.0001)));
-    const tpDiff = tpPoints * pipSize;
-    const tp = isBuy ? pm + tpDiff : pm - tpDiff;
-
-    // Next RC estimate: robot uses dist_base * ATR; approximate as similar to tpPoints
-    const rcPoints = Math.round(tpPoints * 0.9);
-    const rcDiff = rcPoints * pipSize;
-    const rcPrice = isBuy ? pm - rcDiff : pm + rcDiff;
-
-    // Progress: how far currentPrice has moved toward TP relative to tpDiff
-    let progress = 0;
-    if (tpDiff > 0) {
-      progress = isBuy
-        ? ((currentPrice - pm) / tpDiff) * 100
-        : ((pm - currentPrice) / tpDiff) * 100;
-    }
-    progress = Math.max(-100, Math.min(100, Math.round(progress)));
+    // distância PM → preço atual em pips
+    // positivo = preço foi na direção favorável
+    const rawDist = isBuy ? (currentPrice - pm) : (pm - currentPrice);
+    const distPips = Math.round(rawDist / pipValue);
 
     return {
       symbol: b.symbol,
       direction: b.direction,
-      profit: totalProfit,
-      volume: totalVol,
-      level: b.trades.length,
-      maxLevels: 6,
+      trades: b.trades,
+      totalProfit,
+      totalVolume: totalVol,
       pm,
       currentPrice,
-      tp,
-      tpPoints,
-      rcPrice,
-      rcPoints,
-      progress,
+      tpPrice,
       digits,
+      pipValue,
+      distPips,
     };
   });
 }
 
-// ─── Group baskets by symbol for the "per-currency" layout ───────────────────
-function groupBySymbol(baskets: Basket[]): Record<string, Basket[]> {
+function groupBySymbol(baskets: Basket[]) {
   const g: Record<string, Basket[]> = {};
   baskets.forEach((b) => {
     if (!g[b.symbol]) g[b.symbol] = [];
@@ -114,59 +102,121 @@ function groupBySymbol(baskets: Basket[]): Record<string, Basket[]> {
   return g;
 }
 
-const MOCK_BASKETS: Basket[] = [
-  {
-    symbol: "EURUSD", direction: "COMPRA",
-    profit: -133.56, volume: 0.63, level: 3, maxLevels: 6,
-    pm: 1.15644, currentPrice: 1.15608, tp: 1.15779, tpPoints: 347,
-    rcPrice: 1.15367, rcPoints: 188, progress: -10, digits: 5,
-  },
-  {
-    symbol: "EURUSD", direction: "VENDA",
-    profit: -31.36, volume: 0.64, level: 2, maxLevels: 6,
-    pm: 1.15391, currentPrice: 1.15608, tp: 1.15256, tpPoints: 184,
-    rcPrice: 1.15739, rcPoints: 351, progress: -100, digits: 5,
-  },
-  {
-    symbol: "USDJPY", direction: "COMPRA",
-    profit: -15.96, volume: 0.64, level: 1, maxLevels: 6,
-    pm: 160.408, currentPrice: 160.350, tp: 160.688, tpPoints: 280,
-    rcPrice: 160.028, rcPoints: 380, progress: -14, digits: 3,
-  },
-];
+/* ── Grade de blocos ─────────────────────────────────────────────── */
+function GradeBlocks({ level, max = 6, isBuy }: { level: number; max?: number; isBuy: boolean }) {
+  return (
+    <div className={styles.gridBlocks}>
+      {Array.from({ length: max }, (_, i) => (
+        <div
+          key={i}
+          className={`${styles.gridBlock} ${
+            i < level
+              ? isBuy
+                ? styles.gridBlockFilledBuy
+                : styles.gridBlockFilledSell
+              : ""
+          }`}
+        />
+      ))}
+      <span
+        style={{
+          fontSize: "0.68rem",
+          color: level >= 4 ? "var(--neon-red)" : "var(--text-muted)",
+          fontWeight: 700,
+          marginLeft: "0.25rem",
+        }}
+      >
+        {level}/{max}
+      </span>
+    </div>
+  );
+}
 
-// ─── Sub-component: one basket card ──────────────────────────────────────────
+/* ── Barra de distância do PM ──────────────────────────────────── */
+// Mostra quanto o preço se afastou do PM. Estável e baseado em dados reais.
+function DistBar({ distPips, isBuy }: { distPips: number; isBuy: boolean }) {
+  // referência: 200 pips = barra cheia (escala visual)
+  const MAX_PIPS = 200;
+  const absPct = Math.min(100, (Math.abs(distPips) / MAX_PIPS) * 100);
+  const isGood = distPips >= 0; // distância positiva = favor
+  const color = isGood ? "var(--neon-green)" : "var(--neon-red)";
+  const label = isGood
+    ? `+${distPips} pts (favor)`
+    : `${distPips} pts (contra)`;
+
+  return (
+    <div className={styles.tpProgressWrapper}>
+      <div className={styles.tpProgressHeader}>
+        <span className={styles.basketRowLabel}>Dist. do PM</span>
+        <span style={{ fontSize: "0.7rem", fontWeight: 700, color }}>{label}</span>
+      </div>
+      <div className={styles.progressBarOuter}>
+        <div
+          className={styles.progressBarInner}
+          style={{
+            width: `${Math.max(absPct > 0 ? 2 : 0, absPct)}%`,
+            background: color,
+            boxShadow: `0 0 5px ${color}88`,
+            transition: "width 0.5s ease",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── Progresso ao TP (só se TP real disponível) ─────────────────── */
+function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
+  pm: number; currentPrice: number; tpPrice: number; isBuy: boolean; digits: number;
+}) {
+  const totalDist = isBuy ? (tpPrice - pm) : (pm - tpPrice);
+  const doneDist  = isBuy ? (currentPrice - pm) : (pm - currentPrice);
+  const progress  = totalDist > 0 ? Math.round((doneDist / totalDist) * 100) : 0;
+  const clamped   = Math.max(-100, Math.min(100, progress));
+  const color     = clamped >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+  const tpPts     = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
+
+  return (
+    <div className={styles.tpProgressWrapper}>
+      <div className={styles.tpProgressHeader}>
+        <span className={styles.basketRowLabel}>Progresso ao TP</span>
+        <span style={{ fontSize: "0.7rem", fontWeight: 700, color }}>
+          {clamped >= 0 ? "+" : ""}{clamped}%
+        </span>
+      </div>
+      <div className={styles.progressBarOuter}>
+        <div
+          className={styles.progressBarInner}
+          style={{
+            width: `${Math.max(Math.abs(clamped) > 0 ? 2 : 0, Math.abs(clamped))}%`,
+            background: clamped >= 0
+              ? "linear-gradient(90deg, #00c853, #00ff88)"
+              : "linear-gradient(90deg, #c62828, #ff1744)",
+            boxShadow: `0 0 5px ${color}88`,
+            transition: "width 0.5s ease",
+          }}
+        />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+        <span>PM: {pm.toFixed(digits)}</span>
+        <span style={{ color: "var(--neon-gold)" }}>TP: {tpPrice.toFixed(digits)} ({tpPts} pts)</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Card de um cesto ─────────────────────────────────────────── */
 function BasketCard({ b }: { b: Basket }) {
-  const isBuy = b.direction === "COMPRA";
-  const isProfit = b.profit >= 0;
+  const isBuy    = b.direction === "COMPRA";
+  const isProfit = b.totalProfit >= 0;
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
-  const fmtProfit = Math.abs(b.profit).toLocaleString("pt-BR", {
+  const level    = b.trades.length;
+  const isAlert  = level >= 4;
+
+  const fmtProfit = Math.abs(b.totalProfit).toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  const fmtPrice = (v: number) => v.toFixed(b.digits);
-
-  // Grade blocks
-  const blocks = Array.from({ length: b.maxLevels }, (_, i) => {
-    const filled = i < b.level;
-    return (
-      <div
-        key={i}
-        className={`${styles.gridBlock} ${
-          filled
-            ? isBuy
-              ? styles.gridBlockFilledBuy
-              : styles.gridBlockFilledSell
-            : ""
-        }`}
-      />
-    );
-  });
-
-  const isHighLevel = b.level >= 4;
-  const tpColor = isBuy ? "var(--neon-green)" : "var(--neon-gold)";
-  const progressAbs = Math.abs(b.progress);
-  const progressColor = b.progress >= 0 ? "var(--neon-green)" : "var(--neon-red)";
 
   return (
     <div
@@ -174,7 +224,7 @@ function BasketCard({ b }: { b: Basket }) {
         isBuy ? styles.basketCardBorderBuy : styles.basketCardBorderSell
       }`}
     >
-      {/* ── Header ── */}
+      {/* ── Cabeçalho ── */}
       <div className={styles.basketHeader}>
         <div className={styles.basketTitleGroup}>
           <span className={styles.basketSymbol}>{b.symbol}</span>
@@ -183,212 +233,189 @@ function BasketCard({ b }: { b: Basket }) {
               isBuy ? styles.directionBuy : styles.directionSell
             }`}
           >
-            {isBuy ? (
-              <ChevronUp size={9} style={{ display: "inline", marginRight: 1 }} />
-            ) : (
-              <ChevronDown size={9} style={{ display: "inline", marginRight: 1 }} />
-            )}
+            {isBuy
+              ? <ChevronUp size={9} style={{ display: "inline", marginRight: 1 }} />
+              : <ChevronDown size={9} style={{ display: "inline", marginRight: 1 }} />}
             {b.direction}
           </span>
-          {isHighLevel && (
+          {isAlert && (
             <span className={styles.riskBadge}>
-              <AlertTriangle size={9} />
-              {b.level}/6
+              <AlertTriangle size={9} /> NÍVEL {level}
             </span>
           )}
         </div>
         <div className={styles.basketProfit} style={{ color: profitColor }}>
-          {isProfit ? "+" : "-"}
-          {fmtProfit}
+          {isProfit ? "+" : "-"}{fmtProfit}
           <span className={styles.basketProfitSubtext}>USC flutuante</span>
         </div>
       </div>
 
-      {/* ── Nível e Mult ── */}
+      {/* ── Nível ── */}
       <div className={styles.basketLevelRow}>
-        <span style={{ color: isHighLevel ? "var(--neon-red)" : "var(--text-muted)" }}>
-          Nível {b.level} de {b.maxLevels} · Mult 1.50×
-        </span>
+        Nível {level} de 6 · Mult 1.50×
+        {isAlert && (
+          <span style={{ color: "var(--neon-red)", marginLeft: "0.5rem" }}>
+            ⚠ RECOMPRA INTENSA
+          </span>
+        )}
       </div>
 
-      {/* ── Detalhes ── */}
+      {/* ── Dados ── */}
       <div className={styles.basketDetails}>
+        {/* Preço Médio */}
         <div className={styles.basketRow}>
-          <span className={styles.basketRowLabel}>Preço Médio</span>
+          <span className={styles.basketRowLabel}>Preço Médio (PM)</span>
           <span className={styles.basketRowValue} style={{ fontFamily: "monospace" }}>
-            {fmtPrice(b.pm)}
+            {b.pm.toFixed(b.digits)}
           </span>
         </div>
 
+        {/* Preço Atual */}
         <div className={styles.basketRow}>
-          <span className={styles.basketRowLabel}>Alvo TP</span>
+          <span className={styles.basketRowLabel}>Preço Atual</span>
           <span
             className={styles.basketRowValue}
-            style={{ color: tpColor, fontFamily: "monospace" }}
+            style={{
+              fontFamily: "monospace",
+              color: b.distPips >= 0 ? "var(--neon-green)" : "var(--neon-red)",
+            }}
           >
-            {fmtPrice(b.tp)}{" "}
-            <span style={{ fontSize: "0.68rem", fontWeight: 500 }}>
-              ({isBuy ? "+" : "-"}
-              {b.tpPoints} pts)
-            </span>
+            {b.currentPrice.toFixed(b.digits)}
           </span>
         </div>
 
+        {/* Volume Total */}
         <div className={styles.basketRow}>
           <span className={styles.basketRowLabel}>Volume Total</span>
           <span className={styles.basketRowValue} style={{ fontFamily: "monospace" }}>
-            {b.volume.toFixed(3)} L
+            {b.totalVolume.toFixed(3)} L
           </span>
         </div>
 
-        {/* Grade blocos */}
+        {/* Grade */}
         <div className={styles.basketRow}>
           <span className={styles.basketRowLabel}>Grade</span>
-          <div className={styles.gridBlocks}>{blocks}</div>
+          <GradeBlocks level={level} max={6} isBuy={isBuy} />
         </div>
 
-        {/* Progresso ao TP */}
-        <div className={styles.tpProgressWrapper}>
-          <div className={styles.tpProgressHeader}>
-            <span className={styles.basketRowLabel}>Progresso ao TP</span>
-            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: progressColor }}>
-              {b.progress > 0 ? "+" : ""}
-              {b.progress}%
-            </span>
-          </div>
-          <div className={styles.progressBarOuter}>
-            <div
-              className={styles.progressBarInner}
-              style={{
-                width: `${Math.max(2, progressAbs)}%`,
-                background:
-                  b.progress >= 0
-                    ? "linear-gradient(90deg, #00c853, #00ff88)"
-                    : "linear-gradient(90deg, #c62828, #ff1744)",
-                boxShadow: `0 0 6px ${progressColor}88`,
-              }}
-            />
-          </div>
-        </div>
+        {/* Progresso ao TP (se TP real disponível) ou Dist. PM */}
+        {b.tpPrice && b.tpPrice > 0 ? (
+          <TpBar
+            pm={b.pm}
+            currentPrice={b.currentPrice}
+            tpPrice={b.tpPrice}
+            isBuy={isBuy}
+            digits={b.digits}
+          />
+        ) : (
+          <DistBar distPips={b.distPips} isBuy={isBuy} />
+        )}
       </div>
 
-      {/* ── Footer: Prox. RC ── */}
-      <div className={styles.basketFooter}>
-        <span>
-          Prox. RC:{" "}
-          <strong
-            style={{
-              color: isHighLevel ? "var(--neon-red)" : "var(--neon-blue)",
-              fontFamily: "monospace",
-            }}
-          >
-            H4 FR @ {fmtPrice(b.rcPrice)}
-          </strong>
-        </span>
-        <span style={{ color: isHighLevel ? "var(--neon-red)" : "var(--text-muted)" }}>
-          ({isBuy ? "-" : "+"}
-          {b.rcPoints} pts)
-        </span>
-      </div>
+      {/* ── Linha de posições individuais (mini) ── */}
+      {b.trades.length > 1 && (
+        <div className={styles.basketPositions}>
+          {b.trades.map((t, i) => {
+            const tProfit = t.currentProfit;
+            const tColor  = tProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+            return (
+              <div key={t.ticket} className={styles.basketPositionRow}>
+                <span style={{ color: "var(--text-muted)", fontFamily: "monospace", fontSize: "0.6rem" }}>
+                  #{i + 1} · {t.entryPrice.toFixed(b.digits)} · {t.volume.toFixed(2)}L
+                </span>
+                <span style={{ color: tColor, fontSize: "0.65rem", fontWeight: 700, fontFamily: "monospace" }}>
+                  {tProfit >= 0 ? "+" : ""}{tProfit.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function ActiveBaskets({ trades = [], brlRate = 5.45 }: ActiveBasketsProps) {
-  const liveBaskets = buildBaskets(trades);
-  const displayBaskets = liveBaskets.length > 0 ? liveBaskets : MOCK_BASKETS;
-
-  const grouped = groupBySymbol(displayBaskets);
+/* ── Componente principal ─────────────────────────────────────────── */
+export default function ActiveBaskets({ trades = [] }: ActiveBasketsProps) {
+  const baskets = buildBaskets(trades);
+  const grouped = groupBySymbol(baskets);
   const symbols = Object.keys(grouped).sort();
 
-  if (displayBaskets.length === 0) {
+  const totalPl      = baskets.reduce((s, b) => s + b.totalProfit, 0);
+  const totalProfitColor = totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+
+  if (baskets.length === 0) {
     return (
       <div className={styles.basketsSection}>
         <div className={styles.basketsSectionHeader}>
           <span className={styles.basketsSectionTitle}>Cestos Ativos por Moeda</span>
-          <span className={styles.basketsCount}>0 cestos</span>
+          <span className={styles.basketsCount}>sem posições abertas</span>
         </div>
         <div className={styles.basketsEmpty}>
-          <TrendingUp size={32} style={{ opacity: 0.3 }} />
-          <p>Nenhum cesto ativo no momento</p>
+          <span style={{ fontSize: "1.5rem" }}>📊</span>
+          <p>Nenhuma posição aberta no momento</p>
+          <small style={{ color: "var(--text-muted)" }}>
+            Os cestos aparecem aqui assim que o robô abrir operações
+          </small>
         </div>
       </div>
     );
   }
 
-  // Total global P&L
-  const totalPl = displayBaskets.reduce((s, b) => s + b.profit, 0);
-  const totalTrades = trades.length;
-
   return (
     <div className={styles.basketsSection}>
-      {/* ── Section header ── */}
+
+      {/* ── Cabeçalho da seção ── */}
       <div className={styles.basketsSectionHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span className={styles.basketsSectionTitle}>Cestos Ativos por Moeda</span>
           <span className={styles.basketsCount}>
-            {displayBaskets.length} cesto{displayBaskets.length !== 1 ? "s" : ""} ·{" "}
+            {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ·{" "}
             {symbols.length} par{symbols.length !== 1 ? "es" : ""}
           </span>
         </div>
-        <div
-          style={{
-            fontSize: "0.85rem",
-            fontWeight: 700,
-            color: totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)",
-          }}
-        >
-          {totalPl >= 0 ? "+" : ""}
-          {totalPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC total
-        </div>
+        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: totalProfitColor, fontFamily: "monospace" }}>
+          {totalPl >= 0 ? "+" : ""}{totalPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC global
+        </span>
       </div>
 
-      {/* ── Por Símbolo ── */}
+      {/* ── Grupos por símbolo ── */}
       <div className={styles.basketsBySymbol}>
         {symbols.map((sym) => {
           const symBaskets = grouped[sym];
-          const symPl = symBaskets.reduce((s, b) => s + b.profit, 0);
-          const symPlColor = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
-          const hasBuy = symBaskets.some((b) => b.direction === "COMPRA");
-          const hasSell = symBaskets.some((b) => b.direction === "VENDA");
+          const symPl      = symBaskets.reduce((s, b) => s + b.totalProfit, 0);
+          const symColor   = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+          const hasBuy     = symBaskets.some((b) => b.direction === "COMPRA");
+          const hasSell    = symBaskets.some((b) => b.direction === "VENDA");
 
           return (
             <div key={sym} className={styles.symbolGroup}>
-              {/* Symbol header bar */}
+              {/* Cabeçalho do par */}
               <div className={styles.symbolGroupHeader}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                   <span className={styles.symbolGroupName}>{sym}</span>
                   {hasBuy && (
-                    <span className={styles.symbolDirTag} style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.2)" }}>
-                      <TrendingUp size={10} /> COMPRA
+                    <span className={styles.symbolDirTag}
+                      style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.25)", background: "rgba(0,230,118,0.06)" }}>
+                      ▲ COMPRA
                     </span>
                   )}
                   {hasSell && (
-                    <span className={styles.symbolDirTag} style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.2)" }}>
-                      <TrendingDown size={10} /> VENDA
+                    <span className={styles.symbolDirTag}
+                      style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.25)", background: "rgba(255,23,68,0.06)" }}>
+                      ▼ VENDA
                     </span>
                   )}
                 </div>
-                <span
-                  style={{
-                    fontSize: "0.82rem",
-                    fontWeight: 700,
-                    color: symPlColor,
-                    fontFamily: "monospace",
-                  }}
-                >
-                  {symPl >= 0 ? "+" : ""}
-                  {symPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC
+                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: symColor, fontFamily: "monospace" }}>
+                  {symPl >= 0 ? "+" : ""}{symPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC
                 </span>
               </div>
 
-              {/* Basket cards for this symbol */}
+              {/* Cestos do par */}
               <div
                 className={styles.symbolBaskets}
-                style={{
-                  gridTemplateColumns: symBaskets.length === 1 ? "1fr" : "repeat(2, 1fr)",
-                }}
+                style={{ gridTemplateColumns: symBaskets.length === 1 ? "1fr" : "repeat(2, 1fr)" }}
               >
                 {symBaskets.map((b, i) => (
                   <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} />
