@@ -62,8 +62,8 @@ export default function KpiCards({
       {/* 1. Saldo da Conta */}
       <div className={styles.kpiCardMockup}>
         <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
-        <span className={styles.kpiValueMockup}>{formatCurrencyRaw(balance)}</span>
-        <span className={styles.kpiSubValueMockup}>USC · {formatBRL(balance)}</span>
+        <span className={styles.kpiValueMockup}>{formatBRL(balance)}</span>
+        <span className={styles.kpiSubValueMockup}>{formatCurrencyRaw(balance)} USC</span>
         <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>CENT</span>
       </div>
 
@@ -71,13 +71,13 @@ export default function KpiCards({
       <div className={styles.kpiCardMockup}>
         <span className={styles.kpiLabelMockup}>Patrimônio Líquido</span>
         <span className={styles.kpiValueMockup} style={{ color: "var(--neon-green)" }}>
-          {formatCurrencyRaw(equity)}
+          {formatBRL(equity)}
         </span>
         <span className={styles.kpiSubValueMockup}>
-          USC · {equityDiffPct >= 0 ? "+" : ""}{equityDiffPct.toFixed(2)}%
+          {formatCurrencyRaw(equity)} USC · {equityDiffPct >= 0 ? "+" : ""}{equityDiffPct.toFixed(2)}%
         </span>
         <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          {floatingPl >= 0 ? "+" : ""}USC {formatCurrencyRaw(floatingPl)}
+          {floatingPl >= 0 ? "+" : "-"}{formatBRL(floatingPl)}
         </span>
       </div>
 
@@ -85,13 +85,13 @@ export default function KpiCards({
       <div className={styles.kpiCardMockup}>
         <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
         <span className={styles.kpiValueMockup} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {dailyProfit >= 0 ? "+" : "-"}{formatCurrencyRaw(dailyProfit)}
+          {dailyProfit >= 0 ? "+" : "-"}{formatBRL(dailyProfit)}
         </span>
         <span className={styles.kpiSubValueMockup}>
-          USC · {dailyProfit >= 0 ? "+" : ""}{dailyPct.toFixed(2)}%
+          {dailyProfit >= 0 ? "+" : "-"}{formatCurrencyRaw(dailyProfit)} USC
         </span>
         <span className={`${styles.kpiBadgeMockup} ${dailyProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          {formatBRL(dailyProfit)}
+          {dailyProfit >= 0 ? "+" : ""}{dailyPct.toFixed(2)}%
         </span>
       </div>
 
@@ -99,13 +99,13 @@ export default function KpiCards({
       <div className={styles.kpiCardMockup}>
         <span className={styles.kpiLabelMockup}>Lucro Período</span>
         <span className={styles.kpiValueMockup} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {totalProfit >= 0 ? "+" : "-"}{formatCurrencyRaw(totalProfit)}
+          {totalProfit >= 0 ? "+" : "-"}{formatBRL(totalProfit)}
         </span>
         <span className={styles.kpiSubValueMockup}>
-          USC · {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
+          {totalProfit >= 0 ? "+" : "-"}{formatCurrencyRaw(totalProfit)} USC
         </span>
         <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          {formatBRL(totalProfit)}
+          {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
         </span>
       </div>
 

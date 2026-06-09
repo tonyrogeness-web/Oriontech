@@ -49,31 +49,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Upsert AccountState
-    await prisma.accountState.upsert({
-      where: { account: String(account) },
-      update: {
-        balance: parseFloat(balance),
-        equity: parseFloat(equity),
-        dailyProfit: parseFloat(dailyProfit),
-        floatingPl: parseFloat(floatingPl),
-        totalProfit: parseFloat(totalProfit),
-        maxDrawdown: parseFloat(maxDrawdown),
-        status: status || "RUNNING",
-      },
-      create: {
-        account: String(account),
-        balance: parseFloat(balance),
-        equity: parseFloat(equity),
-        dailyProfit: parseFloat(dailyProfit),
-        floatingPl: parseFloat(floatingPl),
-        totalProfit: parseFloat(totalProfit),
-        maxDrawdown: parseFloat(maxDrawdown),
-        status: status || "RUNNING",
-      },
-    });
-
-    // 4. Update Active Trades (Delete old, Insert new for this symbol)
+    // 3. Update Active Trades (Delete old, Insert new for this symbol)
     if (symbol) {
       await prisma.activeTrade.deleteMany({
         where: {
@@ -102,6 +78,39 @@ export async function POST(request: Request) {
         })),
       });
     }
+
+    // 4. Calculate Global floatingPl, equity, and maxDrawdown from all active trades of the account
+    const allActiveTrades = await prisma.activeTrade.findMany({
+      where: { account: String(account) },
+    });
+    const globalFloatingPl = allActiveTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
+    const parsedBalance = parseFloat(balance);
+    const globalEquity = parsedBalance + globalFloatingPl;
+    const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
+
+    // 5. Upsert AccountState with global unified calculations
+    await prisma.accountState.upsert({
+      where: { account: String(account) },
+      update: {
+        balance: parsedBalance,
+        equity: globalEquity,
+        dailyProfit: parseFloat(dailyProfit),
+        floatingPl: globalFloatingPl,
+        totalProfit: parseFloat(totalProfit),
+        maxDrawdown: globalDrawdown,
+        status: status || "RUNNING",
+      },
+      create: {
+        account: String(account),
+        balance: parsedBalance,
+        equity: globalEquity,
+        dailyProfit: parseFloat(dailyProfit),
+        floatingPl: globalFloatingPl,
+        totalProfit: parseFloat(totalProfit),
+        maxDrawdown: globalDrawdown,
+        status: status || "RUNNING",
+      },
+    });
 
     // 5. Upsert PerformanceHistory
     if (history.length > 0) {
