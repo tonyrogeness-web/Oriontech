@@ -57,59 +57,107 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
           </span>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.tradesTable}>
-            <thead>
-              <tr>
-                <th>Ativo</th>
-                <th>Direção</th>
-                <th>Volume</th>
-                <th>Entrada</th>
-                <th>SL/TP</th>
-                <th style={{ textAlign: "right" }}>Resultado</th>
-                <th style={{ textAlign: "right" }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trades.map((trade) => {
-                const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
-                const isProfit = trade.currentProfit >= 0;
-                const asset = getAssetDetails(trade.symbol);
+        <>
+          {/* Desktop Table View */}
+          <div className={`${styles.tableWrapper} ${styles.desktopOnly}`}>
+            <table className={styles.tradesTable}>
+              <thead>
+                <tr>
+                  <th>Ativo</th>
+                  <th>Direção</th>
+                  <th>Volume</th>
+                  <th>Entrada</th>
+                  <th>Preço Atual</th>
+                  <th style={{ textAlign: "right" }}>Resultado</th>
+                  <th style={{ textAlign: "right" }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trades.map((trade) => {
+                  const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
+                  const isProfit = trade.currentProfit >= 0;
+                  const asset = getAssetDetails(trade.symbol);
 
-                return (
-                  <tr key={trade.ticket}>
-                    <td>
-                      <div className={styles.flagBadge}>
-                        <span style={{ fontSize: "1.25rem" }}>{asset.flag}</span>
-                        <span>{asset.label}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={isBuy ? styles.badgeLong : styles.badgeShort}>
-                        {isBuy ? "Long" : "Short"}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{trade.volume.toFixed(2)} Lotes</td>
-                    <td style={{ fontFamily: "monospace" }}>{trade.entryPrice.toFixed(5)}</td>
-                    <td style={{ color: "var(--text-muted)" }}>SL/TP</td>
-                    <td
-                      style={{ textAlign: "right", fontWeight: 700 }}
-                      className={isProfit ? styles.valuePositive : styles.valueNegative}
-                    >
-                      {isProfit ? "+" : ""}
-                      {formatCurrency(trade.currentProfit)}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <span className="badge" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", color: "var(--text-secondary)", borderColor: "var(--border-light)", borderWidth: "1px", borderStyle: "solid" }}>
-                        Aberta
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  return (
+                    <tr key={trade.ticket}>
+                      <td>
+                        <div className={styles.flagBadge}>
+                          <span style={{ fontSize: "1.25rem" }}>{asset.flag}</span>
+                          <span>{asset.label}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={isBuy ? styles.badgeLong : styles.badgeShort}>
+                          {isBuy ? "Long" : "Short"}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 500 }}>{trade.volume.toFixed(2)} Lotes</td>
+                      <td style={{ fontFamily: "monospace" }}>{trade.entryPrice.toFixed(5)}</td>
+                      <td style={{ fontFamily: "monospace" }}>{trade.currentPrice.toFixed(5)}</td>
+                      <td
+                        style={{ textAlign: "right", fontWeight: 700 }}
+                        className={isProfit ? styles.valuePositive : styles.valueNegative}
+                      >
+                        {isProfit ? "+" : ""}
+                        {formatCurrency(trade.currentProfit)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <span className="badge" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", color: "var(--text-secondary)", borderColor: "var(--border-light)", borderWidth: "1px", borderStyle: "solid" }}>
+                          Aberta
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className={`${styles.mobileTradeList} ${styles.mobileOnly}`}>
+            {trades.map((trade) => {
+              const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
+              const isProfit = trade.currentProfit >= 0;
+              const asset = getAssetDetails(trade.symbol);
+
+              return (
+                <div key={trade.ticket} className={styles.mobileTradeCard}>
+                  <div className={styles.mobileTradeHeader}>
+                    <div className={styles.flagBadge}>
+                      <span style={{ fontSize: "1.25rem" }}>{asset.flag}</span>
+                      <span style={{ fontWeight: 600 }}>{asset.label}</span>
+                    </div>
+                    <span className={isBuy ? styles.badgeLong : styles.badgeShort}>
+                      {isBuy ? "Long" : "Short"}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.mobileTradeBody}>
+                    <div className={styles.mobileTradeRow}>
+                      <span className={styles.mobileTradeLabel}>Ticket / Vol:</span>
+                      <strong className={styles.mobileTradeValue}>#{trade.ticket} ({trade.volume.toFixed(2)} L)</strong>
+                    </div>
+                    <div className={styles.mobileTradeRow}>
+                      <span className={styles.mobileTradeLabel}>Entrada:</span>
+                      <span className={styles.mobileTradeValue} style={{ fontFamily: "monospace" }}>{trade.entryPrice.toFixed(5)}</span>
+                    </div>
+                    <div className={styles.mobileTradeRow}>
+                      <span className={styles.mobileTradeLabel}>Preço Atual:</span>
+                      <span className={styles.mobileTradeValue} style={{ fontFamily: "monospace" }}>{trade.currentPrice.toFixed(5)}</span>
+                    </div>
+                    <div className={styles.mobileTradeRow} style={{ marginTop: "0.25rem", paddingTop: "0.25rem", borderTop: "1px solid rgba(255, 255, 255, 0.03)" }}>
+                      <span className={styles.mobileTradeLabel}>Resultado:</span>
+                      <strong className={`${styles.mobileTradeValue} ${isProfit ? styles.valuePositive : styles.valueNegative}`} style={{ fontSize: "0.95rem" }}>
+                        {isProfit ? "+" : ""}
+                        {formatCurrency(trade.currentProfit)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
