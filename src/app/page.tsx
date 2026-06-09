@@ -23,8 +23,8 @@ export default function DashboardPage() {
         if (!response.ok) {
           throw new Error("Falha ao carregar dados do servidor.");
         }
-        const json = await response.ok ? await response.json() : null;
-        if (active && json) {
+        const json = await response.json();
+        if (active) {
           setData(json);
           setError(null);
         }
@@ -110,11 +110,11 @@ export default function DashboardPage() {
       {/* 1. Header component */}
       <Header
         accountNumber={activeAccount.account}
-        lastUpdated={activeAccount.lastUpdated}
+        status={activeAccount.status}
         isMock={data?.isMock}
       />
 
-      {/* 2. Key Metrics Grid */}
+      {/* 2. Key Metrics Panel & Cards */}
       <KpiCards
         balance={activeAccount.balance}
         equity={activeAccount.equity}
@@ -122,6 +122,9 @@ export default function DashboardPage() {
         floatingPl={activeAccount.floatingPl}
         totalProfit={activeAccount.totalProfit}
         maxDrawdown={activeAccount.maxDrawdown}
+        status={activeAccount.status}
+        accountNumber={activeAccount.account}
+        history={history}
       />
 
       {/* 3. Main Dashboard Layout (Charts on left, Controls on right) */}

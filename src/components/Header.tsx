@@ -1,53 +1,48 @@
 import React from "react";
-import { Activity, ShieldCheck } from "lucide-react";
+import { Bell, User, Activity } from "lucide-react";
 import styles from "./components.module.css";
 
 interface HeaderProps {
   accountNumber: string;
-  lastUpdated: string;
+  status: string;
   isMock?: boolean;
 }
 
-export default function Header({ accountNumber, lastUpdated, isMock }: HeaderProps) {
-  const isOnline = () => {
-    if (!lastUpdated) return false;
-    const updateTime = new Date(lastUpdated).getTime();
-    const now = new Date().getTime();
-    // Online if updated in the last 30 seconds
-    return now - updateTime < 30000;
-  };
-
-  const formattedTime = () => {
-    if (!lastUpdated) return "N/A";
-    const date = new Date(lastUpdated);
-    return date.toLocaleTimeString();
-  };
+export default function Header({ accountNumber, status, isMock }: HeaderProps) {
+  const isActive = status === "RUNNING";
 
   return (
     <header className={styles.header}>
+      {/* Left logo section */}
       <div className={styles.brand}>
-        <Activity size={28} className={styles.logoAccent} />
-        <span className={styles.logoText}>
-          Aura-FX<span className={styles.logoAccent}>.io</span>
-        </span>
-        {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem" }}>MOCK MODE</span>}
+        <Activity size={24} className={styles.logoAccent} />
+        <span className={styles.logoText}>AURA-FX</span>
+        {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MOCK</span>}
       </div>
 
-      <div className={styles.connection}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-            Conta: {accountNumber || "Carregando..."}
-          </span>
-          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-            Último Sync: {formattedTime()}
+      {/* Middle dashboard title */}
+      <div className={styles.centerTitle}>DASHBOARD</div>
+
+      {/* Right side connection info */}
+      <div className={styles.rightHeader}>
+        {/* Notification Bell */}
+        <div style={{ position: "relative", cursor: "pointer" }}>
+          <Bell size={20} style={{ color: "var(--text-secondary)" }} />
+          <span className={styles.bellBadge}>3</span>
+        </div>
+
+        {/* Status indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
+          <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
+            {isActive ? "ACTIVE" : "PAUSED"}
           </span>
         </div>
-        <div
-          className={`${styles.statusIndicator} ${
-            isOnline() || isMock ? styles.statusOnline : styles.statusOffline
-          }`}
-          title={isOnline() || isMock ? "Online" : "Desconectado do MT5"}
-        />
+
+        {/* User icon */}
+        <div className={styles.userProfile}>
+          <User size={18} style={{ color: "var(--text-primary)" }} />
+        </div>
       </div>
     </header>
   );
