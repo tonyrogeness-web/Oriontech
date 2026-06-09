@@ -106,7 +106,13 @@ export async function POST(request: Request) {
     // 5. Upsert PerformanceHistory
     if (history.length > 0) {
       for (const h of history) {
-        const hDate = new Date(h.date);
+        if (!h.date) continue;
+        const cleanDateStr = String(h.date).replace(/\./g, "-");
+        const hDate = new Date(cleanDateStr);
+        if (isNaN(hDate.getTime())) {
+          console.warn(`[MT5 Update] Data inválida recebida no histórico: ${h.date}`);
+          continue;
+        }
         // Normalize date to midnight (00:00:00) to ensure single record per day
         hDate.setUTCHours(0, 0, 0, 0);
 
