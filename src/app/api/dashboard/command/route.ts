@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const validCommands = ["PAUSE", "RESUME", "PANIC_LOCAL", "PANIC_GLOBAL"];
+    const validCommands = ["PAUSE", "RESUME", "PANIC_LOCAL", "PANIC_GLOBAL", "RESET_STATS"];
     if (!validCommands.includes(command)) {
       return NextResponse.json(
         { error: `Invalid command. Must be one of: ${validCommands.join(", ")}` },
