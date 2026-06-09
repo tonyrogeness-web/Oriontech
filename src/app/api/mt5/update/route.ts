@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       totalProfit,
       maxDrawdown,
       status,
+      symbol,
       trades = [],
       history = [],
       executedCommands = [],
@@ -72,11 +73,19 @@ export async function POST(request: Request) {
       },
     });
 
-    // 4. Update Active Trades (Delete old, Insert new)
-    // For simplicity, delete all active trades for this account and insert the current ones
-    await prisma.activeTrade.deleteMany({
-      where: { account: String(account) },
-    });
+    // 4. Update Active Trades (Delete old, Insert new for this symbol)
+    if (symbol) {
+      await prisma.activeTrade.deleteMany({
+        where: {
+          account: String(account),
+          symbol: String(symbol),
+        },
+      });
+    } else {
+      await prisma.activeTrade.deleteMany({
+        where: { account: String(account) },
+      });
+    }
 
     if (trades.length > 0) {
       await prisma.activeTrade.createMany({
