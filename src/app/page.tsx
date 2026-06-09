@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Activity } from "lucide-react";
 import Header from "@/components/Header";
 import KpiCards from "@/components/KpiCards";
 import Charts from "@/components/Charts";
@@ -15,6 +16,24 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [brlRate, setBrlRate] = useState(5.45);
+  const [currencyMode, setCurrencyMode] = useState<"CENT_BRL" | "USD_STAND" | "BRL_STAND">("CENT_BRL");
+
+  // Visual polling timer state
+  const [syncProgress, setSyncProgress] = useState(0);
+  const [isFlashActive, setIsFlashActive] = useState(false);
+
+  // Load currency mode preference from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("orion_currency_mode");
+    if (saved === "CENT_BRL" || saved === "USD_STAND" || saved === "BRL_STAND") {
+      setCurrencyMode(saved);
+    }
+  }, []);
+
+  const handleCurrencyModeChange = (mode: "CENT_BRL" | "USD_STAND" | "BRL_STAND") => {
+    setCurrencyMode(mode);
+    localStorage.setItem("orion_currency_mode", mode);
+  };
 
   // Fetch USD/BRL rate on mount
   useEffect(() => {
@@ -54,9 +73,12 @@ export default function DashboardPage() {
     fetchBrlRate();
   }, []);
 
-  // Poll database every 5 seconds for real-time update feel
+  // Poll database every 5 seconds for real-time update feel with smooth progress tracking
   useEffect(() => {
     let active = true;
+    let elapsed = 0;
+    const totalTime = 5000; // 5 seconds
+    const step = 100; // Update progress bar every 100ms
 
     async function fetchData() {
       try {
@@ -68,6 +90,11 @@ export default function DashboardPage() {
         if (active) {
           setData(json);
           setError(null);
+          // Trigger sync flash effect
+          setIsFlashActive(true);
+          setTimeout(() => {
+            if (active) setIsFlashActive(false);
+          }, 600);
         }
       } catch (err: any) {
         if (active) {
@@ -77,7 +104,17 @@ export default function DashboardPage() {
     }
 
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+
+    const interval = setInterval(() => {
+      elapsed += step;
+      if (elapsed >= totalTime) {
+        elapsed = 0;
+        fetchData();
+      }
+      if (active) {
+        setSyncProgress((elapsed / totalTime) * 100);
+      }
+    }, step);
 
     return () => {
       active = false;
@@ -125,6 +162,27 @@ export default function DashboardPage() {
     );
   }
 
+  // Premium loading screen when data is not yet loaded
+  if (!data && !error) {
+    return (
+      <div className={styles.loadingScreen}>
+        <div className={styles.loadingContent}>
+          <div className={styles.loadingLogoContainer}>
+            <Activity className={styles.loadingLogoIcon} size={36} />
+          </div>
+          <div>
+            <h2 className={styles.loadingTitle}>ORION HEDGE</h2>
+            <span className={styles.loadingSubtitle}>Painel de Sincronização Web</span>
+          </div>
+          <div className={styles.loadingBarContainer}>
+            <div className={styles.loadingBarProgress} />
+          </div>
+          <span className={styles.loadingStatusText}>Estabelecendo conexão segura...</span>
+        </div>
+      </div>
+    );
+  }
+
   // Set default initial state values
   const accounts = data?.accounts || [];
   const activeAccount = accounts[0] || {
@@ -150,57 +208,71 @@ export default function DashboardPage() {
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
 
   return (
-    <div className="dashboard-container">
-      {/* 1. Header component */}
-      <Header
-        accountNumber={activeAccount.account}
-        status={activeAccount.status}
-        isMock={data?.isMock}
-        brlRate={brlRate}
-      />
-
-      {/* 2. Row of 5 KPI Cards */}
-      <KpiCards
-        balance={activeAccount.balance}
-        equity={activeAccount.equity}
-        dailyProfit={activeAccount.dailyProfit}
-        floatingPl={activeAccount.floatingPl}
-        totalProfit={activeAccount.totalProfit}
-        maxDrawdown={activeAccount.maxDrawdown}
-        brlRate={brlRate}
-      />
-
-      {/* 3. Chart & Risk Management */}
-      <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
-        <Charts history={history} />
-        <RiskManagement
-          floatingPl={activeAccount.floatingPl}
-          maxDrawdown={activeAccount.maxDrawdown}
-          tradesCount={trades.length}
-          softStopLimit={400.0}
-          balance={activeAccount.balance}
+    <div className={isFlashActive ? styles.syncFlash : ""}>
+      {/* Sleek Polling Sync Progress Line */}
+      <div className={styles.syncProgressBarOuter}>
+        <div
+          className={styles.syncProgressBarInner}
+          style={{ width: `${syncProgress}%` }}
         />
       </div>
 
-      {/* 4. Active Baskets (por moeda) */}
-      <ActiveBaskets trades={trades} brlRate={brlRate} />
-
-      {/* 5. Trades Table & Controls */}
-      <div className={styles.mainGrid}>
-        <TradesTable trades={trades} />
-        <Controls
+      <div className="dashboard-container">
+        {/* 1. Header component */}
+        <Header
+          accountNumber={activeAccount.account}
           status={activeAccount.status}
-          activeSymbols={activeSymbols}
-          pendingCommandsCount={pendingCommandsCount}
-          onSendCommand={handleSendCommand}
+          isMock={data?.isMock}
+          brlRate={brlRate}
+          currencyMode={currencyMode}
+          setCurrencyMode={handleCurrencyModeChange}
         />
-      </div>
 
-      {/* 6. Rodapé */}
-      <footer className={styles.footerSection} style={{ marginTop: "1.5rem" }}>
-        <span>Orion Hedge Sistema Web v1.0.0</span>
-        <span>Sincronização Ativa • MetaTrader 5</span>
-      </footer>
+        {/* 2. Row of 5 KPI Cards */}
+        <KpiCards
+          balance={activeAccount.balance}
+          equity={activeAccount.equity}
+          dailyProfit={activeAccount.dailyProfit}
+          floatingPl={activeAccount.floatingPl}
+          totalProfit={activeAccount.totalProfit}
+          maxDrawdown={activeAccount.maxDrawdown}
+          brlRate={brlRate}
+          currencyMode={currencyMode}
+        />
+
+        {/* 3. Chart & Risk Management */}
+        <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
+          <Charts history={history} currencyMode={currencyMode} />
+          <RiskManagement
+            floatingPl={activeAccount.floatingPl}
+            maxDrawdown={activeAccount.maxDrawdown}
+            tradesCount={trades.length}
+            softStopLimit={400.0}
+            balance={activeAccount.balance}
+            currencyMode={currencyMode}
+          />
+        </div>
+
+        {/* 4. Active Baskets (por moeda) */}
+        <ActiveBaskets trades={trades} brlRate={brlRate} currencyMode={currencyMode} />
+
+        {/* 5. Trades Table & Controls */}
+        <div className={styles.mainGrid}>
+          <TradesTable trades={trades} currencyMode={currencyMode} />
+          <Controls
+            status={activeAccount.status}
+            activeSymbols={activeSymbols}
+            pendingCommandsCount={pendingCommandsCount}
+            onSendCommand={handleSendCommand}
+          />
+        </div>
+
+        {/* 6. Rodapé */}
+        <footer className={styles.footerSection} style={{ marginTop: "1.5rem" }}>
+          <span>Orion Hedge Sistema Web v1.0.0</span>
+          <span>Sincronização Ativa • MetaTrader 5</span>
+        </footer>
+      </div>
     </div>
   );
 }

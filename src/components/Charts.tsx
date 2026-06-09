@@ -12,9 +12,10 @@ interface PerformancePoint {
 
 interface ChartsProps {
   history: PerformancePoint[];
+  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
 }
 
-export default function Charts({ history = [] }: ChartsProps) {
+export default function Charts({ history = [], currencyMode = "CENT_BRL" }: ChartsProps) {
   const [timeframe, setTimeframe] = useState("7D");
 
   const formatDate = (dateStr: string) => {
@@ -27,8 +28,16 @@ export default function Charts({ history = [] }: ChartsProps) {
   };
 
   const formatCurrency = (val: number) => {
-    if (val >= 1000) return `${(val / 1000).toFixed(0)}k USC`;
-    return `${val} USC`;
+    if (currencyMode === "CENT_BRL") {
+      if (val >= 1000) return `${(val / 1000).toFixed(0)}k USC`;
+      return `${val} USC`;
+    } else if (currencyMode === "USD_STAND") {
+      if (val >= 1000) return `$ ${(val / 1000).toFixed(0)}k`;
+      return `$ ${val}`;
+    } else {
+      if (val >= 1000) return `R$ ${(val / 1000).toFixed(0)}k`;
+      return `R$ ${val}`;
+    }
   };
 
   // Filter history based on timeframe
@@ -131,7 +140,16 @@ export default function Charts({ history = [] }: ChartsProps) {
                     color: "var(--text-primary)",
                     fontFamily: "var(--font-primary)",
                   }}
-                  formatter={(value: any) => [`${value.toLocaleString("pt-BR")} USC`, "Saldo"]}
+                  formatter={(value: any) => {
+                    const formatted = value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    if (currencyMode === "CENT_BRL") {
+                      return [`${formatted} USC`, "Saldo"];
+                    } else if (currencyMode === "USD_STAND") {
+                      return [`$ ${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Saldo"];
+                    } else {
+                      return [`R$ ${formatted}`, "Saldo"];
+                    }
+                  }}
                 />
                 <Area
                   type="monotone"

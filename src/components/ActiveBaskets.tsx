@@ -19,9 +19,7 @@ interface Trade {
   sl?: number;   // opcional: SL real
 }
 
-interface ActiveBasketsProps {
-  trades: Trade[];
-}
+// ActiveBasketsProps is defined below in the primary component section
 
 /* ── Lógica de agrupamento ─────────────────────────────────────── */
 interface Basket {
@@ -144,6 +142,9 @@ function DistBar({ distPips, isBuy }: { distPips: number; isBuy: boolean }) {
     ? `+${distPips} pts (favor)`
     : `${distPips} pts (contra)`;
 
+  // Carrega a barra apenas quando a distância for positiva (a favor)
+  const fillWidth = isGood ? absPct : 0;
+
   return (
     <div className={styles.tpProgressWrapper}>
       <div className={styles.tpProgressHeader}>
@@ -154,9 +155,9 @@ function DistBar({ distPips, isBuy }: { distPips: number; isBuy: boolean }) {
         <div
           className={styles.progressBarInner}
           style={{
-            width: `${Math.max(absPct > 0 ? 2 : 0, absPct)}%`,
+            width: `${fillWidth}%`,
             background: color,
-            boxShadow: `0 0 5px ${color}88`,
+            boxShadow: isGood ? `0 0 5px ${color}88` : undefined,
             transition: "width 0.5s ease",
           }}
         />
@@ -176,6 +177,9 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
   const color     = clamped >= 0 ? "var(--neon-green)" : "var(--neon-red)";
   const tpPts     = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
 
+  // Carrega a barra apenas conforme a porcentagem real positiva (0% se negativo/drawdown)
+  const fillWidth = clamped >= 0 ? clamped : 0;
+
   return (
     <div className={styles.tpProgressWrapper}>
       <div className={styles.tpProgressHeader}>
@@ -188,11 +192,11 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
         <div
           className={styles.progressBarInner}
           style={{
-            width: `${Math.max(Math.abs(clamped) > 0 ? 2 : 0, Math.abs(clamped))}%`,
+            width: `${fillWidth}%`,
             background: clamped >= 0
               ? "linear-gradient(90deg, #00c853, #00ff88)"
               : "linear-gradient(90deg, #c62828, #ff1744)",
-            boxShadow: `0 0 5px ${color}88`,
+            boxShadow: clamped >= 0 ? `0 0 5px ${color}88` : undefined,
             transition: "width 0.5s ease",
           }}
         />
@@ -206,17 +210,55 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
 }
 
 /* ── Card de um cesto ─────────────────────────────────────────── */
-function BasketCard({ b }: { b: Basket }) {
+interface BasketCardProps {
+  b: Basket;
+  currencyMode: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  brlRate: number;
+}
+
+function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
   const isBuy    = b.direction === "COMPRA";
   const isProfit = b.totalProfit >= 0;
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
   const level    = b.trades.length;
   const isAlert  = level >= 4;
 
-  const fmtProfit = Math.abs(b.totalProfit).toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formatBasketProfit = (val: number) => {
+    const absVal = Math.abs(val);
+    if (currencyMode === "CENT_BRL") {
+      const convertedBrl = (val / 100) * brlRate;
+      return `R$ ${convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    } else if (currencyMode === "USD_STAND") {
+      return `$ ${absVal.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    } else {
+      return `R$ ${absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    }
+  };
+
+  const formatBasketProfitSub = (val: number) => {
+    const absVal = Math.abs(val);
+    const formattedNum = absVal.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    
+    if (currencyMode === "CENT_BRL") {
+      return `${formattedNum} USC flutuante`;
+    } else if (currencyMode === "USD_STAND") {
+      return `${formattedNum} USD flutuante`;
+    } else {
+      return `${formattedNum} BRL flutuante`;
+    }
+  };
 
   return (
     <div
@@ -245,8 +287,8 @@ function BasketCard({ b }: { b: Basket }) {
           )}
         </div>
         <div className={styles.basketProfit} style={{ color: profitColor }}>
-          {isProfit ? "+" : "-"}{fmtProfit}
-          <span className={styles.basketProfitSubtext}>USC flutuante</span>
+          {isProfit ? "+" : "-"}{formatBasketProfit(b.totalProfit)}
+          <span className={styles.basketProfitSubtext}>{formatBasketProfitSub(b.totalProfit)}</span>
         </div>
       </div>
 
@@ -324,7 +366,7 @@ function BasketCard({ b }: { b: Basket }) {
                   #{i + 1} · {t.entryPrice.toFixed(b.digits)} · {t.volume.toFixed(2)}L
                 </span>
                 <span style={{ color: tColor, fontSize: "0.65rem", fontWeight: 700, fontFamily: "monospace" }}>
-                  {tProfit >= 0 ? "+" : ""}{tProfit.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC
+                  {tProfit >= 0 ? "+" : "-"}{Math.abs(tProfit).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currencyMode === "CENT_BRL" ? "USC" : currencyMode === "USD_STAND" ? "USD" : "BRL"}
                 </span>
               </div>
             );
@@ -336,13 +378,39 @@ function BasketCard({ b }: { b: Basket }) {
 }
 
 /* ── Componente principal ─────────────────────────────────────────── */
-export default function ActiveBaskets({ trades = [] }: ActiveBasketsProps) {
+interface ActiveBasketsProps {
+  trades: Trade[];
+  brlRate?: number;
+  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+}
+
+export default function ActiveBaskets({
+  trades = [],
+  brlRate = 5.45,
+  currencyMode = "CENT_BRL",
+}: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
   const symbols = Object.keys(grouped).sort();
 
   const totalPl      = baskets.reduce((s, b) => s + b.totalProfit, 0);
   const totalProfitColor = totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+
+  const formatSecondaryVal = (val: number) => {
+    const absVal = Math.abs(val);
+    const formattedNum = absVal.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    
+    if (currencyMode === "CENT_BRL") {
+      return `${formattedNum} USC`;
+    } else if (currencyMode === "USD_STAND") {
+      return `${formattedNum} USD`;
+    } else {
+      return `${formattedNum} BRL`;
+    }
+  };
 
   if (baskets.length === 0) {
     return (
@@ -375,7 +443,7 @@ export default function ActiveBaskets({ trades = [] }: ActiveBasketsProps) {
           </span>
         </div>
         <span style={{ fontSize: "0.85rem", fontWeight: 700, color: totalProfitColor, fontFamily: "monospace" }}>
-          {totalPl >= 0 ? "+" : ""}{totalPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC global
+          {totalPl >= 0 ? "+" : "-"}{formatSecondaryVal(totalPl)} global
         </span>
       </div>
 
@@ -408,17 +476,14 @@ export default function ActiveBaskets({ trades = [] }: ActiveBasketsProps) {
                   )}
                 </div>
                 <span style={{ fontSize: "0.82rem", fontWeight: 700, color: symColor, fontFamily: "monospace" }}>
-                  {symPl >= 0 ? "+" : ""}{symPl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC
+                  {symPl >= 0 ? "+" : "-"}{formatSecondaryVal(symPl)}
                 </span>
               </div>
 
               {/* Cestos do par */}
-              <div
-                className={styles.symbolBaskets}
-                style={{ gridTemplateColumns: symBaskets.length === 1 ? "1fr" : "repeat(2, 1fr)" }}
-              >
+              <div className={styles.symbolBaskets}>
                 {symBaskets.map((b, i) => (
-                  <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} />
+                  <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} currencyMode={currencyMode} brlRate={brlRate} />
                 ))}
               </div>
             </div>

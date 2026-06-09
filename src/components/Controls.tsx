@@ -99,8 +99,13 @@ export default function Controls({
         </div>
 
         {pendingCommandsCount > 0 && (
-          <div style={{ fontSize: "0.7rem", color: "var(--neon-amber)", display: "flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.5rem" }}>
-            <RefreshCw size={11} className="spin" /> {pendingCommandsCount} comando(s) pendente(s)...
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginBottom: "0.75rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--neon-amber)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+              <RefreshCw size={11} className="spin" /> {pendingCommandsCount} comando(s) pendente(s)...
+            </div>
+            <div className={styles.pendingProgressBarOuter}>
+              <div className={styles.pendingProgressBarInner} />
+            </div>
           </div>
         )}
 

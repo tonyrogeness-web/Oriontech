@@ -7,9 +7,18 @@ interface HeaderProps {
   status: string;
   isMock?: boolean;
   brlRate: number;
+  currencyMode: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  setCurrencyMode: (mode: "CENT_BRL" | "USD_STAND" | "BRL_STAND") => void;
 }
 
-export default function Header({ accountNumber, status, isMock, brlRate }: HeaderProps) {
+export default function Header({
+  accountNumber,
+  status,
+  isMock,
+  brlRate,
+  currencyMode,
+  setCurrencyMode,
+}: HeaderProps) {
   const isActive = status === "RUNNING";
 
   return (
@@ -28,23 +37,50 @@ export default function Header({ accountNumber, status, isMock, brlRate }: Heade
 
       {/* Right side connection info */}
       <div className={styles.rightHeader}>
-        {/* Exchange rate indicator */}
-        <div 
-          className={styles.desktopOnly} 
-          style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "0.4rem", 
-            background: "rgba(255, 255, 255, 0.03)", 
-            padding: "0.25rem 0.6rem", 
-            borderRadius: "8px", 
-            border: "1px solid var(--border-light)" 
-          }}
-          title="Cotação em tempo real obtida via API AwesomeAPI"
-        >
-          <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>USD/BRL</span>
-          <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
+        {/* Currency/Layout Localization Switcher */}
+        <div className={styles.currencySelector}>
+          <button
+            className={`${styles.currencyOption} ${currencyMode === "CENT_BRL" ? styles.currencyOptionActive : ""}`}
+            onClick={() => setCurrencyMode("CENT_BRL")}
+            title="Exibir em BRL convertido de Dólar Cent (USC)"
+          >
+            CENT → BRL
+          </button>
+          <button
+            className={`${styles.currencyOption} ${currencyMode === "USD_STAND" ? styles.currencyOptionActive : ""}`}
+            onClick={() => setCurrencyMode("USD_STAND")}
+            title="Exibir em Dólar Standard (USD)"
+          >
+            USD
+          </button>
+          <button
+            className={`${styles.currencyOption} ${currencyMode === "BRL_STAND" ? styles.currencyOptionActive : ""}`}
+            onClick={() => setCurrencyMode("BRL_STAND")}
+            title="Exibir em Real Standard (BRL)"
+          >
+            BRL
+          </button>
         </div>
+
+        {/* Exchange rate indicator - only visible/relevant when doing BRL conversions */}
+        {currencyMode === "CENT_BRL" && (
+          <div 
+            className={styles.desktopOnly} 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.4rem", 
+              background: "rgba(255, 255, 255, 0.03)", 
+              padding: "0.25rem 0.6rem", 
+              borderRadius: "8px", 
+              border: "1px solid var(--border-light)" 
+            }}
+            title="Cotação em tempo real obtida via API AwesomeAPI"
+          >
+            <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>USD/BRL</span>
+            <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
+          </div>
+        )}
 
         {/* Notification Bell */}
         <div style={{ position: "relative", cursor: "pointer" }}>

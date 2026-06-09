@@ -9,6 +9,7 @@ interface RiskManagementProps {
   tradesCount: number;  // Total de posições abertas
   softStopLimit?: number; // Limite do SoftStop (USC)
   balance?: number;     // Saldo da conta (USC)
+  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
 }
 
 export default function RiskManagement({
@@ -17,61 +18,94 @@ export default function RiskManagement({
   tradesCount = 0,
   softStopLimit = 400.0,
   balance = 0,
+  currencyMode = "CENT_BRL",
 }: RiskManagementProps) {
 
   /* ── helpers ──────────────────────────────────────────────────── */
-  const fmt2 = (v: number) =>
-    Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formatRiskCurrency = (val: number, keepSign = false) => {
+    const isNeg = val < 0;
+    const absVal = Math.abs(val);
+    const formattedNum = absVal.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    
+    let signStr = "";
+    if (keepSign) {
+      signStr = isNeg ? "-" : val > 0 ? "+" : "";
+    }
+
+    if (currencyMode === "CENT_BRL") {
+      return `${signStr}${formattedNum} USC`;
+    } else if (currencyMode === "USD_STAND") {
+      return `${signStr}$ ${absVal.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} USD`;
+    } else {
+      return `${signStr}R$ ${formattedNum} BRL`;
+    }
+  };
 
   /* clamp 0–100 */
   const pct = (val: number, max: number) =>
     max > 0 ? Math.min(100, Math.max(0, (val / max) * 100)) : 0;
 
-  /* ── 1. P&L Flutuante Global ──────────────────────────────────── */
-  // Barra mostra a perda atual vs o SoftStop. Verde = lucro, Vermelho = perda.
-  const plLoss   = Math.abs(Math.min(0, floatingPl));          // só perda
-  const plGain   = Math.max(0, floatingPl);
-  const isProfit = floatingPl >= 0;
-  // % em relação ao SoftStop (cap 100%)
-  const plBarPct = isProfit
-    ? pct(plGain, softStopLimit)   // lucro: verde crescendo
-    : pct(plLoss, softStopLimit);  // perda: vermelho crescendo
-  const plColor  = isProfit ? "var(--neon-green)" : "var(--neon-red)";
-  const plGlow   = isProfit ? "var(--neon-green-glow)" : "var(--neon-red-glow)";
+  const plLoss = Math.max(0, -floatingPl);
 
-  /* ── 2. Drawdown (3 zonas: 0-10 verde / 10-20 amarelo / 20-40 vermelho) */
-  const ddBarPct = pct(maxDrawdown, 40);
-  const ddColor  = maxDrawdown >= 20 ? "var(--neon-red)"
-                 : maxDrawdown >= 10 ? "var(--neon-gold)"
-                 : "var(--neon-green)";
-  const ddLabel  = maxDrawdown >= 20 ? "ZONA VERMELHA"
-                 : maxDrawdown >= 10 ? "ZONA AMARELA"
-                 : "ZONA VERDE";
+  /* ── 1. P&L Flutuante Global (vs SoftStop) ─────────────────────── */
+  const plReachPct = floatingPl < 0 ? pct(plLoss, softStopLimit) : 0;
+  const plColor = floatingPl >= 0 ? "var(--neon-green)"
+                : plReachPct >= 80 ? "var(--neon-red)"
+                : plReachPct >= 50 ? "var(--neon-gold)"
+                : "var(--neon-green)";
+  const plStatus = floatingPl >= 0 ? "LUCRO"
+                 : plReachPct >= 80 ? "CRÍTICO"
+                 : plReachPct >= 50 ? "ALERTA"
+                 : "OK";
+
+  /* ── 2. Drawdown (Limite 40%) ──────────────────────────────────── */
+  const ddReachPct = pct(maxDrawdown, 40);
+  const ddColor = maxDrawdown >= 20 ? "var(--neon-red)"
+                : maxDrawdown >= 10 ? "var(--neon-gold)"
+                : "var(--neon-green)";
+  const ddStatus = maxDrawdown >= 20 ? "CRÍTICO"
+                 : maxDrawdown >= 10 ? "ALERTA"
+                 : "SEGURO";
   // marcadores em px% dentro da barra
   const zone10px = (10 / 40) * 100; // 25%
   const zone20px = (20 / 40) * 100; // 50%
 
-  /* ── 3. SoftStop: quanto da "margem de perda" já foi usada ──── */
-  const ssUsedPct = pct(plLoss, softStopLimit);
-  const ssColor   = ssUsedPct >= 80 ? "var(--neon-red)"
-                  : ssUsedPct >= 50 ? "var(--neon-gold)"
-                  : "var(--neon-green)";
-  const ssLabel   = ssUsedPct >= 80 ? "CRÍTICO"
-                  : ssUsedPct >= 50 ? "ALERTA"
-                  : "OK";
+  /* ── 3. SoftStop Global (Perda Máxima vs Limite) ──────────────── */
+  const ssReachPct = pct(plLoss, softStopLimit);
+  const ssColor = ssReachPct >= 80 ? "var(--neon-red)"
+                : ssReachPct >= 50 ? "var(--neon-gold)"
+                : "var(--neon-green)";
+  const ssStatus = ssReachPct >= 80 ? "CRÍTICO"
+                 : ssReachPct >= 50 ? "ALERTA"
+                 : plLoss === 0 ? "NENHUM"
+                 : "OK";
 
-  /* ── 4. Ordens Abertas (max 36 slots = 6 pares × 6 níveis) ─── */
-  const maxSlots  = 36;
-  const slotsBarPct = pct(tradesCount, maxSlots);
-  const slotsColor  = tradesCount >= 28 ? "var(--neon-red)"
-                    : tradesCount >= 18 ? "var(--neon-gold)"
-                    : "var(--neon-green)";
+  /* ── 4. Ordens Abertas (Limite 36) ────────────────────────────── */
+  const maxSlots = 36;
+  const slotsReachPct = pct(tradesCount, maxSlots);
+  const slotsColor = tradesCount >= 28 ? "var(--neon-red)"
+                   : tradesCount >= 18 ? "var(--neon-gold)"
+                   : "var(--neon-green)";
+  const slotsStatus = tradesCount >= 28 ? "CRÍTICO"
+                    : tradesCount >= 18 ? "ALERTA"
+                    : "SEGURO";
 
-  /* ── 5. Capital em risco: % do saldo que é o floatingPl de perda */
-  const capPct   = balance > 0 ? pct(plLoss, balance) : 0;
-  const capColor = capPct >= 5 ? "var(--neon-red)"
-                 : capPct >= 2 ? "var(--neon-gold)"
+  /* ── 5. Capital em Risco (Limite 10% do Saldo) ───────────────── */
+  const capLossPct = balance > 0 ? (plLoss / balance) * 100 : 0;
+  const capLimit = 10.00; // 10% do saldo como limite
+  const capReachPct = pct(capLossPct, capLimit);
+  const capColor = capLossPct >= 5 ? "var(--neon-red)"
+                 : capLossPct >= 2 ? "var(--neon-gold)"
                  : "var(--neon-green)";
+  const capStatus = capLossPct >= 5 ? "CRÍTICO"
+                  : capLossPct >= 2 ? "ALERTA"
+                  : "SEGURO";
 
   return (
     <div className={styles.riskManagementCard}>
@@ -81,75 +115,64 @@ export default function RiskManagement({
 
         {/* 1. P&L Flutuante Global */}
         <RiskBar
-          label="P&L Flutuante Global"
-          valueNode={
-            <span style={{ color: plColor, fontWeight: 700 }}>
-              {isProfit ? "+" : "-"}USC {fmt2(floatingPl)}
-            </span>
-          }
-          barPct={plBarPct}
+          label="P&L Flutuante (vs SoftStop)"
+          valueText={`${formatRiskCurrency(floatingPl, true)} / ${formatRiskCurrency(-softStopLimit, true)}`}
+          reachText={`${plReachPct.toFixed(1)}% de alcance`}
+          barPct={plReachPct}
           barColor={plColor}
-          barGlow={plGlow}
+          barGlow={plColor}
+          statusLabel={plStatus}
+          statusColor={plColor}
         />
 
         {/* 2. Drawdown */}
         <RiskBar
-          label="Drawdown (Zona 3 faixas)"
-          valueNode={
-            <span style={{ color: ddColor, fontWeight: 700 }}>
-              {maxDrawdown.toFixed(2)}% / 40%{" "}
-              <small style={{ color: "var(--text-muted)", fontWeight: 500 }}>· {ddLabel}</small>
-            </span>
-          }
-          barPct={ddBarPct}
+          label="Drawdown de Saldo (Limite 40%)"
+          valueText={`${maxDrawdown.toFixed(2)}% / 40.00%`}
+          reachText={`${ddReachPct.toFixed(1)}% de alcance`}
+          barPct={ddReachPct}
           barColor={ddColor}
           barGlow={ddColor}
-          scaleLabels={["0%", "10%", "20%", "40%"]}
+          statusLabel={ddStatus}
+          statusColor={ddColor}
           markers={[zone10px, zone20px]}
           markerColors={["rgba(255,179,0,0.5)", "rgba(255,23,68,0.5)"]}
         />
 
         {/* 3. SoftStop Global */}
         <RiskBar
-          label="SoftStop Global"
-          valueNode={
-            <span style={{ fontWeight: 700 }}>
-              USC {softStopLimit.toFixed(0)} ·{" "}
-              <span style={{ color: ssColor }}>{ssUsedPct.toFixed(0)}% usado · {ssLabel}</span>
-            </span>
-          }
-          barPct={ssUsedPct}
+          label="SoftStop Consumido"
+          valueText={`${formatRiskCurrency(plLoss)} / ${formatRiskCurrency(softStopLimit)}`}
+          reachText={`${ssReachPct.toFixed(1)}% usado`}
+          barPct={ssReachPct}
           barColor={ssColor}
           barGlow={ssColor}
+          statusLabel={ssStatus}
+          statusColor={ssColor}
         />
 
         {/* 4. Ordens Abertas */}
         <RiskBar
           label="Ordens Abertas"
-          valueNode={
-            <span style={{ color: slotsColor, fontWeight: 700 }}>
-              {tradesCount} / {maxSlots} slots
-            </span>
-          }
-          barPct={slotsBarPct}
+          valueText={`${tradesCount} / ${maxSlots} slots`}
+          reachText={`${slotsReachPct.toFixed(1)}% de alcance`}
+          barPct={slotsReachPct}
           barColor={slotsColor}
           barGlow={slotsColor}
+          statusLabel={slotsStatus}
+          statusColor={slotsColor}
         />
 
         {/* 5. Capital em Risco */}
         <RiskBar
-          label="Capital em Risco"
-          valueNode={
-            <span style={{ color: capColor, fontWeight: 700 }}>
-              {capPct.toFixed(2)}%{" "}
-              <small style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: "0.68rem" }}>
-                do saldo
-              </small>
-            </span>
-          }
-          barPct={capPct}
+          label="Capital em Risco (Limite 10% Saldo)"
+          valueText={`${capLossPct.toFixed(2)}% / ${capLimit.toFixed(2)}%`}
+          reachText={`${capReachPct.toFixed(1)}% de alcance`}
+          barPct={capReachPct}
           barColor={capColor}
           barGlow={capColor}
+          statusLabel={capStatus}
+          statusColor={capColor}
         />
 
       </div>
@@ -160,22 +183,26 @@ export default function RiskManagement({
 /* ── Sub-componente de barra individual ─────────────────────────── */
 interface RiskBarProps {
   label: string;
-  valueNode: React.ReactNode;
+  valueText: string;
+  reachText: string;
   barPct: number;       // 0–100
   barColor: string;
   barGlow?: string;
-  scaleLabels?: string[];
+  statusLabel?: string;
+  statusColor?: string;
   markers?: number[];   // posições % dos marcadores de zona
   markerColors?: string[];
 }
 
 function RiskBar({
   label,
-  valueNode,
+  valueText,
+  reachText,
   barPct,
   barColor,
   barGlow,
-  scaleLabels,
+  statusLabel,
+  statusColor,
   markers = [],
   markerColors = [],
 }: RiskBarProps) {
@@ -183,7 +210,7 @@ function RiskBar({
     <div className={styles.riskItem}>
       <div className={styles.riskHeaderRow}>
         <span className={styles.riskLabel}>{label}</span>
-        <span className={styles.riskItemValue}>{valueNode}</span>
+        <span className={styles.riskItemValue}>{valueText}</span>
       </div>
 
       {/* barra */}
@@ -213,24 +240,17 @@ function RiskBar({
         ))}
       </div>
 
-      {/* escala */}
-      {scaleLabels && (
-        <div className={styles.riskScale}>
-          {scaleLabels.map((s, i) => (
-            <span
-              key={i}
-              style={{
-                color:
-                  i === 1 ? "var(--neon-gold)"
-                  : i === 2 ? "var(--neon-red)"
-                  : undefined,
-              }}
-            >
-              {s}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* rodapé da barra com porcentagem e status */}
+      <div className={styles.riskScale}>
+        <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
+          {reachText}
+        </span>
+        {statusLabel && (
+          <span style={{ color: statusColor, fontWeight: 700, letterSpacing: "0.02em" }}>
+            {statusLabel}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

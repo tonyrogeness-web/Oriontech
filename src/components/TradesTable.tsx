@@ -17,9 +17,10 @@ interface Trade {
 
 interface TradesTableProps {
   trades: Trade[];
+  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
 }
 
-export default function TradesTable({ trades = [] }: TradesTableProps) {
+export default function TradesTable({ trades = [], currencyMode = "CENT_BRL" }: TradesTableProps) {
   const cleanSymbol = (sym: string) => {
     return sym.toUpperCase().replace("C", "").replace("/", "");
   };
@@ -83,10 +84,10 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
             <thead>
               <tr>
                 <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Par</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Dir</th>
+                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Tipo</th>
                 <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Nível</th>
                 <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Volume</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem", textAlign: "right" }}>PM</th>
+                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem", textAlign: "right" }}>Preço</th>
               </tr>
             </thead>
             <tbody>
@@ -102,7 +103,7 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
                     </td>
                     <td style={{ padding: "0.6rem 0.75rem" }}>
                       <span className={isBuy ? styles.badgeLong : styles.badgeShort} style={{ fontSize: "0.65rem", padding: "0.1rem 0.4rem" }}>
-                        {isBuy ? "BUY" : "SELL"}
+                        {isBuy ? "COMPRA" : "VENDA"}
                       </span>
                     </td>
                     <td style={{ padding: "0.6rem 0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
