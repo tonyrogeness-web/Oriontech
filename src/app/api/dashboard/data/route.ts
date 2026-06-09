@@ -74,11 +74,17 @@ function getMockData() {
 
 export async function GET() {
   try {
+    // Test DB connection first
     const accounts = await prisma.accountState.findMany();
 
-    // If there is no data in the database, return mock data for initial UI rendering
+    // If there is no data in the database yet, return mock data for initial UI rendering
     if (accounts.length === 0) {
-      return NextResponse.json(getMockData());
+      // DB is accessible but empty — robot hasn't sent data yet
+      return NextResponse.json({
+        ...getMockData(),
+        isMock: true,
+        mockReason: "DB_EMPTY",
+      });
     }
 
     // Otherwise, fetch real data from database
@@ -107,6 +113,12 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error("Dashboard Data Fetch Error (falling back to mock data):", error);
-    return NextResponse.json(getMockData());
+    // Return mock data but also expose diagnostic info for debugging
+    return NextResponse.json({
+      ...getMockData(),
+      isMock: true,
+      mockReason: "DB_ERROR",
+      dbError: error?.message || "Unknown error",
+    });
   }
 }

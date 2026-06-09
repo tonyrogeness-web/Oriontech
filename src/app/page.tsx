@@ -98,6 +98,9 @@ export default function DashboardPage() {
     lastUpdated: "",
   };
 
+  const mockReason = data?.mockReason || null;
+  const dbError = data?.dbError || null;
+
   const trades = data?.trades || [];
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
