@@ -590,3 +590,413 @@
     color: var(--text-primary);
   }
 }
+
+/* ===================================================================
+   MOCKUP REDESIGN STYLES (5 KPI CARDS, RISK MGT, ACTIVE BASKETS, CONTROLS)
+   =================================================================== */
+
+.kpiRowGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .kpiRowGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiRowGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kpiCardMockup {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.kpiCardMockup:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.kpiLabelMockup {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+.kpiValueMockup {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.kpiSubValueMockup {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.kpiBadgeMockup {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.kpiBadgeGreen {
+  background: rgba(0, 230, 118, 0.08);
+  color: var(--neon-green);
+  border: 1px solid rgba(0, 230, 118, 0.15);
+}
+
+.kpiBadgeGold {
+  background: rgba(255, 179, 0, 0.08);
+  color: var(--neon-gold);
+  border: 1px solid rgba(255, 179, 0, 0.15);
+}
+
+.kpiBadgeRed {
+  background: rgba(255, 23, 68, 0.08);
+  color: var(--neon-red);
+  border: 1px solid rgba(255, 23, 68, 0.15);
+}
+
+.chartFilters {
+  display: flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.15rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  align-items: center;
+}
+
+.chartFilterBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.chartFilterBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.chartFilterBtnActive {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.riskManagementCard {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  height: 100%;
+}
+
+.riskItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.riskHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.riskItemValue {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.progressBarOuter {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  height: 7px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressBarInner {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.riskScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+  font-weight: 600;
+}
+
+.basketsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .basketsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.basketCard {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.basketCard:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.basketCardBorderBuy {
+  border-color: rgba(0, 230, 118, 0.15);
+}
+
+.basketCardBorderSell {
+  border-color: rgba(255, 23, 68, 0.15);
+}
+
+.basketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: 0.5rem;
+}
+
+.basketTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.basketSymbol {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.basketDirection {
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.directionBuy {
+  background: rgba(0, 230, 118, 0.08);
+  color: var(--neon-green);
+  border: 1px solid rgba(0, 230, 118, 0.15);
+}
+
+.directionSell {
+  background: rgba(255, 23, 68, 0.08);
+  color: var(--neon-red);
+  border: 1px solid rgba(255, 23, 68, 0.15);
+}
+
+.basketProfit {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.basketProfitSubtext {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.basketDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.basketRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+}
+
+.basketRowLabel {
+  color: var(--text-muted);
+}
+
+.basketRowValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gridBlocks {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.gridBlock {
+  width: 14px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: 1px;
+}
+
+.gridBlockFilledBuy {
+  background: var(--neon-green);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 4px var(--neon-green-glow);
+}
+
+.gridBlockFilledSell {
+  background: var(--neon-red);
+  border-color: var(--neon-red);
+  box-shadow: 0 0 4px var(--neon-red-glow);
+}
+
+.basketFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 0.5rem;
+  font-size: 0.675rem;
+  color: var(--text-muted);
+}
+
+.controlsGrid2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.btnControlMockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.775rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  background: transparent;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.btnControlPause {
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.btnControlPause:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.btnControlResume {
+  background: var(--neon-green);
+  color: #0c0f13;
+  border-color: var(--neon-green);
+}
+
+.btnControlResume:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px var(--neon-green-glow);
+}
+
+.btnControlZerar {
+  border-color: var(--neon-gold);
+  color: var(--neon-gold);
+  background: rgba(255, 179, 0, 0.02);
+}
+
+.btnControlZerar:hover {
+  background: rgba(255, 179, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btnControlPanic {
+  background: rgba(255, 23, 68, 0.05);
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
+
+.btnControlPanic:hover {
+  background: var(--neon-red);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px var(--neon-red-glow);
+}
+

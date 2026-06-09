@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Play, Pause, AlertOctagon, RefreshCw, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { Play, Pause, Zap, Skull, RefreshCw } from "lucide-react";
 import styles from "./components.module.css";
 
 interface ControlsProps {
@@ -19,8 +19,8 @@ export default function Controls({
 }: ControlsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [confirmPanicGlobal, setConfirmPanicGlobal] = useState(false);
-  const [confirmPanicLocal, setConfirmPanicLocal] = useState<string | null>(null);
-  const [isLocalPanicCollapsed, setIsLocalPanicCollapsed] = useState(true);
+  const [showLocalSelector, setShowLocalSelector] = useState(false);
+  const [confirmLocalSymbol, setConfirmLocalSymbol] = useState<string | null>(null);
 
   // Global Panic timer
   useEffect(() => {
@@ -32,16 +32,21 @@ export default function Controls({
 
   // Local Panic timer
   useEffect(() => {
-    if (confirmPanicLocal) {
-      const timer = setTimeout(() => setConfirmPanicLocal(null), 4000);
+    if (confirmLocalSymbol) {
+      const timer = setTimeout(() => setConfirmLocalSymbol(null), 4000);
       return () => clearTimeout(timer);
     }
-  }, [confirmPanicLocal]);
+  }, [confirmLocalSymbol]);
 
-  const handlePauseResume = async () => {
-    const cmd = status === "PAUSED" ? "RESUME" : "PAUSE";
-    setLoading(cmd);
-    await onSendCommand(cmd);
+  const handlePause = async () => {
+    setLoading("PAUSE");
+    await onSendCommand("PAUSE");
+    setLoading(null);
+  };
+
+  const handleResume = async () => {
+    setLoading("RESUME");
+    await onSendCommand("RESUME");
     setLoading(null);
   };
 
@@ -57,119 +62,130 @@ export default function Controls({
   };
 
   const handlePanicLocal = async (symbol: string) => {
-    if (confirmPanicLocal !== symbol) {
-      setConfirmPanicLocal(symbol);
+    if (confirmLocalSymbol !== symbol) {
+      setConfirmLocalSymbol(symbol);
       return;
     }
     setLoading(`PANIC_LOCAL_${symbol}`);
     await onSendCommand("PANIC_LOCAL", symbol);
-    setConfirmPanicLocal(null);
+    setConfirmLocalSymbol(null);
+    setShowLocalSelector(false);
     setLoading(null);
   };
 
   const isPaused = status === "PAUSED";
 
   return (
-    <div className={styles.controlsCard}>
-      <h3 className={styles.cardTitle}>
-        <AlertOctagon size={20} className={styles.logoAccent} />
-        Painel de Controle
-      </h3>
-
-      {/* Connection / Queue Status */}
-      <div className={styles.controlStatusMessage}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-          <span>Status do Robô:</span>
-          <span
+    <div className={styles.controlsCard} style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+          <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
+            Controles do Robô
+          </h3>
+          <span 
             className="badge"
             style={{
-              backgroundColor: isPaused ? "rgba(255, 23, 68, 0.15)" : "rgba(0, 230, 118, 0.15)",
+              backgroundColor: isPaused ? "rgba(255, 23, 68, 0.08)" : "rgba(0, 230, 118, 0.08)",
               color: isPaused ? "var(--neon-red)" : "var(--neon-green)",
-              borderColor: isPaused ? "rgba(255, 23, 68, 0.3)" : "rgba(0, 230, 118, 0.3)",
+              borderColor: isPaused ? "rgba(255, 23, 68, 0.15)" : "rgba(0, 230, 118, 0.15)",
               borderWidth: "1px",
               borderStyle: "solid",
+              fontSize: "0.65rem",
+              fontWeight: 700,
             }}
           >
             {isPaused ? "PAUSADO" : "EXECUTANDO"}
           </span>
         </div>
+
         {pendingCommandsCount > 0 && (
-          <div style={{ fontSize: "0.75rem", color: "var(--neon-amber)", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.25rem" }}>
-            <RefreshCw size={12} className="spin" /> {pendingCommandsCount} comando(s) aguardando sincronização...
+          <div style={{ fontSize: "0.7rem", color: "var(--neon-amber)", display: "flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.5rem" }}>
+            <RefreshCw size={11} className="spin" /> {pendingCommandsCount} comando(s) pendente(s)...
           </div>
         )}
-      </div>
 
-      {/* Pause/Resume Group */}
-      <div className={styles.controlGroup}>
-        <span className={styles.controlGroupTitle}>Fluxo de Operações</span>
-        <button
-          className={`btn ${isPaused ? "btn-primary" : "btn-secondary"}`}
-          onClick={handlePauseResume}
-          disabled={loading !== null}
-          style={{ width: "100%", justifyContent: "center" }}
-        >
-          {loading === "PAUSE" || loading === "RESUME" ? (
-            <RefreshCw className="spin" size={16} />
-          ) : isPaused ? (
-            <>
-              <Play size={16} /> Retomar Robô
-            </>
-          ) : (
-            <>
-              <Pause size={16} /> Pausar Robô
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Global Panic Group */}
-      <div className={styles.controlGroup}>
-        <span className={styles.controlGroupTitle}>Pânico de Emergência</span>
-        <button
-          className={`btn btn-danger`}
-          onClick={handlePanicGlobal}
-          disabled={loading !== null}
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            background: confirmPanicGlobal ? "var(--neon-red)" : "rgba(255, 23, 68, 0.15)",
-            color: confirmPanicGlobal ? "#fff" : "var(--neon-red)",
-            border: "1px solid var(--neon-red)",
-          }}
-        >
-          {loading === "PANIC_GLOBAL" ? (
-            <RefreshCw className="spin" size={16} />
-          ) : confirmPanicGlobal ? (
-            "CLIQUE PARA CONFIRMAR ZERAR TUDO!"
-          ) : (
-            <>
-              <AlertOctagon size={16} /> ZERAR TUDO (GLOBAL)
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Local Panic Group */}
-      {activeSymbols.length > 0 && (
-        <div className={styles.controlGroup}>
-          <div 
-            className={styles.collapsibleHeader}
-            onClick={() => setIsLocalPanicCollapsed(!isLocalPanicCollapsed)}
+        {/* 2x2 Grid of Actions */}
+        <div className={styles.controlsGrid2x2}>
+          {/* Button 1: Pausar */}
+          <button
+            className={`${styles.btnControlMockup} ${styles.btnControlPause}`}
+            onClick={handlePause}
+            disabled={loading !== null || isPaused}
+            title="Pausar todas as novas entradas"
           >
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <span className={styles.controlGroupTitle}>Pânico Local por Ativo</span>
-              <span className={styles.badgeCount}>{activeSymbols.length}</span>
-            </div>
-            <span className={styles.collapseIcon}>
-              {isLocalPanicCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-            </span>
-          </div>
+            {loading === "PAUSE" ? (
+              <RefreshCw className="spin" size={14} />
+            ) : (
+              <>
+                <Pause size={14} /> Pausar
+              </>
+            )}
+          </button>
 
-          {!isLocalPanicCollapsed && (
-            <div className={styles.controlButtons}>
+          {/* Button 2: Retomar */}
+          <button
+            className={`${styles.btnControlMockup} ${styles.btnControlResume}`}
+            onClick={handleResume}
+            disabled={loading !== null || !isPaused}
+            title="Retomar operações normais"
+          >
+            {loading === "RESUME" ? (
+              <RefreshCw className="spin" size={14} />
+            ) : (
+              <>
+                <Play size={14} /> Retomar
+              </>
+            )}
+          </button>
+
+          {/* Button 3: Zerar Local */}
+          <button
+            className={`${styles.btnControlMockup} ${styles.btnControlZerar}`}
+            onClick={() => setShowLocalSelector(!showLocalSelector)}
+            disabled={loading !== null || activeSymbols.length === 0}
+            title="Zerar posições de um ativo específico"
+          >
+            <Zap size={14} /> Zerar Local
+          </button>
+
+          {/* Button 4: Pânico Global */}
+          <button
+            className={`${styles.btnControlMockup} ${styles.btnControlPanic}`}
+            onClick={handlePanicGlobal}
+            disabled={loading !== null}
+            style={{
+              backgroundColor: confirmPanicGlobal ? "var(--neon-red)" : "rgba(255, 23, 68, 0.05)",
+              color: confirmPanicGlobal ? "#fff" : "var(--neon-red)",
+            }}
+            title="Fechar todas as ordens abertas da conta imediatamente"
+          >
+            {loading === "PANIC_GLOBAL" ? (
+              <RefreshCw className="spin" size={14} />
+            ) : confirmPanicGlobal ? (
+              "CONFIRMAR?"
+            ) : (
+              <>
+                <Skull size={14} /> Pânico Global
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Expandable active symbols list selector for "Zerar Local" */}
+        {showLocalSelector && activeSymbols.length > 0 && (
+          <div style={{
+            marginTop: "1rem",
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid var(--border-light)",
+            borderRadius: "8px",
+            padding: "0.5rem",
+          }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: "0.4rem", textTransform: "uppercase" }}>
+              Selecione o Par para fechar:
+            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {activeSymbols.map((symbol) => {
-                const isConfirming = confirmPanicLocal === symbol;
+                const isConfirming = confirmLocalSymbol === symbol;
                 return (
                   <button
                     key={symbol}
@@ -179,19 +195,18 @@ export default function Controls({
                     style={{
                       width: "100%",
                       justifyContent: "space-between",
+                      fontSize: "0.75rem",
                       borderColor: isConfirming ? "var(--neon-amber)" : "var(--border-light)",
                       color: isConfirming ? "var(--neon-amber)" : "var(--text-primary)",
+                      padding: "0.35rem 0.6rem",
                     }}
                   >
-                    <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <Layers size={14} />
-                      {symbol}
-                    </span>
+                    <span>{symbol.toUpperCase().replace("C", "")}</span>
                     <span>
                       {loading === `PANIC_LOCAL_${symbol}` ? (
-                        <RefreshCw className="spin" size={12} />
+                        <RefreshCw className="spin" size={10} />
                       ) : isConfirming ? (
-                        "Confirmar?"
+                        "Confirmar Fechar?"
                       ) : (
                         "Zerar Par"
                       )}
@@ -200,9 +215,14 @@ export default function Controls({
                 );
               })}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+
+      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.03)", paddingTop: "0.5rem", display: "flex", justifyContent: "space-between" }}>
+        <span>Sincronizado via MetaTrader 5</span>
+        <span>Ações seguras com dupla confirmação</span>
+      </div>
     </div>
   );
 }

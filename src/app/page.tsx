@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import KpiCards from "@/components/KpiCards";
 import Charts from "@/components/Charts";
+import RiskManagement from "@/components/RiskManagement";
+import ActiveBaskets from "@/components/ActiveBaskets";
 import TradesTable from "@/components/TradesTable";
 import Controls from "@/components/Controls";
 import styles from "@/components/components.module.css";
@@ -157,7 +159,7 @@ export default function DashboardPage() {
         brlRate={brlRate}
       />
 
-      {/* 2. Key Metrics Panel & Cards */}
+      {/* 2. Row of 5 KPI Cards */}
       <KpiCards
         balance={activeAccount.balance}
         equity={activeAccount.equity}
@@ -165,16 +167,26 @@ export default function DashboardPage() {
         floatingPl={activeAccount.floatingPl}
         totalProfit={activeAccount.totalProfit}
         maxDrawdown={activeAccount.maxDrawdown}
-        status={activeAccount.status}
-        accountNumber={activeAccount.account}
-        history={history}
         brlRate={brlRate}
       />
 
-      {/* 3. Main Dashboard Layout (Charts on left, Controls on right) */}
-      <div className={styles.mainGrid}>
+      {/* 3. Chart & Risk Management */}
+      <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
         <Charts history={history} />
-        
+        <RiskManagement
+          floatingPl={activeAccount.floatingPl}
+          maxDrawdown={activeAccount.maxDrawdown}
+          tradesCount={trades.length}
+          softStopLimit={400.0}
+        />
+      </div>
+
+      {/* 4. Active Baskets (Compra/Venda details) */}
+      <ActiveBaskets trades={trades} />
+
+      {/* 5. Trades Table & Controls */}
+      <div className={styles.mainGrid}>
+        <TradesTable trades={trades} />
         <Controls
           status={activeAccount.status}
           activeSymbols={activeSymbols}
@@ -183,11 +195,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* 4. Active Trades Details Table */}
-      <TradesTable trades={trades} />
-
-      {/* 5. Rodapé */}
-      <footer className={styles.footerSection}>
+      {/* 6. Rodapé */}
+      <footer className={styles.footerSection} style={{ marginTop: "1.5rem" }}>
         <span>Orion Hedge Sistema Web v1.0.0</span>
         <span>Sincronização Ativa • MetaTrader 5</span>
       </footer>
