@@ -28,7 +28,7 @@ export default function KpiCards({
   history = [],
 }: KpiCardsProps) {
   const formatCurrency = (val: number) => {
-    return val.toLocaleString("en-US", {
+    return val.toLocaleString("pt-BR", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
@@ -52,22 +52,22 @@ export default function KpiCards({
       {/* 1. Big Balance & Equity Panel */}
       <div className={styles.balancePanel}>
         <div className={styles.balanceHeader}>
-          <span>Account: <strong>{accountNumber}</strong></span>
+          <span>Conta: <strong>{accountNumber}</strong></span>
           <span className={isRobotActive ? styles.robotStatusBadge : styles.robotStatusPausedBadge}>
-            Robot {isRobotActive ? "ACTIVE" : "PAUSED"}
+            Robô {isRobotActive ? "ATIVO" : "PAUSADO"}
           </span>
         </div>
 
         <div className={styles.balanceGrid}>
           {/* Account Balance Column */}
           <div className={styles.balanceColumn}>
-            <span className={styles.balanceLabel}>Account Balance</span>
+            <span className={styles.balanceLabel}>Saldo da Conta</span>
             <span className={styles.balanceValue}>{formatCurrency(balance)}</span>
           </div>
 
           {/* Equity Column */}
           <div className={styles.balanceColumn}>
-            <span className={styles.balanceLabel}>Equity</span>
+            <span className={styles.balanceLabel}>Patrimônio (Equity)</span>
             <span className={styles.equityValue}>{formatCurrency(equity)}</span>
             
             {/* Sparkline & P/L Changes */}
@@ -110,35 +110,35 @@ export default function KpiCards({
 
       {/* 2. Grid of 4 Cards (Daily Profit, Floating P&L, Total Profit, Drawdown) */}
       <div className={styles.kpiGrid}>
-        {/* Daily Profit Card */}
+        {/* Lucro Diário */}
         <div className={`${styles.kpiCard} ${styles.kpiDailyCard}`}>
-          <span className={styles.kpiLabel}>Daily Profit</span>
+          <span className={styles.kpiLabel}>Lucro Diário</span>
           <span className={`${styles.kpiValue} ${styles.valuePositive}`}>
             {dailyProfit >= 0 ? "+" : ""}{formatCurrency(dailyProfit)}
           </span>
         </div>
 
-        {/* Floating P&L Card */}
+        {/* Flutuante P&L */}
         <div className={`${styles.kpiCard} ${styles.kpiFloatingCard}`}>
-          <span className={styles.kpiLabel}>Floating P&L</span>
+          <span className={styles.kpiLabel}>Resultado Flutuante</span>
           <span className={`${styles.kpiValue} ${floatingPl >= 0 ? styles.valuePositive : styles.valueNegative}`}>
             {floatingPl >= 0 ? "+" : ""}{formatCurrency(floatingPl)}
           </span>
         </div>
 
-        {/* Total Profit Card */}
+        {/* Lucro Total */}
         <div className={`${styles.kpiCard} ${styles.kpiTotalCard}`}>
-          <span className={styles.kpiLabel}>Total Profit</span>
+          <span className={styles.kpiLabel}>Lucro Total</span>
           <span className={styles.kpiValue}>
             {totalProfit >= 0 ? "+" : ""}{formatCurrency(totalProfit)}
           </span>
         </div>
 
-        {/* Drawdown Card */}
+        {/* Drawdown */}
         <div className={`${styles.kpiCard} ${styles.kpiDrawdownCard}`}>
           <span className={styles.kpiLabel}>Drawdown</span>
           <span className={`${styles.kpiValue} ${maxDrawdown >= 10 ? styles.valueRed : styles.valuePositive}`}>
-            Max: {maxDrawdown.toFixed(1)}%
+            Máx: {maxDrawdown.toFixed(1)}%
           </span>
         </div>
       </div>

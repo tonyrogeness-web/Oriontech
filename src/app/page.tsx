@@ -142,9 +142,9 @@ export default function DashboardPage() {
       {/* 4. Active Trades Details Table */}
       <TradesTable trades={trades} />
 
-      {/* 5. Footer version info */}
+      {/* 5. Rodapé */}
       <footer className={styles.footerSection}>
-        <span>Orion Hedge Web System v1.0.0</span>
+        <span>Orion Hedge Sistema Web v1.0.0</span>
         <span>Sincronização Ativa • MetaTrader 5</span>
       </footer>
     </div>

@@ -18,7 +18,7 @@ interface TradesTableProps {
 
 export default function TradesTable({ trades = [] }: TradesTableProps) {
   const formatCurrency = (val: number) => {
-    return val.toLocaleString("en-US", {
+    return val.toLocaleString("pt-BR", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
@@ -43,9 +43,9 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
   return (
     <div className={styles.tradesCard}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-        <h3 className={styles.cardTitle} style={{ margin: 0 }}>Active Pairs & Trades</h3>
+        <h3 className={styles.cardTitle} style={{ margin: 0 }}>Pares Ativos e Operações</h3>
         <span style={{ fontSize: "0.825rem", color: "var(--neon-green)", fontWeight: 600 }}>
-          {trades.length} ACTIVE TRADES (Total: {totalLots.toFixed(2)} Lots)
+          {trades.length} ORDENS ATIVAS (Total: {totalLots.toFixed(2)} Lotes)
         </span>
       </div>
 
@@ -61,12 +61,12 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
           <table className={styles.tradesTable}>
             <thead>
               <tr>
-                <th>Asset</th>
-                <th>Status</th>
-                <th>Trade</th>
-                <th>Entry</th>
+                <th>Ativo</th>
+                <th>Direção</th>
+                <th>Volume</th>
+                <th>Entrada</th>
                 <th>SL/TP</th>
-                <th style={{ textAlign: "right" }}>P/L</th>
+                <th style={{ textAlign: "right" }}>Resultado</th>
                 <th style={{ textAlign: "right" }}>Status</th>
               </tr>
             </thead>
@@ -89,7 +89,7 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
                         {isBuy ? "Long" : "Short"}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 500 }}>{trade.volume.toFixed(2)} Lots</td>
+                    <td style={{ fontWeight: 500 }}>{trade.volume.toFixed(2)} Lotes</td>
                     <td style={{ fontFamily: "monospace" }}>{trade.entryPrice.toFixed(5)}</td>
                     <td style={{ color: "var(--text-muted)" }}>SL/TP</td>
                     <td
@@ -101,7 +101,7 @@ export default function TradesTable({ trades = [] }: TradesTableProps) {
                     </td>
                     <td style={{ textAlign: "right" }}>
                       <span className="badge" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", color: "var(--text-secondary)", borderColor: "var(--border-light)", borderWidth: "1px", borderStyle: "solid" }}>
-                        Open
+                        Aberta
                       </span>
                     </td>
                   </tr>

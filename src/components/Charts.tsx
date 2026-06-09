@@ -19,7 +19,7 @@ export default function Charts({ history = [] }: ChartsProps) {
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
+      return date.toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
     } catch {
       return dateStr;
     }
@@ -58,7 +58,7 @@ export default function Charts({ history = [] }: ChartsProps) {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <h3 className={styles.cardTitle}>
             <Activity size={16} className={styles.logoAccent} />
-            Performance History <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "none" }}>(Last 30 Days)</span>
+            Histórico de Performance <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "none" }}>(Últimos 30 Dias)</span>
           </h3>
 
           {lineData.length === 0 ? (
@@ -92,7 +92,7 @@ export default function Charts({ history = [] }: ChartsProps) {
                       color: "var(--text-primary)",
                       fontFamily: "var(--font-primary)",
                     }}
-                    formatter={(value: any) => [`$${value.toLocaleString()}`, "Balance"]}
+                    formatter={(value: any) => [`$${value.toLocaleString()}`, "Saldo"]}
                   />
                   <Area
                     type="monotone"
@@ -113,7 +113,7 @@ export default function Charts({ history = [] }: ChartsProps) {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <h3 className={styles.cardTitle}>
             <Percent size={16} style={{ color: "var(--neon-amber)" }} />
-            Daily Drawdown <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "none" }}>(MTD)</span>
+            Drawdown Diário <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "none" }}>(Mês Atual)</span>
           </h3>
 
           <div className={styles.chartContainer}>
