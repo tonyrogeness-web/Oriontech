@@ -178,11 +178,12 @@ export default function DashboardPage() {
           maxDrawdown={activeAccount.maxDrawdown}
           tradesCount={trades.length}
           softStopLimit={400.0}
+          balance={activeAccount.balance}
         />
       </div>
 
-      {/* 4. Active Baskets (Compra/Venda details) */}
-      <ActiveBaskets trades={trades} />
+      {/* 4. Active Baskets (por moeda) */}
+      <ActiveBaskets trades={trades} brlRate={brlRate} />
 
       {/* 5. Trades Table & Controls */}
       <div className={styles.mainGrid}>
