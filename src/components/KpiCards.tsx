@@ -86,14 +86,14 @@ export default function KpiCards({
                     <AreaChart data={sparklineData} margin={{ top: 2, bottom: 2, left: 2, right: 2 }}>
                       <defs>
                         <linearGradient id="sparkGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--neon-green)" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="var(--neon-green)" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--neon-gold)" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="var(--neon-gold)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <Area
                         type="monotone"
                         dataKey="val"
-                        stroke="var(--neon-green)"
+                        stroke="var(--neon-gold)"
                         strokeWidth={1.5}
                         dot={false}
                         fillOpacity={1}

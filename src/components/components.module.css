@@ -26,8 +26,8 @@
 }
 
 .logoAccent {
-  color: var(--neon-green);
-  filter: drop-shadow(0 0 8px var(--neon-green-glow));
+  color: var(--neon-gold);
+  filter: drop-shadow(0 0 8px var(--neon-gold-glow));
 }
 
 .centerTitle {
@@ -162,8 +162,8 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 2.25rem;
-  color: var(--neon-green);
-  text-shadow: 0 0 20px var(--neon-green-glow);
+  color: var(--neon-gold);
+  text-shadow: 0 0 20px var(--neon-gold-glow);
 }
 
 .equityValue {

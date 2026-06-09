@@ -71,8 +71,8 @@ export default function Charts({ history = [] }: ChartsProps) {
                 <AreaChart data={lineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="performanceGlow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--neon-green)" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="var(--neon-green)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--neon-gold)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="var(--neon-gold)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.02)" />
@@ -97,11 +97,11 @@ export default function Charts({ history = [] }: ChartsProps) {
                   <Area
                     type="monotone"
                     dataKey="balance"
-                    stroke="var(--neon-green)"
+                    stroke="var(--neon-gold)"
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#performanceGlow)"
-                    dot={{ stroke: "var(--neon-green)", strokeWidth: 2, r: 3, fill: "var(--bg-panel-solid)" }}
+                    dot={{ stroke: "var(--neon-gold)", strokeWidth: 2, r: 3, fill: "var(--bg-panel-solid)" }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -134,8 +134,8 @@ export default function Charts({ history = [] }: ChartsProps) {
                 />
                 <Bar dataKey="val" radius={[4, 4, 0, 0]} fillOpacity={0.85}>
                   {barData.map((entry, index) => {
-                    // Color highlight: yellow for moderate, blue for standard, orange/red for higher
-                    let color = "var(--neon-blue)";
+                    // Color highlight: yellow/amber for moderate, gold for standard, orange/red for higher
+                    let color = "var(--neon-gold)";
                     if (entry.val > 3.0) color = "var(--neon-amber)";
                     if (entry.val >= 5.0) color = "var(--neon-red)";
                     return <Cell key={`cell-${index}`} fill={color} />;

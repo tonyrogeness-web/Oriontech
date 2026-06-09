@@ -17,7 +17,7 @@ export default function Header({ accountNumber, status, isMock }: HeaderProps) {
       <div className={styles.brand}>
         <Activity size={24} className={styles.logoAccent} />
         <span className={styles.logoText}>ORION HEDGE</span>
-        {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MOCK</span>}
+        {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MOCK MODE</span>}
       </div>
 
       {/* Middle dashboard title */}
