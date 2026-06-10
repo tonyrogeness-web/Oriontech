@@ -333,13 +333,33 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
           </span>
         </div>
 
-        {/* Lotes Recompra (Sequência) */}
-        <div className={styles.basketRow} style={{ marginTop: "0.25rem", borderTop: "1px dashed rgba(255,255,255,0.05)", paddingTop: "0.25rem" }}>
-          <span className={styles.basketRowLabel}>Lotes Recompra</span>
-          <span className={styles.basketRowValue} style={{ fontSize: "0.68rem", color: "var(--neon-gold)", fontFamily: "monospace" }}>
-            {sortedTrades.map((t) => parseFloat(t.volume.toFixed(3))).join(" + ")}
-          </span>
-        </div>
+        {/* Próximo Alvo de Recompra */}
+        {level < 6 && (() => {
+          // Calculate next recompra price using same grid logic as MT5 EA
+          // dist base = 1.2 * ATR, step = 0.30 per level, min 400pts
+          // Without live ATR, we estimate based on current PM distPips
+          // Use the distPips as a guide: next level triggers at ~120% of current distance
+          const pipValue = b.digits <= 3 ? 0.001 : 0.00001;
+          // Heuristic: use 200 pips as base step estimate if no better data
+          const estimatedStepPips = 200 + (level - 1) * 60; // grows with level
+          const nextPrice = isBuy
+            ? b.pm - estimatedStepPips * pipValue
+            : b.pm + estimatedStepPips * pipValue;
+          const distToNext = isBuy
+            ? Math.round((b.currentPrice - nextPrice) / pipValue)
+            : Math.round((nextPrice - b.currentPrice) / pipValue);
+          const distLabel = distToNext <= 0 ? "PRÓXIMO!" : `${Math.abs(distToNext)} pts`;
+          const distColor = distToNext <= 0 ? "var(--neon-amber)" : "var(--text-secondary)";
+          return (
+            <div className={styles.basketRow} style={{ marginTop: "0.25rem", borderTop: "1px dashed rgba(255,255,255,0.05)", paddingTop: "0.25rem" }}>
+              <span className={styles.basketRowLabel}>Prox. Recompra</span>
+              <span className={styles.basketRowValue} style={{ fontFamily: "monospace", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.05rem" }}>
+                <span style={{ color: "var(--neon-gold)", fontWeight: 700 }}>{nextPrice.toFixed(b.digits)}</span>
+                <span style={{ fontSize: "0.62rem", color: distColor, fontWeight: 700 }}>{distLabel}</span>
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Alvo do Cesto (igual ao painel do MT5) */}
         {b.tpPrice && b.tpPrice > 0 ? (() => {

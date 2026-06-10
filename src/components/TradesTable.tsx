@@ -211,11 +211,11 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                    <span style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-secondary)" }}>
-                      {group.totalVolume.toFixed(3)} L
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                      {group.totalVolume.toFixed(3)}L
                     </span>
-                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, display: "flex", alignItems: "center" }}>
+                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, whiteSpace: "nowrap" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
                     </span>
                   </div>
@@ -273,12 +273,12 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                           </div>
 
                           {/* Middle: Volume details */}
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600 }}>
-                            {trade.volume.toFixed(3)} L
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+                            {trade.volume.toFixed(3)}L
                           </div>
 
                           {/* Right: Profit/Loss */}
-                          <div style={{ fontFamily: "monospace", textAlign: "right" }}>
+                          <div style={{ fontFamily: "monospace", textAlign: "right", flexShrink: 0 }}>
                             <span style={{
                               color: profitColor,
                               backgroundColor: profitBg,
@@ -287,7 +287,8 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                               borderRadius: "4px",
                               fontSize: "0.65rem",
                               fontWeight: 700,
-                              display: "inline-block"
+                              display: "inline-block",
+                              whiteSpace: "nowrap"
                             }}>
                               {formatProfitPrimary(tProfit)}
                             </span>
