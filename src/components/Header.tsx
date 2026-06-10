@@ -208,28 +208,8 @@ export default function Header({
       if (savedRecents) {
         setRecentNotifications(JSON.parse(savedRecents));
       } else {
-        // Seed initial mock recent notifications
-        const seedNow = Date.now();
-        const seeds: RecentNotification[] = [
-          {
-            id: "seed_eurusd",
-            title: "✅ EURUSD BUY fechou — +1.50 USC",
-            desc: "TP atingido N2",
-            createdAt: seedNow,
-            expiresAt: seedNow + 3 * 60 * 1000, // 3 minutes
-            read: false,
-          },
-          {
-            id: "seed_gbpusd",
-            title: "✅ GBPUSD SELL fechou — +0.80 USC",
-            desc: "TP atingido N1",
-            createdAt: seedNow - 30 * 1000,
-            expiresAt: seedNow + 1 * 60 * 1000, // 1 minute
-            read: false,
-          },
-        ];
-        setRecentNotifications(seeds);
-        localStorage.setItem("orion_recent_notifications", JSON.stringify(seeds));
+        setRecentNotifications([]);
+        localStorage.setItem("orion_recent_notifications", JSON.stringify([]));
       }
     } catch (e) {
       console.error("Erro ao carregar notificações", e);
@@ -250,7 +230,10 @@ export default function Header({
   // Detect trade closures in real-time
   const prevTradesRef = useRef<Trade[]>([]);
   useEffect(() => {
-    if (!trades) return;
+    if (!trades || isMock) {
+      prevTradesRef.current = trades || [];
+      return;
+    }
     if (prevTradesRef.current.length === 0 && trades.length > 0) {
       prevTradesRef.current = trades;
       return;

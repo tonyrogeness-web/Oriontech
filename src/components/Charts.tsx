@@ -171,9 +171,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.02)" />
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={9} tickLine={false} />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} />
                 <YAxis
-                  stroke="var(--text-muted)"
+                  stroke="var(--text-secondary)"
                   fontSize={9}
                   tickLine={false}
                   domain={["auto", "auto"]}

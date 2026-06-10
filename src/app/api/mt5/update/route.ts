@@ -56,83 +56,83 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Update Active Trades (Delete old, Insert new for this symbol)
-    if (symbol) {
-      await prisma.activeTrade.deleteMany({
-        where: {
-          account: String(account),
-          symbol: String(symbol),
-        },
-      });
-    } else {
-      await prisma.activeTrade.deleteMany({
+    // 3. Update Active Trades and AccountState in a single database transaction to prevent race conditions/empty states
+    await prisma.$transaction(async (tx) => {
+      if (symbol) {
+        await tx.activeTrade.deleteMany({
+          where: {
+            account: String(account),
+            symbol: String(symbol),
+          },
+        });
+      } else {
+        await tx.activeTrade.deleteMany({
+          where: { account: String(account) },
+        });
+      }
+
+      if (trades.length > 0) {
+        await tx.activeTrade.createMany({
+          data: trades.map((t: any) => ({
+            account: String(account),
+            ticket: String(t.ticket),
+            symbol: String(t.symbol),
+            type: String(t.type),
+            volume: parseFloat(t.volume || 0),
+            entryPrice: parseFloat(t.entryPrice || 0),
+            currentPrice: parseFloat(t.currentPrice !== undefined && t.currentPrice !== null ? t.currentPrice : (t.entryPrice || 0)),
+            currentProfit: parseFloat(t.currentProfit || 0),
+            magicNumber: parseInt(t.magicNumber || "0"),
+            tp: t.tp !== undefined && t.tp !== null ? parseFloat(t.tp) : null,
+            sl: t.sl !== undefined && t.sl !== null ? parseFloat(t.sl) : null,
+          })),
+        });
+      }
+
+      // 4. Calculate Global floatingPl, equity, and maxDrawdown from all active trades of the account within the transaction
+      const allActiveTrades = await tx.activeTrade.findMany({
         where: { account: String(account) },
       });
-    }
+      const globalFloatingPl = allActiveTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
+      const parsedBalance = parseFloat(balance);
+      const globalEquity = parsedBalance + globalFloatingPl;
+      const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
 
-    if (trades.length > 0) {
-      await prisma.activeTrade.createMany({
-        data: trades.map((t: any) => ({
+      // 5. Upsert AccountState with global unified calculations
+      await tx.accountState.upsert({
+        where: { account: String(account) },
+        update: {
+          balance: parsedBalance,
+          equity: globalEquity,
+          dailyProfit: parseFloat(dailyProfit),
+          floatingPl: globalFloatingPl,
+          maxDrawdown: globalDrawdown,
+          status: status || "RUNNING",
+          newsActive: Boolean(newsActive),
+          newsFrozen: Boolean(newsFrozen),
+          newsName: String(newsName || ""),
+          trailingActive: Boolean(trailingActive),
+          trailingPeak: parseFloat(trailingPeak || 0),
+          ddReached10: Boolean(ddReached10),
+          ddReached20: Boolean(ddReached20),
+        },
+        create: {
           account: String(account),
-          ticket: String(t.ticket),
-          symbol: String(t.symbol),
-          type: String(t.type),
-          volume: parseFloat(t.volume || 0),
-          entryPrice: parseFloat(t.entryPrice || 0),
-          currentPrice: parseFloat(t.currentPrice !== undefined && t.currentPrice !== null ? t.currentPrice : (t.entryPrice || 0)),
-          currentProfit: parseFloat(t.currentProfit || 0),
-          magicNumber: parseInt(t.magicNumber || "0"),
-          tp: t.tp !== undefined && t.tp !== null ? parseFloat(t.tp) : null,
-          sl: t.sl !== undefined && t.sl !== null ? parseFloat(t.sl) : null,
-        })),
+          balance: parsedBalance,
+          equity: globalEquity,
+          dailyProfit: parseFloat(dailyProfit),
+          floatingPl: globalFloatingPl,
+          maxDrawdown: globalDrawdown,
+          status: status || "RUNNING",
+          newsActive: Boolean(newsActive),
+          newsFrozen: Boolean(newsFrozen),
+          newsName: String(newsName || ""),
+          trailingActive: Boolean(trailingActive),
+          trailingPeak: parseFloat(trailingPeak || 0),
+          ddReached10: Boolean(ddReached10),
+          ddReached20: Boolean(ddReached20),
+        },
       });
-    }
-
-    // 4. Calculate Global floatingPl, equity, and maxDrawdown from all active trades of the account
-    const allActiveTrades = await prisma.activeTrade.findMany({
-      where: { account: String(account) },
-    });
-    const globalFloatingPl = allActiveTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
-    const parsedBalance = parseFloat(balance);
-    const globalEquity = parsedBalance + globalFloatingPl;
-    const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
-
-    // 5. Upsert AccountState with global unified calculations
-    await prisma.accountState.upsert({
-      where: { account: String(account) },
-      update: {
-        balance: parsedBalance,
-        equity: globalEquity,
-        dailyProfit: parseFloat(dailyProfit),
-        floatingPl: globalFloatingPl,
-        totalProfit: parseFloat(totalProfit),
-        maxDrawdown: globalDrawdown,
-        status: status || "RUNNING",
-        newsActive: Boolean(newsActive),
-        newsFrozen: Boolean(newsFrozen),
-        newsName: String(newsName || ""),
-        trailingActive: Boolean(trailingActive),
-        trailingPeak: parseFloat(trailingPeak || 0),
-        ddReached10: Boolean(ddReached10),
-        ddReached20: Boolean(ddReached20),
-      },
-      create: {
-        account: String(account),
-        balance: parsedBalance,
-        equity: globalEquity,
-        dailyProfit: parseFloat(dailyProfit),
-        floatingPl: globalFloatingPl,
-        totalProfit: parseFloat(totalProfit),
-        maxDrawdown: globalDrawdown,
-        status: status || "RUNNING",
-        newsActive: Boolean(newsActive),
-        newsFrozen: Boolean(newsFrozen),
-        newsName: String(newsName || ""),
-        trailingActive: Boolean(trailingActive),
-        trailingPeak: parseFloat(trailingPeak || 0),
-        ddReached10: Boolean(ddReached10),
-        ddReached20: Boolean(ddReached20),
-      },
     });
 
     // 5. Upsert PerformanceHistory

@@ -1749,12 +1749,10 @@
 
 @keyframes flashSync {
   0% {
-    box-shadow: 0 0 20px var(--neon-gold);
-    opacity: 0.8;
+    background-color: rgba(0, 200, 83, 0.04);
   }
   100% {
-    box-shadow: none;
-    opacity: 1;
+    background-color: transparent;
   }
 }
 
