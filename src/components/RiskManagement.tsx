@@ -55,7 +55,7 @@ export default function RiskManagement({
 
   const plLoss = Math.max(0, -floatingPl);
 
-  /* ── 1. Limite de Perda (SoftStop) ─────────────────────── */
+  /* ── 1. Perda Flutuante (SoftStop) ─────────────────────── */
   const plReachPct = floatingPl < 0 ? pct(plLoss, softStopLimit) : 0;
   const plColor = floatingPl >= 0 ? "var(--neon-green)"
                 : plReachPct >= 80 ? "var(--neon-red)"
@@ -77,25 +77,15 @@ export default function RiskManagement({
   const zone10px = (10 / 40) * 100; // 25%
   const zone20px = (20 / 40) * 100; // 50%
 
-  /* ── 3. Ordens em Execução (Slots) ──────────────────────── */
-  const maxSlots = 36;
-  const slotsReachPct = pct(tradesCount, maxSlots);
-  const slotsColor = tradesCount >= 28 ? "var(--neon-red)"
-                   : tradesCount >= 18 ? "var(--neon-gold)"
-                   : "var(--neon-green)";
-  const slotsStatus = tradesCount >= 28 ? "CRÍTICO"
-                     : tradesCount >= 18 ? "ALERTA"
-                     : "SEGURO";
-
   return (
     <div className={styles.riskManagementCard}>
       <h3 className={styles.riskTitle}>Gestão de Risco</h3>
 
       <div className={styles.riskItemList}>
 
-        {/* 1. Limite de Perda (SoftStop) */}
+        {/* 1. Perda Flutuante (SoftStop) */}
         <RiskBar
-          label="Limite de Perda (SoftStop)"
+          label="Perda Flutuante (SoftStop)"
           valueText={`${formatRiskCurrency(floatingPl, true)} / ${formatRiskCurrency(-softStopLimit, true)}`}
           reachText={`${plReachPct.toFixed(1)}% do limite consumido`}
           barPct={plReachPct}
@@ -117,18 +107,6 @@ export default function RiskManagement({
           statusColor={ddColor}
           markers={[zone10px, zone20px]}
           markerColors={["rgba(255,179,0,0.5)", "rgba(255,23,68,0.5)"]}
-        />
-
-        {/* 3. Ordens em Execução (Slots de Mercado) */}
-        <RiskBar
-          label="Ordens em Execução"
-          valueText={`${tradesCount} / ${maxSlots} ordens`}
-          reachText={`Capacidade de slots: ${slotsReachPct.toFixed(1)}%`}
-          barPct={slotsReachPct}
-          barColor={slotsColor}
-          barGlow={slotsColor}
-          statusLabel={slotsStatus}
-          statusColor={slotsColor}
         />
 
       </div>
