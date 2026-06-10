@@ -246,29 +246,35 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                             gap: "0.4rem"
                           }}
                         >
-                          {/* Left: Direction + Ticket + Level */}
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-                            <span 
-                              className={isBuy ? styles.badgeLong : styles.badgeShort} 
-                              style={{ 
-                                fontSize: "0.55rem", 
-                                padding: "0.05rem 0.3rem", 
-                                fontWeight: 800,
-                                borderRadius: "3px"
-                              }}
-                            >
-                              {isBuy ? "COMPRA" : "VENDA"}
-                            </span>
-                            <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                          {/* Left: Direction + Level (row 1) + Ticket (row 2) */}
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.15rem", minWidth: 0 }}>
+                            {/* Row 1: badge + grade */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                              <span 
+                                className={isBuy ? styles.badgeLong : styles.badgeShort} 
+                                style={{ 
+                                  fontSize: "0.55rem", 
+                                  padding: "0.05rem 0.3rem", 
+                                  fontWeight: 800,
+                                  borderRadius: "3px",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                {isBuy ? "COMPRA" : "VENDA"}
+                              </span>
+                              <span style={{
+                                fontSize: "0.6rem",
+                                color: "var(--neon-gold)",
+                                fontFamily: "monospace",
+                                fontWeight: 700,
+                                whiteSpace: "nowrap"
+                              }}>
+                                {trade.level}
+                              </span>
+                            </div>
+                            {/* Row 2: ticket number — smaller and left-aligned */}
+                            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontFamily: "monospace", whiteSpace: "nowrap" }}>
                               #{trade.ticket}
-                            </span>
-                            <span style={{
-                              fontSize: "0.62rem",
-                              color: "var(--text-secondary)",
-                              fontFamily: "monospace",
-                              fontWeight: 700
-                            }}>
-                              {trade.level}
                             </span>
                           </div>
 
