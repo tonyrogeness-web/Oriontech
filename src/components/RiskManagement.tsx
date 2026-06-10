@@ -55,18 +55,18 @@ export default function RiskManagement({
 
   const plLoss = Math.max(0, -floatingPl);
 
-  /* ── 1. P&L Flutuante Global (vs SoftStop) ─────────────────────── */
+  /* ── 1. Limite de Perda (SoftStop) ─────────────────────── */
   const plReachPct = floatingPl < 0 ? pct(plLoss, softStopLimit) : 0;
   const plColor = floatingPl >= 0 ? "var(--neon-green)"
                 : plReachPct >= 80 ? "var(--neon-red)"
                 : plReachPct >= 50 ? "var(--neon-gold)"
                 : "var(--neon-green)";
-  const plStatus = floatingPl >= 0 ? "LUCRO"
+  const plStatus = floatingPl >= 0 ? "SEGURO"
                  : plReachPct >= 80 ? "CRÍTICO"
                  : plReachPct >= 50 ? "ALERTA"
-                 : "OK";
+                 : "SEGURO";
 
-  /* ── 2. Drawdown (Limite 40%) ──────────────────────────────────── */
+  /* ── 2. Rebaixamento (Drawdown de Saldo) ────────────────── */
   const ddReachPct = pct(maxDrawdown, 40);
   const ddColor = maxDrawdown >= 20 ? "var(--neon-red)"
                 : maxDrawdown >= 10 ? "var(--neon-gold)"
@@ -74,40 +74,18 @@ export default function RiskManagement({
   const ddStatus = maxDrawdown >= 20 ? "CRÍTICO"
                  : maxDrawdown >= 10 ? "ALERTA"
                  : "SEGURO";
-  // marcadores em px% dentro da barra
   const zone10px = (10 / 40) * 100; // 25%
   const zone20px = (20 / 40) * 100; // 50%
 
-  /* ── 3. SoftStop Global (Perda Máxima vs Limite) ──────────────── */
-  const ssReachPct = pct(plLoss, softStopLimit);
-  const ssColor = ssReachPct >= 80 ? "var(--neon-red)"
-                : ssReachPct >= 50 ? "var(--neon-gold)"
-                : "var(--neon-green)";
-  const ssStatus = ssReachPct >= 80 ? "CRÍTICO"
-                 : ssReachPct >= 50 ? "ALERTA"
-                 : plLoss === 0 ? "NENHUM"
-                 : "OK";
-
-  /* ── 4. Ordens Abertas (Limite 36) ────────────────────────────── */
+  /* ── 3. Ordens em Execução (Slots) ──────────────────────── */
   const maxSlots = 36;
   const slotsReachPct = pct(tradesCount, maxSlots);
   const slotsColor = tradesCount >= 28 ? "var(--neon-red)"
                    : tradesCount >= 18 ? "var(--neon-gold)"
                    : "var(--neon-green)";
   const slotsStatus = tradesCount >= 28 ? "CRÍTICO"
-                    : tradesCount >= 18 ? "ALERTA"
-                    : "SEGURO";
-
-  /* ── 5. Capital em Risco (Limite 10% do Saldo) ───────────────── */
-  const capLossPct = balance > 0 ? (plLoss / balance) * 100 : 0;
-  const capLimit = 10.00; // 10% do saldo como limite
-  const capReachPct = pct(capLossPct, capLimit);
-  const capColor = capLossPct >= 5 ? "var(--neon-red)"
-                 : capLossPct >= 2 ? "var(--neon-gold)"
-                 : "var(--neon-green)";
-  const capStatus = capLossPct >= 5 ? "CRÍTICO"
-                  : capLossPct >= 2 ? "ALERTA"
-                  : "SEGURO";
+                     : tradesCount >= 18 ? "ALERTA"
+                     : "SEGURO";
 
   return (
     <div className={styles.riskManagementCard}>
@@ -115,11 +93,11 @@ export default function RiskManagement({
 
       <div className={styles.riskItemList}>
 
-        {/* 1. P&L Flutuante Global */}
+        {/* 1. Limite de Perda (SoftStop) */}
         <RiskBar
-          label="P&L Flutuante (vs SoftStop)"
+          label="Limite de Perda (SoftStop)"
           valueText={`${formatRiskCurrency(floatingPl, true)} / ${formatRiskCurrency(-softStopLimit, true)}`}
-          reachText={`${plReachPct.toFixed(1)}% de alcance`}
+          reachText={`${plReachPct.toFixed(1)}% do limite consumido`}
           barPct={plReachPct}
           barColor={plColor}
           barGlow={plColor}
@@ -127,11 +105,11 @@ export default function RiskManagement({
           statusColor={plColor}
         />
 
-        {/* 2. Drawdown */}
+        {/* 2. Rebaixamento de Saldo (Drawdown) */}
         <RiskBar
-          label="Drawdown de Saldo (Limite 40%)"
+          label="Rebaixamento (Drawdown)"
           valueText={`${maxDrawdown.toFixed(2)}% / 40.00%`}
-          reachText={`${ddReachPct.toFixed(1)}% de alcance`}
+          reachText={`${ddReachPct.toFixed(1)}% do limite atingido`}
           barPct={ddReachPct}
           barColor={ddColor}
           barGlow={ddColor}
@@ -141,40 +119,16 @@ export default function RiskManagement({
           markerColors={["rgba(255,179,0,0.5)", "rgba(255,23,68,0.5)"]}
         />
 
-        {/* 3. SoftStop Global */}
+        {/* 3. Ordens em Execução (Slots de Mercado) */}
         <RiskBar
-          label="SoftStop Consumido"
-          valueText={`${formatRiskCurrency(plLoss)} / ${formatRiskCurrency(softStopLimit)}`}
-          reachText={`${ssReachPct.toFixed(1)}% usado`}
-          barPct={ssReachPct}
-          barColor={ssColor}
-          barGlow={ssColor}
-          statusLabel={ssStatus}
-          statusColor={ssColor}
-        />
-
-        {/* 4. Ordens Abertas */}
-        <RiskBar
-          label="Ordens Abertas"
-          valueText={`${tradesCount} / ${maxSlots} slots`}
-          reachText={`${slotsReachPct.toFixed(1)}% de alcance`}
+          label="Ordens em Execução"
+          valueText={`${tradesCount} / ${maxSlots} ordens`}
+          reachText={`Capacidade de slots: ${slotsReachPct.toFixed(1)}%`}
           barPct={slotsReachPct}
           barColor={slotsColor}
           barGlow={slotsColor}
           statusLabel={slotsStatus}
           statusColor={slotsColor}
-        />
-
-        {/* 5. Capital em Risco */}
-        <RiskBar
-          label="Capital em Risco (Limite 10% Saldo)"
-          valueText={`${capLossPct.toFixed(2)}% / ${capLimit.toFixed(2)}%`}
-          reachText={`${capReachPct.toFixed(1)}% de alcance`}
-          barPct={capReachPct}
-          barColor={capColor}
-          barGlow={capColor}
-          statusLabel={capStatus}
-          statusColor={capColor}
         />
 
       </div>

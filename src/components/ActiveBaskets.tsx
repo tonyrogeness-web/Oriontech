@@ -377,29 +377,36 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
 /* ── Card inativo de placeholder ────────────────────────────────── */
 interface InactiveBasketCardProps {
   symbol: string;
+  direction: "COMPRA" | "VENDA";
 }
 
-function InactiveBasketCard({ symbol }: InactiveBasketCardProps) {
+function InactiveBasketCard({ symbol, direction }: InactiveBasketCardProps) {
+  const isBuy = direction === "COMPRA";
   return (
     <div className={`${styles.basketCard} ${styles.basketCardInactive}`}>
       <div className={styles.basketHeader} style={{ borderBottom: "none", paddingBottom: 0, marginBottom: 0 }}>
         <div className={styles.basketTitleGroup}>
-          <span className={styles.basketSymbol} style={{ opacity: 0.4 }}>{symbol}</span>
+          <span className={styles.basketSymbol} style={{ opacity: 0.35 }}>{symbol}</span>
           <span
             className={styles.symbolDirTag}
             style={{
-              color: "var(--text-muted)",
-              borderColor: "rgba(255,255,255,0.06)",
+              color: isBuy ? "var(--neon-green)" : "var(--neon-red)",
+              borderColor: isBuy ? "rgba(0, 230, 118, 0.15)" : "rgba(255, 23, 68, 0.15)",
               background: "transparent",
-              opacity: 0.5,
+              opacity: 0.4,
               fontSize: "0.55rem",
-              padding: "0.05rem 0.35rem"
+              padding: "0.05rem 0.35rem",
+              border: "1px solid",
+              borderRadius: "3px"
             }}
           >
+            {isBuy ? "▲ COMPRA" : "▼ VENDA"}
+          </span>
+          <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", opacity: 0.4, marginLeft: "0.25rem", textTransform: "uppercase" }}>
             INATIVO
           </span>
         </div>
-        <div className={styles.basketProfit} style={{ color: "var(--text-muted)", opacity: 0.4, fontSize: "0.85rem" }}>
+        <div className={styles.basketProfit} style={{ color: "var(--text-muted)", opacity: 0.35, fontSize: "0.85rem" }}>
           0.00
         </div>
       </div>
@@ -463,63 +470,55 @@ export default function ActiveBaskets({
       <div className={styles.basketsGridMain}>
         {ALL_SYMBOLS.map((sym) => {
           const symBaskets = grouped[sym] || [];
+          const symPl      = symBaskets.reduce((s, b) => s + b.totalProfit, 0);
           const hasBaskets = symBaskets.length > 0;
+          const symColor   = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
 
-          if (hasBaskets) {
-            const symPl      = symBaskets.reduce((s, b) => s + b.totalProfit, 0);
-            const symColor   = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
-            const hasBuy     = symBaskets.some((b) => b.direction === "COMPRA");
-            const hasSell    = symBaskets.some((b) => b.direction === "VENDA");
+          const buyBasket  = symBaskets.find((b) => b.direction === "COMPRA");
+          const sellBasket = symBaskets.find((b) => b.direction === "VENDA");
 
-            return (
-              <div key={sym} className={styles.symbolGroup}>
-                {/* Cabeçalho do par ativo */}
-                <div className={styles.symbolGroupHeader}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                    <span className={styles.symbolGroupName}>{sym}</span>
-                    {hasBuy && (
-                      <span className={styles.symbolDirTag}
-                        style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.25)", background: "rgba(0,230,118,0.06)" }}>
-                        ▲ COMPRA
-                      </span>
-                    )}
-                    {hasSell && (
-                      <span className={styles.symbolDirTag}
-                        style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.25)", background: "rgba(255,23,68,0.06)" }}>
-                        ▼ VENDA
-                      </span>
-                    )}
-                  </div>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: symColor, fontFamily: "monospace" }}>
-                    {symPl >= 0 ? "+" : "-"}{formatSecondaryVal(symPl)}
-                  </span>
+          return (
+            <div key={sym} className={styles.symbolGroup}>
+              {/* Cabeçalho do par */}
+              <div className={styles.symbolGroupHeader} style={{ opacity: hasBaskets ? 1 : 0.5 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <span className={styles.symbolGroupName} style={{ color: hasBaskets ? "var(--text-primary)" : "var(--text-muted)" }}>{sym}</span>
+                  {buyBasket && (
+                    <span className={styles.symbolDirTag}
+                      style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.25)", background: "rgba(0,230,118,0.06)" }}>
+                      ▲ COMPRA
+                    </span>
+                  )}
+                  {sellBasket && (
+                    <span className={styles.symbolDirTag}
+                      style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.25)", background: "rgba(255,23,68,0.06)" }}>
+                      ▼ VENDA
+                    </span>
+                  )}
                 </div>
-
-                {/* Cestos do par ativo */}
-                <div className={styles.symbolBaskets}>
-                  {symBaskets.map((b, i) => (
-                    <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} currencyMode={currencyMode} brlRate={brlRate} />
-                  ))}
-                </div>
+                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: hasBaskets ? symColor : "var(--text-muted)", fontFamily: "monospace" }}>
+                  {symPl >= 0 ? "+" : "-"}{formatSecondaryVal(symPl)}
+                </span>
               </div>
-            );
-          } else {
-            // Inativo
-            return (
-              <div key={sym} className={styles.symbolGroup}>
-                {/* Cabeçalho do par inativo */}
-                <div className={styles.symbolGroupHeader} style={{ opacity: 0.5 }}>
-                  <span className={styles.symbolGroupName} style={{ color: "var(--text-muted)" }}>{sym}</span>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-muted)", fontFamily: "monospace" }}>
-                    0.00
-                  </span>
-                </div>
 
-                {/* Card inativo */}
-                <InactiveBasketCard symbol={sym} />
+              {/* Cestos direcionais fixos do par */}
+              <div className={styles.symbolBaskets}>
+                {/* 1. COMPRA (topo) */}
+                {buyBasket ? (
+                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} />
+                ) : (
+                  <InactiveBasketCard symbol={sym} direction="COMPRA" />
+                )}
+
+                {/* 2. VENDA (base) */}
+                {sellBasket ? (
+                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} />
+                ) : (
+                  <InactiveBasketCard symbol={sym} direction="VENDA" />
+                )}
               </div>
-            );
-          }
+            </div>
+          );
         })}
       </div>
     </div>
