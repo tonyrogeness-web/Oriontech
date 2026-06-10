@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       trailingPeak = 0,
       ddReached10 = false,
       ddReached20 = false,
+      brlRate = 5.20,
     } = payload;
 
     // 1. Verify token
@@ -97,6 +98,7 @@ export async function POST(request: Request) {
       const parsedBalance = parseFloat(balance);
       const parsedEquity = parseFloat(equity !== undefined && equity !== null ? equity : balance);
       const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
+      const parsedBrlRate = parseFloat(brlRate || 5.20);
 
       // 5. Upsert AccountState with global unified calculations
       await tx.accountState.upsert({
@@ -116,6 +118,7 @@ export async function POST(request: Request) {
           trailingPeak: parseFloat(trailingPeak || 0),
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
+          brlRate: parsedBrlRate,
         },
         create: {
           account: String(account),
@@ -133,6 +136,7 @@ export async function POST(request: Request) {
           trailingPeak: parseFloat(trailingPeak || 0),
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
+          brlRate: parsedBrlRate,
         },
       });
     });

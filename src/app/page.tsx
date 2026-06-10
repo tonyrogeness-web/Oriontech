@@ -221,6 +221,13 @@ export default function DashboardPage() {
   const mockReason = data?.mockReason || null;
   const dbError = data?.dbError || null;
 
+  // Sincronizar taxa do dólar (BRL rate) enviada pelo robô do MT5
+  useEffect(() => {
+    if (activeAccount && activeAccount.brlRate && activeAccount.brlRate > 0) {
+      setBrlRate(activeAccount.brlRate);
+    }
+  }, [activeAccount]);
+
   const trades = data?.trades || [];
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;

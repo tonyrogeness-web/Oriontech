@@ -25,6 +25,7 @@ model AccountState {
   trailingPeak   Float    @default(0.0)
   ddReached10    Boolean  @default(false)
   ddReached20    Boolean  @default(false)
+  brlRate        Float    @default(5.20)
 }
 
 model ActiveTrade {
