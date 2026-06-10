@@ -229,3 +229,9 @@ body {
   border-radius: 8px !important;
   backdrop-filter: var(--glass-blur);
 }
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 0.75rem !important;
+  }
+}

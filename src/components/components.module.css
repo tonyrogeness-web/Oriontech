@@ -490,10 +490,6 @@
 }
 
 @media (max-width: 768px) {
-  :global(.dashboard-container) {
-    padding: 0.75rem !important;
-  }
-
   .tradesCard, .controlsCard, .chartsCard, .riskManagementCard {
     padding: 0.85rem !important;
     margin-bottom: 1rem !important;
