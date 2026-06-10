@@ -74,7 +74,7 @@ export default function DashboardPage() {
     // Fallback: fetch from public APIs if no rate is sent by the robot yet
     if (data && !hasFetchedFallback) {
       setHasFetchedFallback(true);
-      async function fetchBrlRate() {
+      const fetchBrlRate = async () => {
         try {
           const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
           if (res.ok) {
@@ -105,7 +105,7 @@ export default function DashboardPage() {
         } catch (e) {
           console.error("Falha ao buscar taxa em todos os serviços", e);
         }
-      }
+      };
       fetchBrlRate();
     }
   }, [data, hasFetchedFallback]);
