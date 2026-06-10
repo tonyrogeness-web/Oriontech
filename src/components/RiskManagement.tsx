@@ -93,8 +93,8 @@ function Pill({ label, color }: { label: string; color: string }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: "0.2rem",
-      background: bgMap[label] ?? "rgba(255,255,255,0.07)",
-      border: `1px solid ${bdMap[label] ?? "rgba(255,255,255,0.12)"}`,
+      background: bgMap[label] ?? "var(--opacity-bg-soft)",
+      border: `1px solid ${bdMap[label] ?? "var(--opacity-border)"}`,
       color, fontSize: "0.68rem", fontWeight: 800,
       padding: "0.1rem 0.5rem", borderRadius: "20px",
       letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0,
@@ -106,7 +106,7 @@ function Pill({ label, color }: { label: string; color: string }) {
 
 /* ── Divider ─────────────────────────────────────────────────────── */
 function Divider() {
-  return <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "0.1rem 0" }} />;
+  return <div style={{ height: "1px", background: "var(--opacity-divider)", margin: "0.1rem 0" }} />;
 }
 
 /* ── Main component ──────────────────────────────────────────────── */
@@ -354,8 +354,8 @@ export default function RiskManagement({
           marginTop: "0.2rem",
           padding: "0.5rem 0.75rem",
           borderRadius: "8px",
-          background: "rgba(255,255,255,0.015)",
-          border: "1px solid rgba(255,255,255,0.045)",
+          background: "var(--opacity-bg-soft)",
+          border: "1px solid var(--opacity-border)",
         }}>
           <span style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
             TRAILING EQUITY

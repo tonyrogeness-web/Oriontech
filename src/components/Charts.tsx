@@ -114,7 +114,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 alignItems: "center",
                 gap: "0.25rem",
                 color: showDailyProfit ? "var(--neon-gold)" : "var(--text-muted)",
-                borderColor: showDailyProfit ? "rgba(255, 184, 0, 0.3)" : "rgba(255, 255, 255, 0.06)",
+                borderColor: showDailyProfit ? "rgba(255, 184, 0, 0.3)" : "var(--opacity-border)",
                 background: showDailyProfit ? "rgba(255, 184, 0, 0.05)" : "transparent",
               }}
               title="Exibir série de Lucro Diário consolidado"
@@ -170,7 +170,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                     <stop offset={off} stopColor="var(--neon-red)" stopOpacity={0.25} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.02)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} />
                 <YAxis
                   stroke="var(--text-secondary)"
@@ -202,7 +202,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 {lineData.length > 0 && (
                   <ReferenceLine
                     y={lineData[0].balance}
-                    stroke="rgba(255, 255, 255, 0.15)"
+                    stroke="var(--opacity-border)"
                     strokeDasharray="3 3"
                     label={{
                       value: "Ponto Inicial",

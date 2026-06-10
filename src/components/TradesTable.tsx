@@ -139,7 +139,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
           </span>
         </div>
         <span style={{
-          background: "rgba(255, 255, 255, 0.03)",
+          background: "var(--opacity-bg-header)",
           border: "1px solid var(--border-light)",
           color: "var(--text-secondary)",
           fontSize: "0.7rem",
@@ -172,7 +172,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                 marginBottom: "0.6rem",
                 borderRadius: "12px",
                 border: "1px solid var(--border-light)",
-                background: "rgba(255, 255, 255, 0.01)",
+                background: "var(--opacity-bg-soft)",
                 overflow: "hidden",
                 width: "100%"
               }}>
@@ -181,7 +181,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                   onClick={() => toggleSymbol(group.symbol)}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: "rgba(255, 255, 255, 0.025)",
+                    backgroundColor: "var(--opacity-bg-soft)",
                     padding: "0.5rem 0.75rem",
                     display: "grid",
                     gridTemplateColumns: COLS,
@@ -238,8 +238,8 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                       display: "grid",
                       gridTemplateColumns: COLS,
                       padding: "0.22rem 0.75rem",
-                      borderBottom: "1px solid rgba(255,255,255,0.04)",
-                      background: "rgba(255,255,255,0.012)",
+                      borderBottom: "1px solid var(--opacity-border)",
+                      background: "var(--opacity-bg-soft)",
                     }}>
                       <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Ordem</span>
                       <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Grade</span>
@@ -264,7 +264,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                             gridTemplateColumns: COLS,
                             alignItems: "center",
                             padding: "0.38rem 0.75rem",
-                            borderBottom: "1px solid rgba(255, 255, 255, 0.025)",
+                            borderBottom: "1px solid var(--opacity-border)",
                           }}
                         >
                           {/* Col 1: badge + ticket */}

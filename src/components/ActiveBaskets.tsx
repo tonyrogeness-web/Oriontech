@@ -351,7 +351,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
           const distLabel = distToNext <= 0 ? "PRÓXIMO!" : `${Math.abs(distToNext)} pts`;
           const distColor = distToNext <= 0 ? "var(--neon-amber)" : "var(--text-secondary)";
           return (
-            <div className={styles.basketRow} style={{ marginTop: "0.25rem", borderTop: "1px dashed rgba(255,255,255,0.05)", paddingTop: "0.25rem" }}>
+            <div className={styles.basketRow} style={{ marginTop: "0.25rem", borderTop: "1px dashed var(--opacity-border-dashed)", paddingTop: "0.25rem" }}>
               <span className={styles.basketRowLabel}>Prox. Recompra</span>
               <span className={styles.basketRowValue} style={{ fontFamily: "monospace", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.05rem" }}>
                 <span style={{ color: "var(--neon-gold)", fontWeight: 700 }}>{nextPrice.toFixed(b.digits)}</span>

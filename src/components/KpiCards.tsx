@@ -250,8 +250,7 @@ export default function KpiCards({
           {ddBadge}
         </span>
         
-        {/* Mini progress bar of drawdown with limit markers (25% and 50% relative zones) */}
-        <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
+        <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "var(--opacity-divider)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
           <div
             style={{
               height: "100%",
@@ -261,8 +260,8 @@ export default function KpiCards({
               transition: "width 0.5s ease"
             }}
           />
-          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
-          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
+          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
         </div>
 
         <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />

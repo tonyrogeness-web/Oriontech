@@ -46,6 +46,16 @@
 
   --glass-blur: blur(16px);
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Adaptive opacity variables for light/dark theme consistency */
+  --opacity-border: rgba(255, 255, 255, 0.07);
+  --opacity-border-dashed: rgba(255, 255, 255, 0.05);
+  --opacity-bg-soft: rgba(255, 255, 255, 0.02);
+  --opacity-bg-hover: rgba(255, 255, 255, 0.04);
+  --opacity-bg-header: rgba(255, 255, 255, 0.03);
+  --opacity-divider: rgba(255, 255, 255, 0.03);
+  --opacity-grid: rgba(255, 255, 255, 0.02);
+  --opacity-text-muted: rgba(255, 255, 255, 0.25);
 }
 
 * {
@@ -256,38 +266,55 @@ body {
 }
 /* Proposta Light Theme Override */
 [data-theme="light"] {
-  --bg-deep: #f0f2f5;
-  --bg-panel: rgba(255, 255, 255, 0.45); /* Refined glassmorphism overlay */
+  --bg-deep: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.85); /* Refined glassmorphism overlay - less transparent for better definition */
   --bg-panel-solid: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.6);   /* Refined card frosted overlay */
-  --bg-card-hover: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(248, 250, 252, 0.9);   /* Refined card frosted overlay - less transparent */
+  --bg-card-hover: #ffffff;
   
-  --bg-card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.75) 100%);
-  --bg-card-gradient-hover: linear-gradient(135deg, rgba(248, 250, 252, 0.85) 0%, rgba(241, 245, 249, 0.85) 100%);
+  --bg-card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  --bg-card-gradient-hover: linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
   
-  --border-light: rgba(0, 0, 0, 0.06);
-  --border-active: rgba(255, 184, 0, 0.5);
-  --border-glow: rgba(255, 184, 0, 0.05);
+  --border-light: rgba(15, 23, 42, 0.08); /* Darker borders for crisp outlines */
+  --border-active: rgba(255, 184, 0, 0.6);
+  --border-glow: rgba(255, 184, 0, 0.1);
 
-  --text-primary: #0f172a;       /* Slate-900 */
-  --text-secondary: #334155;     /* Slate-700 - increased contrast for light background */
-  --text-muted: #64748b;         /* Slate-500 */
+  /* Much stronger text colors for light background to ensure high readability */
+  --text-primary: #020617;       /* Deep Slate, almost pure black */
+  --text-secondary: #0f172a;     /* Slate-900 */
+  --text-muted: #334155;         /* Slate-700 */
 
   --neon-green: #0d8a4e; /* Darker green for text readability on white */
   --neon-red: #b91c1c;   /* Darker red for text readability on white */
   --neon-amber: #b45309; /* Darker amber */
   --neon-gold: #c27803;  /* Darker gold */
+  --neon-orange: #d34000; /* Darker orange for light mode */
 
   --neon-green-glow: rgba(13, 138, 78, 0.08);
   --neon-amber-glow: rgba(180, 83, 9, 0.08);
   --neon-red-glow: rgba(185, 28, 28, 0.08);
   --neon-gold-glow: rgba(194, 120, 3, 0.08);
-  --neon-orange-glow: rgba(255, 85, 0, 0.05);
+  --neon-orange-glow: rgba(211, 64, 0, 0.08);
+
+  /* Adaptive opacity variables for light/dark theme consistency */
+  --opacity-border: rgba(15, 23, 42, 0.08);
+  --opacity-border-dashed: rgba(15, 23, 42, 0.08);
+  --opacity-bg-soft: rgba(15, 23, 42, 0.02);
+  --opacity-bg-hover: rgba(15, 23, 42, 0.04);
+  --opacity-bg-header: rgba(15, 23, 42, 0.04);
+  --opacity-divider: rgba(15, 23, 42, 0.08);
+  --opacity-grid: rgba(15, 23, 42, 0.04);
+  --opacity-text-muted: rgba(15, 23, 42, 0.45);
 }
 
 [data-theme="light"] body {
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(255, 184, 0, 0.03) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(255, 85, 0, 0.02) 0%, transparent 40%);
-  background-color: #f0f2f5;
+  background-color: #f8fafc;
+}
+
+/* Compensate light-mode font thinning with slightly heavier text weights */
+[data-theme="light"] .tabular-nums {
+  font-weight: 600;
 }

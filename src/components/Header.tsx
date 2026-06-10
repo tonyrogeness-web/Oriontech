@@ -458,7 +458,7 @@ export default function Header({
               display: "flex", 
               alignItems: "center", 
               gap: "0.4rem", 
-              background: "rgba(255, 255, 255, 0.03)", 
+              background: "var(--opacity-bg-header)", 
               padding: "0.25rem 0.6rem", 
               borderRadius: "8px", 
               border: "1px solid var(--border-light)" 

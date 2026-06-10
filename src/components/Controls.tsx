@@ -77,7 +77,7 @@ function PinModal({
       <div
         style={{
           background: "linear-gradient(135deg, #0f1117 0%, #161b27 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: "1px solid var(--opacity-border)",
           borderRadius: "20px",
           padding: "2rem 1.75rem",
           width: "min(320px, 90vw)",
@@ -169,10 +169,10 @@ function PinModal({
                 style={{
                   height: "52px",
                   borderRadius: "10px",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  border: "1px solid var(--opacity-border)",
                   background: isDelete
                     ? "rgba(255,23,68,0.07)"
-                    : "rgba(255,255,255,0.04)",
+                    : "var(--opacity-bg-soft)",
                   color: isDelete ? "var(--neon-red)" : "var(--text-primary)",
                   fontSize: isDelete ? "1rem" : "1.25rem",
                   fontWeight: 700,
@@ -202,7 +202,7 @@ function PinModal({
             width: "100%",
             padding: "0.6rem",
             borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.06)",
+            border: "1px solid var(--opacity-border)",
             background: "transparent",
             color: "var(--text-muted)",
             fontSize: "0.78rem",
@@ -381,8 +381,8 @@ export default function Controls({
                   gap: "0.2rem",
                   fontSize: "0.6rem",
                   fontWeight: 700,
-                  color: isUnlocked ? "var(--neon-green)" : "rgba(255,255,255,0.25)",
-                  border: `1px solid ${isUnlocked ? "rgba(0,230,118,0.25)" : "rgba(255,255,255,0.07)"}`,
+                  color: isUnlocked ? "var(--neon-green)" : "var(--opacity-text-muted)",
+                  border: `1px solid ${isUnlocked ? "rgba(0,230,118,0.25)" : "var(--opacity-border)"}`,
                   borderRadius: "6px",
                   padding: "0.15rem 0.4rem",
                   cursor: "default",
@@ -492,7 +492,7 @@ export default function Controls({
           {showLocalSelector && activeSymbols.length > 0 && (
             <div style={{
               marginTop: "1rem",
-              background: "rgba(255, 255, 255, 0.02)",
+              background: "var(--opacity-bg-soft)",
               border: "1px solid var(--border-light)",
               borderRadius: "8px",
               padding: "0.5rem",
@@ -543,7 +543,7 @@ export default function Controls({
         </div>
 
         {/* Footer */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.03)", paddingTop: "0.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "1rem", borderTop: "1px solid var(--opacity-divider)", paddingTop: "0.5rem" }}>
           {lastCommand && (
             <span style={{ fontSize: "0.68rem", color: "var(--neon-gold)", fontWeight: 700, letterSpacing: "0.02em" }}>
               {lastCommand}
