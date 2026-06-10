@@ -730,17 +730,18 @@
 }
 
 .kpiCardLarge .kpiValueMockup {
-  font-size: clamp(1.4rem, 4vw, 2.35rem) !important;
+  font-size: clamp(1.4rem, 4vw, 1.95rem) !important;
 }
 
 .kpiCardLarge .kpiSubValueMockup {
-  font-size: 0.9rem !important;
-  margin-top: 0.2rem !important;
+  font-size: clamp(1.02rem, 2.8vw, 1.25rem) !important;
+  margin-top: 0.25rem !important;
+  color: var(--text-secondary) !important;
 }
 
 .kpiCardLarge .kpiBadgeMockup {
-  font-size: 0.75rem !important;
-  padding: 0.15rem 0.55rem !important;
+  font-size: 0.78rem !important;
+  padding: 0.18rem 0.55rem !important;
   margin-top: 0.55rem !important;
 }
 
@@ -749,17 +750,18 @@
 }
 
 .kpiCardSmall .kpiValueMockup {
-  font-size: clamp(1.2rem, 3.5vw, 1.75rem) !important;
+  font-size: clamp(1.2rem, 3.2vw, 1.55rem) !important;
 }
 
 .kpiCardSmall .kpiSubValueMockup {
-  font-size: 0.82rem !important;
-  margin-top: 0.15rem !important;
+  font-size: clamp(0.88rem, 2.2vw, 1.02rem) !important;
+  margin-top: 0.18rem !important;
+  color: var(--text-secondary) !important;
 }
 
 .kpiCardSmall .kpiBadgeMockup {
-  font-size: 0.7rem !important;
-  padding: 0.12rem 0.45rem !important;
+  font-size: 0.72rem !important;
+  padding: 0.15rem 0.45rem !important;
   margin-top: 0.5rem !important;
 }
 

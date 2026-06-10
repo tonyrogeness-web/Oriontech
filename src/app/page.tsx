@@ -366,7 +366,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 4. Active Baskets (por moeda) */}
-        <ActiveBaskets trades={trades} brlRate={brlRate} currencyMode={currencyMode} />
+        <ActiveBaskets trades={trades} brlRate={brlRate} currencyMode={currencyMode} balance={activeAccount.balance} />
 
         {/* 5. Trades Table & Controls */}
         <div className={styles.mainGrid}>

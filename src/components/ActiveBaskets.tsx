@@ -214,9 +214,10 @@ interface BasketCardProps {
   b: Basket;
   currencyMode: "CENT" | "BRL";
   brlRate: number;
+  balance: number;
 }
 
-function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
+function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
   const isBuy    = b.direction === "COMPRA";
   const isProfit = b.totalProfit >= 0;
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
@@ -340,6 +341,56 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
           </span>
         </div>
 
+        {/* Alvo do Cesto (igual ao painel do MT5) */}
+        {b.tpPrice && b.tpPrice > 0 ? (() => {
+          const calculateTakeProfitLimit = (bal: number) => {
+            const InpLotInitial = 0.015;
+            const InpTakeProfitDinheiro = 1.50;
+            const InpBancaRef = 1000.0;
+            const InpLotDeceleration = 0.90;
+
+            let ratio = bal / InpBancaRef;
+            if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
+              ratio = Math.pow(ratio, InpLotDeceleration);
+            }
+            const raw = InpLotInitial * ratio;
+            const step = 0.01;
+            const minV = 0.01;
+            const maxV = 500.0;
+            
+            let loteBase = Math.max(minV, Math.floor(raw / step) * step);
+            if (loteBase > maxV) {
+              loteBase = maxV;
+            }
+            
+            const fat = loteBase / 0.01;
+            return InpTakeProfitDinheiro * fat;
+          };
+
+          const tpLimit = calculateTakeProfitLimit(balance);
+          const remainingDist = isBuy ? (b.tpPrice - b.currentPrice) : (b.currentPrice - b.tpPrice);
+          const remainingPts = Math.round(remainingDist / (b.digits <= 3 ? 0.001 : 0.00001));
+          const remainingPtsStr = remainingPts <= 0 ? "PRONTO!" : `▲ ${remainingPts} pts`;
+
+          const formatTargetProfit = (val: number) => {
+            if (currencyMode === "CENT") {
+              return `[+${val.toFixed(2)} USC]`;
+            } else {
+              const convertedBrl = (val / 100) * brlRate;
+              return `[+R$ ${convertedBrl.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}]`;
+            }
+          };
+
+          return (
+            <div className={styles.basketRow}>
+              <span className={styles.basketRowLabel}>Alvo (TP)</span>
+              <span className={styles.basketRowValue} style={{ fontFamily: "monospace", color: "var(--neon-gold)", fontWeight: 700 }}>
+                {b.tpPrice.toFixed(b.digits)} <span style={{ color: "var(--text-secondary)", fontWeight: "normal", fontSize: "0.65rem" }}>({remainingPtsStr})</span> <span style={{ color: "var(--neon-green)", marginLeft: "0.3rem" }}>{formatTargetProfit(tpLimit)}</span>
+              </span>
+            </div>
+          );
+        })() : null}
+
         {/* Grade */}
         <div className={styles.basketRow}>
           <span className={styles.basketRowLabel}>Grade</span>
@@ -428,12 +479,14 @@ interface ActiveBasketsProps {
   trades: Trade[];
   brlRate?: number;
   currencyMode?: "CENT" | "BRL";
+  balance?: number;
 }
 
 export default function ActiveBaskets({
   trades = [],
   brlRate = 5.45,
   currencyMode = "CENT",
+  balance = 0,
 }: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
@@ -526,14 +579,14 @@ export default function ActiveBaskets({
               <div className={styles.symbolBaskets}>
                 {/* 1. COMPRA (topo) */}
                 {buyBasket ? (
-                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} />
+                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="COMPRA" />
                 )}
 
                 {/* 2. VENDA (base) */}
                 {sellBasket ? (
-                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} />
+                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="VENDA" />
                 )}

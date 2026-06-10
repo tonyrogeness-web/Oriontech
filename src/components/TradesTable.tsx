@@ -167,106 +167,152 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
           <p className={styles.emptyStateText}>Nenhuma ordem aberta no momento.</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper} style={{ flex: 1, overflowY: "auto", overflowX: "auto", maxHeight: "310px", width: "100%" }}>
-          <table className={styles.tradesTable} style={{ width: "100%", minWidth: "520px", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Par / Ticket</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Tipo</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Nível</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Volume</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem" }}>Preço Entrada</th>
-                <th style={{ padding: "0.5rem 0.75rem", fontSize: "0.7rem", textAlign: "right" }}>P&L Posição</th>
-              </tr>
-            </thead>
-            {groupedSymbols.map((group) => {
-              const isExpanded = expandedSymbols[group.symbol] !== false;
-              const isGroupProfit = group.totalProfit >= 0;
-              const groupColor = isGroupProfit ? "var(--neon-green)" : "var(--neon-red)";
-              
-              return (
-                <tbody key={group.symbol} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.03)" }}>
-                  {/* Group Summary Accordion Header Row */}
-                  <tr 
-                    onClick={() => toggleSymbol(group.symbol)} 
-                    style={{ 
-                      cursor: "pointer", 
-                      backgroundColor: "rgba(255, 255, 255, 0.015)",
-                      transition: "background-color 0.2s" 
-                    }}
-                    className={styles.symbolGroupRow}
-                  >
-                    <td style={{ padding: "0.65rem 0.75rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <div style={{ flex: 1, overflowY: "auto", maxHeight: "310px", width: "100%", paddingRight: "0.25rem", marginTop: "0.75rem" }}>
+          {groupedSymbols.map((group) => {
+            const isExpanded = expandedSymbols[group.symbol] !== false;
+            const isGroupProfit = group.totalProfit >= 0;
+            const groupColor = isGroupProfit ? "var(--neon-green)" : "var(--neon-red)";
+            
+            return (
+              <div key={group.symbol} style={{
+                marginBottom: "0.6rem",
+                borderRadius: "12px",
+                border: "1px solid var(--border-light)",
+                background: "rgba(255, 255, 255, 0.01)",
+                overflow: "hidden",
+                width: "100%"
+              }}>
+                {/* Accordion Group Summary Header */}
+                <div 
+                  onClick={() => toggleSymbol(group.symbol)} 
+                  style={{ 
+                    cursor: "pointer", 
+                    backgroundColor: "rgba(255, 255, 255, 0.02)",
+                    padding: "0.55rem 0.75rem",
+                    display: "flex",
+                    justify-content: "space-between",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    userSelect: "none"
+                  }}
+                  className={styles.symbolGroupRow}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                       {isExpanded ? <ChevronDown size={14} style={{ color: "var(--text-secondary)" }} /> : <ChevronRight size={14} style={{ color: "var(--text-secondary)" }} />}
-                      <span>{group.symbol}</span>
-                    </td>
-                    <td style={{ padding: "0.65rem 0.75rem", fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 600 }}>
+                      <strong style={{ fontSize: "0.85rem", color: "var(--text-primary)" }}>{group.symbol}</strong>
+                    </div>
+                    
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>
                       {group.buyCount > 0 && `Buy x${group.buyCount}`}
                       {group.buyCount > 0 && group.sellCount > 0 && " + "}
                       {group.sellCount > 0 && `Sell x${group.sellCount}`}
-                    </td>
-                    <td style={{ padding: "0.65rem 0.75rem", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.68rem" }}>
+                    </span>
+                    
+                    <span style={{
+                      fontSize: "0.62rem",
+                      color: "var(--neon-gold)",
+                      backgroundColor: "rgba(255, 184, 0, 0.06)",
+                      border: "1px solid rgba(255, 184, 0, 0.15)",
+                      padding: "0.05rem 0.3rem",
+                      borderRadius: "3px",
+                      fontWeight: 700
+                    }}>
                       Grade: {group.maxLevel}
-                    </td>
-                    <td style={{ padding: "0.65rem 0.75rem", fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-secondary)" }}>
                       {group.totalVolume.toFixed(3)} L
-                    </td>
-                    <td style={{ padding: "0.65rem 0.75rem" }} />
-                    <td style={{ padding: "0.65rem 0.75rem", fontFamily: "monospace", textAlign: "right", fontWeight: 700, fontSize: "0.75rem", color: groupColor }}>
+                    </span>
+                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, display: "flex", alignItems: "center" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
                       {renderMiniBar(group.totalProfit)}
-                    </td>
-                  </tr>
+                    </span>
+                  </div>
+                </div>
 
-                  {/* Individual position detail rows (Rendered if expanded) */}
-                  {isExpanded && group.trades.map((trade) => {
-                    const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
-                    const isJpy = trade.symbol.toUpperCase().includes("JPY");
-                    const digits = isJpy ? 3 : 5;
-                    const tProfit = trade.currentProfit;
-                    const isProfit = tProfit >= 0;
-                    const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
-                    const profitBg = isProfit ? "rgba(0, 230, 118, 0.06)" : "rgba(255, 23, 68, 0.06)";
-                    const profitBorder = isProfit ? "rgba(0, 230, 118, 0.2)" : "rgba(255, 23, 68, 0.2)";
+                {/* Individual position detail rows (Rendered if expanded) */}
+                {isExpanded && (
+                  <div style={{ borderTop: "1px solid var(--border-light)", background: "rgba(0, 0, 0, 0.15)" }}>
+                    {group.trades.map((trade) => {
+                      const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
+                      const isJpy = trade.symbol.toUpperCase().includes("JPY");
+                      const digits = isJpy ? 3 : 5;
+                      const tProfit = trade.currentProfit;
+                      const isProfit = tProfit >= 0;
+                      const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
+                      const profitBg = isProfit ? "rgba(0, 230, 118, 0.05)" : "rgba(255, 23, 68, 0.05)";
+                      const profitBorder = isProfit ? "rgba(0, 230, 118, 0.15)" : "rgba(255, 23, 68, 0.15)";
 
-                    return (
-                      <tr key={trade.ticket} style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
-                        <td style={{ padding: "0.55rem 0.75rem", paddingLeft: "1.75rem", color: "var(--text-muted)", fontSize: "0.68rem" }}>
-                          #{trade.ticket}
-                        </td>
-                        <td style={{ padding: "0.55rem 0.75rem" }}>
-                          <span className={isBuy ? styles.badgeLong : styles.badgeShort} style={{ fontSize: "0.6rem", padding: "0.05rem 0.35rem" }}>
-                            {isBuy ? "COMPRA" : "VENDA"}
-                          </span>
-                        </td>
-                        <td style={{ padding: "0.55rem 0.75rem", color: "var(--text-muted)", fontSize: "0.68rem" }}>
-                          {trade.level}
-                        </td>
-                        <td style={{ padding: "0.55rem 0.75rem", fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                          {trade.volume.toFixed(3)}
-                        </td>
-                        <td style={{ padding: "0.55rem 0.75rem", fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                          {trade.entryPrice.toFixed(digits)}
-                        </td>
-                        <td style={{ padding: "0.55rem 0.75rem", fontFamily: "monospace", textAlign: "right", fontWeight: 600 }}>
-                          <span style={{
-                            color: profitColor,
-                            backgroundColor: profitBg,
-                            border: `1px solid ${profitBorder}`,
-                            padding: "0.1rem 0.35rem",
-                            borderRadius: "4px",
-                            fontSize: "0.65rem"
-                          }}>
-                            {formatProfitPrimary(tProfit)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              );
-            })}
-          </table>
+                      return (
+                        <div 
+                          key={trade.ticket} 
+                          style={{ 
+                            display: "flex", 
+                            justify-content: "space-between", 
+                            alignItems: "center", 
+                            padding: "0.45rem 0.75rem", 
+                            borderBottom: "1px solid rgba(255, 255, 255, 0.02)",
+                            gap: "0.4rem"
+                          }}
+                        >
+                          {/* Left: Direction + Ticket + Level */}
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
+                            <span 
+                              className={isBuy ? styles.badgeLong : styles.badgeShort} 
+                              style={{ 
+                                fontSize: "0.55rem", 
+                                padding: "0.05rem 0.3rem", 
+                                fontWeight: 800,
+                                borderRadius: "3px"
+                              }}
+                            >
+                              {isBuy ? "COMPRA" : "VENDA"}
+                            </span>
+                            <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                              #{trade.ticket}
+                            </span>
+                            <span style={{
+                              fontSize: "0.62rem",
+                              color: "var(--text-secondary)",
+                              fontFamily: "monospace",
+                              fontWeight: 700
+                            }}>
+                              {trade.level}
+                            </span>
+                          </div>
+
+                          {/* Middle: Volume & Price details */}
+                          <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", fontFamily: "monospace" }}>
+                            <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{trade.volume.toFixed(3)} L</span>
+                            <span style={{ color: "var(--text-muted)", marginLeft: "0.35rem" }}>@ {trade.entryPrice.toFixed(digits)}</span>
+                          </div>
+
+                          {/* Right: Profit/Loss */}
+                          <div style={{ fontFamily: "monospace", textAlign: "right" }}>
+                            <span style={{
+                              color: profitColor,
+                              backgroundColor: profitBg,
+                              border: `1px solid ${profitBorder}`,
+                              padding: "0.1rem 0.4rem",
+                              borderRadius: "4px",
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                              display: "inline-block"
+                            }}>
+                              {formatProfitPrimary(tProfit)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
