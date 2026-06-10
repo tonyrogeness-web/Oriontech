@@ -9,6 +9,8 @@
   background: var(--bg-panel);
   border: 1px solid var(--border-light);
   backdrop-filter: var(--glass-blur);
+  position: relative;
+  z-index: 2000;
 }
 
 .brand {
@@ -485,6 +487,20 @@
 }
 
 @media (max-width: 768px) {
+  :global(.dashboard-container) {
+    padding: 0.75rem !important;
+  }
+
+  .tradesCard, .controlsCard, .chartsCard, .riskManagementCard {
+    padding: 0.85rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .notificationsDropdown {
+    right: -25px !important;
+    width: 290px !important;
+  }
+
   .mobileOnly {
     display: block !important;
   }
@@ -1561,15 +1577,15 @@
 .notificationsDropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: -80px;
+  right: -50px;
   width: 320px;
-  background: rgba(13, 17, 23, 0.96);
-  border: 1px solid var(--border-light);
+  background: var(--bg-panel-solid) !important;
+  border: 1px solid var(--border-active);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 184, 0, 0.05);
-  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 184, 0, 0.15);
+  z-index: 10000;
   overflow: hidden;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   animation: slideDownFade 0.2s ease-out;
 }
 

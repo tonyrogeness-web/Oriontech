@@ -217,7 +217,7 @@ export default function Header({
             <div className={styles.notificationsDropdown} ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
               <div className={styles.notificationsHeader}>
                 <span>Alertas do Robô</span>
-                <span className={styles.notificationsClear} onClick={() => setShowNotifications(false)}>Fechar</span>
+                <span className={styles.notificationsClear} onClick={(e) => { e.stopPropagation(); setShowNotifications(false); }}>Fechar</span>
               </div>
               <div className={styles.notificationsList}>
                 {notifications.map((n, idx) => {

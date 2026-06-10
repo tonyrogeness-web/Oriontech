@@ -79,7 +79,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT" }: Trad
           <p className={styles.emptyStateText}>Nenhuma ordem aberta no momento.</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper} style={{ flex: 1, overflowY: "auto", maxHeight: "310px" }}>
+        <div className={styles.tableWrapper} style={{ flex: 1, overflowY: "auto", overflowX: "auto", maxHeight: "310px" }}>
           <table className={styles.tradesTable} style={{ width: "100%" }}>
             <thead>
               <tr>
