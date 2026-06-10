@@ -46,6 +46,10 @@ export default function Header({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
 
+  // Sync timer state
+  const [secondsAgo, setSecondsAgo] = useState(0);
+  const [lastSyncStr, setLastSyncStr] = useState("--:--:--");
+
   // Close notifications dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -60,6 +64,23 @@ export default function Header({
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Reset sync timer whenever new trades data arrives
+  useEffect(() => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    setLastSyncStr(timeStr);
+    setSecondsAgo(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trades.length, status]);
+
+  // Count elapsed seconds since last sync
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsAgo((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Generate dynamic system alerts/notifications from trades and risk metrics
