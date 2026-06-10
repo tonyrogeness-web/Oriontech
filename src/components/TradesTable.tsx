@@ -161,7 +161,12 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
             const isExpanded = expandedSymbols[group.symbol] !== false;
             const isGroupProfit = group.totalProfit >= 0;
             const groupColor = isGroupProfit ? "var(--neon-green)" : "var(--neon-red)";
-            
+
+            // ── Shared grid: all rows use this exact same template ──────────
+            // Col1: Ordem (flexible), Col2: Grade (44px), Col3: Lotes (64px), Col4: P&L (88px)
+            const COLS = "1fr 44px 64px 88px";
+            const ROW_PAD = "0 0.75rem";
+
             return (
               <div key={group.symbol} style={{
                 marginBottom: "0.6rem",
@@ -171,21 +176,21 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                 overflow: "hidden",
                 width: "100%"
               }}>
-                {/* Accordion Group Summary Header — 4-col grid matching data rows */}
+                {/* ── Group summary header — same grid as rows below ── */}
                 <div
                   onClick={() => toggleSymbol(group.symbol)}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: "rgba(255, 255, 255, 0.02)",
+                    backgroundColor: "rgba(255, 255, 255, 0.025)",
                     padding: "0.5rem 0.75rem",
                     display: "grid",
-                    gridTemplateColumns: "1fr auto auto auto",
+                    gridTemplateColumns: COLS,
                     alignItems: "center",
                     userSelect: "none",
                   }}
                   className={styles.symbolGroupRow}
                 >
-                  {/* Col 1: chevron + symbol name */}
+                  {/* Col 1: chevron + symbol */}
                   <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                     {isExpanded
                       ? <ChevronDown size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
@@ -193,59 +198,58 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                     <strong style={{ fontSize: "0.85rem", color: "var(--text-primary)", whiteSpace: "nowrap" }}>{group.symbol}</strong>
                   </div>
 
-                  {/* Col 2: Grade badge */}
-                  <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                  {/* Col 2: max grade badge — centered */}
+                  <div style={{ textAlign: "center" }}>
                     <span style={{
                       fontSize: "0.6rem",
                       color: "var(--neon-gold)",
                       backgroundColor: "rgba(255, 184, 0, 0.06)",
                       border: "1px solid rgba(255, 184, 0, 0.15)",
-                      padding: "0.05rem 0.35rem",
+                      padding: "0.05rem 0.3rem",
                       borderRadius: "3px",
                       fontWeight: 700,
-                      whiteSpace: "nowrap"
+                      whiteSpace: "nowrap",
                     }}>
                       {group.maxLevel}
                     </span>
                   </div>
 
-                  {/* Col 3: Total Volume */}
-                  <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                  {/* Col 3: total volume — centered */}
+                  <div style={{ textAlign: "center" }}>
                     <span style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                       {group.totalVolume.toFixed(3)}L
                     </span>
                   </div>
 
-                  {/* Col 4: Total P&L */}
-                  <div style={{ paddingLeft: "0.75rem", textAlign: "right" }}>
+                  {/* Col 4: total P&L — right */}
+                  <div style={{ textAlign: "right" }}>
                     <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.75rem", color: groupColor, whiteSpace: "nowrap" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
                     </span>
                   </div>
                 </div>
 
-                {/* Individual position detail rows with proper grid alignment */}
+                {/* ── Expanded detail section ── */}
                 {isExpanded && (
                   <div style={{ borderTop: "1px solid var(--border-light)", background: "rgba(0, 0, 0, 0.15)" }}>
-                    {/* Column Headers */}
+
+                    {/* Column label header — same grid */}
                     <div style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr auto auto auto",
-                      gap: "0",
-                      padding: "0.25rem 0.75rem",
+                      gridTemplateColumns: COLS,
+                      padding: "0.22rem 0.75rem",
                       borderBottom: "1px solid rgba(255,255,255,0.04)",
-                      background: "rgba(255,255,255,0.015)"
+                      background: "rgba(255,255,255,0.012)",
                     }}>
-                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Ordem</span>
-                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center", paddingLeft: "0.75rem" }}>Grade</span>
-                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center", paddingLeft: "0.75rem" }}>Lotes</span>
-                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "right", paddingLeft: "0.75rem" }}>P&L</span>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Ordem</span>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Grade</span>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Lotes</span>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>P&L</span>
                     </div>
 
+                    {/* Data rows — same grid */}
                     {group.trades.map((trade) => {
                       const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
-                      const isJpy = trade.symbol.toUpperCase().includes("JPY");
-                      const digits = isJpy ? 3 : 5;
                       const tProfit = trade.currentProfit;
                       const isProfit = tProfit >= 0;
                       const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
@@ -257,53 +261,52 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                           key={trade.ticket}
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "1fr auto auto auto",
-                            gap: "0",
+                            gridTemplateColumns: COLS,
                             alignItems: "center",
-                            padding: "0.4rem 0.75rem",
-                            borderBottom: "1px solid rgba(255, 255, 255, 0.02)",
+                            padding: "0.38rem 0.75rem",
+                            borderBottom: "1px solid rgba(255, 255, 255, 0.025)",
                           }}
                         >
-                          {/* Col 1: Direction badge + ticket below */}
+                          {/* Col 1: badge + ticket */}
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.1rem" }}>
                             <span
                               className={isBuy ? styles.badgeLong : styles.badgeShort}
-                              style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", fontWeight: 800, borderRadius: "3px", whiteSpace: "nowrap" }}
+                              style={{ fontSize: "0.55rem", padding: "0.05rem 0.28rem", fontWeight: 800, borderRadius: "3px", whiteSpace: "nowrap" }}
                             >
                               {isBuy ? "COMPRA" : "VENDA"}
                             </span>
-                            <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                            <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.01em" }}>
                               #{trade.ticket}
                             </span>
                           </div>
 
-                          {/* Col 2: Level / Grade */}
-                          <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                          {/* Col 2: grade — centered */}
+                          <div style={{ textAlign: "center" }}>
                             <span style={{ fontSize: "0.62rem", color: "var(--neon-gold)", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
                               {trade.level}
                             </span>
                           </div>
 
-                          {/* Col 3: Volume */}
-                          <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
-                            <span style={{ fontSize: "0.68rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap" }}>
+                          {/* Col 3: volume — centered */}
+                          <div style={{ textAlign: "center" }}>
+                            <span style={{ fontSize: "0.65rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap" }}>
                               {trade.volume.toFixed(3)}L
                             </span>
                           </div>
 
-                          {/* Col 4: P&L */}
-                          <div style={{ paddingLeft: "0.75rem", textAlign: "right" }}>
+                          {/* Col 4: P&L badge — right */}
+                          <div style={{ textAlign: "right" }}>
                             <span style={{
                               color: profitColor,
                               backgroundColor: profitBg,
                               border: `1px solid ${profitBorder}`,
-                              padding: "0.1rem 0.35rem",
+                              padding: "0.08rem 0.3rem",
                               borderRadius: "4px",
-                              fontSize: "0.63rem",
+                              fontSize: "0.6rem",
                               fontWeight: 700,
                               display: "inline-block",
                               whiteSpace: "nowrap",
-                              fontFamily: "monospace"
+                              fontFamily: "monospace",
                             }}>
                               {formatProfitPrimary(tProfit)}
                             </span>
