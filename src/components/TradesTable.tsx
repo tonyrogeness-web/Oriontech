@@ -221,9 +221,24 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                   </div>
                 </div>
 
-                {/* Individual position detail rows (Rendered if expanded) */}
+                {/* Individual position detail rows with proper grid alignment */}
                 {isExpanded && (
                   <div style={{ borderTop: "1px solid var(--border-light)", background: "rgba(0, 0, 0, 0.15)" }}>
+                    {/* Column Headers */}
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto auto auto",
+                      gap: "0",
+                      padding: "0.25rem 0.75rem",
+                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      background: "rgba(255,255,255,0.015)"
+                    }}>
+                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Ordem</span>
+                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center", paddingLeft: "0.75rem" }}>Grade</span>
+                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center", paddingLeft: "0.75rem" }}>Lotes</span>
+                      <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "right", paddingLeft: "0.75rem" }}>P&L</span>
+                    </div>
+
                     {group.trades.map((trade) => {
                       const isBuy = trade.type.toUpperCase() === "BUY" || trade.type === "0";
                       const isJpy = trade.symbol.toUpperCase().includes("JPY");
@@ -235,66 +250,57 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                       const profitBorder = isProfit ? "rgba(0, 230, 118, 0.15)" : "rgba(255, 23, 68, 0.15)";
 
                       return (
-                        <div 
-                          key={trade.ticket} 
-                          style={{ 
-                            display: "flex", 
-                            justifyContent: "space-between", 
-                            alignItems: "center", 
-                            padding: "0.45rem 0.75rem", 
+                        <div
+                          key={trade.ticket}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto auto auto",
+                            gap: "0",
+                            alignItems: "center",
+                            padding: "0.4rem 0.75rem",
                             borderBottom: "1px solid rgba(255, 255, 255, 0.02)",
-                            gap: "0.4rem"
                           }}
                         >
-                          {/* Left: Direction + Level (row 1) + Ticket (row 2) */}
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.15rem", minWidth: 0 }}>
-                            {/* Row 1: badge + grade */}
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                              <span 
-                                className={isBuy ? styles.badgeLong : styles.badgeShort} 
-                                style={{ 
-                                  fontSize: "0.55rem", 
-                                  padding: "0.05rem 0.3rem", 
-                                  fontWeight: 800,
-                                  borderRadius: "3px",
-                                  whiteSpace: "nowrap"
-                                }}
-                              >
-                                {isBuy ? "COMPRA" : "VENDA"}
-                              </span>
-                              <span style={{
-                                fontSize: "0.6rem",
-                                color: "var(--neon-gold)",
-                                fontFamily: "monospace",
-                                fontWeight: 700,
-                                whiteSpace: "nowrap"
-                              }}>
-                                {trade.level}
-                              </span>
-                            </div>
-                            {/* Row 2: ticket number — smaller and left-aligned */}
-                            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontFamily: "monospace", whiteSpace: "nowrap" }}>
+                          {/* Col 1: Direction badge + ticket below */}
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.1rem" }}>
+                            <span
+                              className={isBuy ? styles.badgeLong : styles.badgeShort}
+                              style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", fontWeight: 800, borderRadius: "3px", whiteSpace: "nowrap" }}
+                            >
+                              {isBuy ? "COMPRA" : "VENDA"}
+                            </span>
+                            <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
                               #{trade.ticket}
                             </span>
                           </div>
 
-                          {/* Middle: Volume details */}
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
-                            {trade.volume.toFixed(3)}L
+                          {/* Col 2: Level / Grade */}
+                          <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                            <span style={{ fontSize: "0.62rem", color: "var(--neon-gold)", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                              {trade.level}
+                            </span>
                           </div>
 
-                          {/* Right: Profit/Loss */}
-                          <div style={{ fontFamily: "monospace", textAlign: "right", flexShrink: 0 }}>
+                          {/* Col 3: Volume */}
+                          <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                            <span style={{ fontSize: "0.68rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap" }}>
+                              {trade.volume.toFixed(3)}L
+                            </span>
+                          </div>
+
+                          {/* Col 4: P&L */}
+                          <div style={{ paddingLeft: "0.75rem", textAlign: "right" }}>
                             <span style={{
                               color: profitColor,
                               backgroundColor: profitBg,
                               border: `1px solid ${profitBorder}`,
-                              padding: "0.1rem 0.4rem",
+                              padding: "0.1rem 0.35rem",
                               borderRadius: "4px",
-                              fontSize: "0.65rem",
+                              fontSize: "0.63rem",
                               fontWeight: 700,
                               display: "inline-block",
-                              whiteSpace: "nowrap"
+                              whiteSpace: "nowrap",
+                              fontFamily: "monospace"
                             }}>
                               {formatProfitPrimary(tProfit)}
                             </span>
