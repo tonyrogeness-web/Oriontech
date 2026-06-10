@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Play, Pause, Zap, Skull, RefreshCw } from "lucide-react";
+import { Play, Pause, Zap, XCircle, RefreshCw } from "lucide-react";
 import styles from "./components.module.css";
 
 interface ControlsProps {
@@ -18,7 +18,7 @@ export default function Controls({
   onSendCommand,
 }: ControlsProps) {
   const [loading, setLoading] = useState<string | null>(null);
-  const [confirmPanicGlobal, setConfirmPanicGlobal] = useState(false);
+  const [confirmZerarGlobal, setConfirmZerarGlobal] = useState(false);
   const [showLocalSelector, setShowLocalSelector] = useState(false);
   const [confirmLocalSymbol, setConfirmLocalSymbol] = useState<string | null>(null);
   const [lastCommand, setLastCommand] = useState<string | null>(null);
@@ -31,13 +31,13 @@ export default function Controls({
     }
   }, []);
 
-  // Global Panic timer
+  // Zerar Global timer
   useEffect(() => {
-    if (confirmPanicGlobal) {
-      const timer = setTimeout(() => setConfirmPanicGlobal(false), 4000);
+    if (confirmZerarGlobal) {
+      const timer = setTimeout(() => setConfirmZerarGlobal(false), 4000);
       return () => clearTimeout(timer);
     }
-  }, [confirmPanicGlobal]);
+  }, [confirmZerarGlobal]);
 
   // Local Panic timer
   useEffect(() => {
@@ -69,15 +69,18 @@ export default function Controls({
     setLoading(null);
   };
 
-  const handlePanicGlobal = async () => {
-    if (!confirmPanicGlobal) {
-      setConfirmPanicGlobal(true);
+  const handleZerarGlobal = async () => {
+    if (!confirmZerarGlobal) {
+      setConfirmZerarGlobal(true);
       return;
     }
     setLoading("PANIC_GLOBAL");
+    // 1. Fecha todas as posições
     await onSendCommand("PANIC_GLOBAL");
-    trackCommand("Pânico Global");
-    setConfirmPanicGlobal(false);
+    // 2. Pausa o robô automaticamente para não abrir novas entradas
+    await onSendCommand("PAUSE");
+    trackCommand("Zerar Global + Pausar Robô");
+    setConfirmZerarGlobal(false);
     setLoading(null);
   };
 
@@ -166,24 +169,24 @@ export default function Controls({
             <Zap size={14} /> Zerar Local
           </button>
 
-          {/* Button 4: Pânico Global */}
+          {/* Button 4: Zerar Global */}
           <button
             className={`${styles.btnControlMockup} ${styles.btnControlPanic}`}
-            onClick={handlePanicGlobal}
+            onClick={handleZerarGlobal}
             disabled={loading !== null}
             style={{
-              backgroundColor: confirmPanicGlobal ? "var(--neon-red)" : "rgba(255, 23, 68, 0.05)",
-              color: confirmPanicGlobal ? "#fff" : "var(--neon-red)",
+              backgroundColor: confirmZerarGlobal ? "var(--neon-red)" : "rgba(255, 23, 68, 0.05)",
+              color: confirmZerarGlobal ? "#fff" : "var(--neon-red)",
             }}
-            title="Fechar todas as ordens abertas da conta imediatamente"
+            title="Zerar todas as posições e pausar o robô imediatamente"
           >
             {loading === "PANIC_GLOBAL" ? (
               <RefreshCw className="spin" size={14} />
-            ) : confirmPanicGlobal ? (
-              "CONFIRMAR?"
+            ) : confirmZerarGlobal ? (
+              "⚠ CONFIRMAR ZERAR?"
             ) : (
               <>
-                <Skull size={14} /> Pânico Global
+                <XCircle size={14} /> Zerar Global
               </>
             )}
           </button>
@@ -245,7 +248,7 @@ export default function Controls({
         )}
         <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
           <span>Sincronizado via MetaTrader 5</span>
-          <span>Ações seguras com dupla confirmação</span>
+          <span>Zerar Global fecha tudo + pausa o robô</span>
         </div>
       </div>
     </div>
