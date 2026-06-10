@@ -245,6 +245,18 @@ export default function DashboardPage() {
       </div>
 
       <div className="dashboard-container">
+        {activeAccount.newsActive && (
+          <div className={styles.newsAlertBanner}>
+            <div className={styles.newsAlertContent}>
+              <span className={styles.newsAlertIcon}>⚠️</span>
+              <span className={styles.newsAlertText}>
+                <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
+                {activeAccount.newsFrozen ? " (Novas entradas bloqueadas e grade congelada)" : " (Operações suspensas)"}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* 1. Header component */}
         <Header
           accountNumber={activeAccount.account}
@@ -258,6 +270,8 @@ export default function DashboardPage() {
           floatingPl={activeAccount.floatingPl}
           balance={activeAccount.balance}
           softStopLimit={dynamicSoftStopLimit}
+          newsActive={activeAccount.newsActive}
+          newsName={activeAccount.newsName}
         />
 
         {/* 2. Row of 5 KPI Cards */}

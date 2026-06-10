@@ -18,6 +18,9 @@ model AccountState {
   maxDrawdown   Float
   status        String   // "RUNNING" or "PAUSED"
   lastUpdated   DateTime @updatedAt
+  newsActive    Boolean  @default(false)
+  newsFrozen    Boolean  @default(false)
+  newsName      String   @default("")
 }
 
 model ActiveTrade {

@@ -26,6 +26,8 @@ interface HeaderProps {
   floatingPl?: number;
   balance?: number;
   softStopLimit?: number;
+  newsActive?: boolean;
+  newsName?: string;
 }
 
 export default function Header({
@@ -40,6 +42,8 @@ export default function Header({
   floatingPl = 0,
   balance = 0,
   softStopLimit = 400.0,
+  newsActive = false,
+  newsName = "",
 }: HeaderProps) {
   const isActive = status === "RUNNING";
   const [showNotifications, setShowNotifications] = useState(false);
@@ -287,9 +291,15 @@ export default function Header({
         {/* Status indicator with animated colored bullet status */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span className={styles.desktopOnly} style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
-          <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
-            <span className={styles.statusBullet}>●</span> {isActive ? "ATIVO" : "PAUSADO"}
-          </span>
+          {newsActive ? (
+            <span className={styles.statusNewsBadge} title={`Filtro de Notícias Ativo: ${newsName}`}>
+              <span className={styles.statusBullet}>●</span> NOTÍCIA
+            </span>
+          ) : (
+            <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
+              <span className={styles.statusBullet}>●</span> {isActive ? "ATIVO" : "PAUSADO"}
+            </span>
+          )}
         </div>
       </div>
     </header>

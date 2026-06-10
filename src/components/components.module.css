@@ -146,6 +146,15 @@
   align-items: center;
 }
 
+.statusNewsBadge {
+  color: var(--neon-gold);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-shadow: 0 0 10px var(--neon-gold-glow);
+  display: flex;
+  align-items: center;
+}
+
 .userProfile {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-light);
@@ -1935,5 +1944,47 @@
 .notificationItem.success {
   border-left: 3px solid var(--neon-green);
 }
+
+/* ── News Alert Banner & Badge ── */
+.newsAlertBanner {
+  background: rgba(224, 155, 0, 0.07);
+  border: 1px solid rgba(224, 155, 0, 0.25);
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 12px rgba(224, 155, 0, 0.05);
+  animation: pulseNews 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes pulseNews {
+  from {
+    border-color: rgba(224, 155, 0, 0.2);
+    box-shadow: 0 0 8px rgba(224, 155, 0, 0.02);
+  }
+  to {
+    border-color: rgba(224, 155, 0, 0.45);
+    box-shadow: 0 0 16px rgba(224, 155, 0, 0.12);
+  }
+}
+
+.newsAlertContent {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--neon-gold);
+}
+
+.newsAlertIcon {
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.newsAlertText {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
 
 

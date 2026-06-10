@@ -24,6 +24,9 @@ export async function POST(request: Request) {
       trades = [],
       history = [],
       executedCommands = [],
+      newsActive = false,
+      newsFrozen = false,
+      newsName = "",
     } = payload;
 
     // 1. Verify token
@@ -99,6 +102,9 @@ export async function POST(request: Request) {
         totalProfit: parseFloat(totalProfit),
         maxDrawdown: globalDrawdown,
         status: status || "RUNNING",
+        newsActive: Boolean(newsActive),
+        newsFrozen: Boolean(newsFrozen),
+        newsName: String(newsName || ""),
       },
       create: {
         account: String(account),
@@ -109,6 +115,9 @@ export async function POST(request: Request) {
         totalProfit: parseFloat(totalProfit),
         maxDrawdown: globalDrawdown,
         status: status || "RUNNING",
+        newsActive: Boolean(newsActive),
+        newsFrozen: Boolean(newsFrozen),
+        newsName: String(newsName || ""),
       },
     });
 
