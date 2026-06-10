@@ -377,6 +377,39 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
   );
 }
 
+/* ── Card inativo de placeholder ────────────────────────────────── */
+interface InactiveBasketCardProps {
+  symbol: string;
+}
+
+function InactiveBasketCard({ symbol }: InactiveBasketCardProps) {
+  return (
+    <div className={`${styles.basketCard} ${styles.basketCardInactive}`}>
+      <div className={styles.basketHeader} style={{ borderBottom: "none", paddingBottom: 0, marginBottom: 0 }}>
+        <div className={styles.basketTitleGroup}>
+          <span className={styles.basketSymbol} style={{ opacity: 0.4 }}>{symbol}</span>
+          <span
+            className={styles.symbolDirTag}
+            style={{
+              color: "var(--text-muted)",
+              borderColor: "rgba(255,255,255,0.06)",
+              background: "transparent",
+              opacity: 0.5,
+              fontSize: "0.55rem",
+              padding: "0.05rem 0.35rem"
+            }}
+          >
+            INATIVO
+          </span>
+        </div>
+        <div className={styles.basketProfit} style={{ color: "var(--text-muted)", opacity: 0.4, fontSize: "0.85rem" }}>
+          0.00
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Componente principal ─────────────────────────────────────────── */
 interface ActiveBasketsProps {
   trades: Trade[];
@@ -391,10 +424,8 @@ export default function ActiveBaskets({
 }: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
-  const symbols = Object.keys(grouped).sort();
 
   const totalPl      = baskets.reduce((s, b) => s + b.totalProfit, 0);
-  const totalProfitColor = totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
 
   const formatSecondaryVal = (val: number) => {
     const absVal = Math.abs(val);
@@ -412,23 +443,7 @@ export default function ActiveBaskets({
     }
   };
 
-  if (baskets.length === 0) {
-    return (
-      <div className={styles.basketsSection}>
-        <div className={styles.basketsSectionHeader}>
-          <span className={styles.basketsSectionTitle}>Cestos Ativos por Moeda</span>
-          <span className={styles.basketsCount}>sem posições abertas</span>
-        </div>
-        <div className={styles.basketsEmpty}>
-          <span style={{ fontSize: "1.5rem" }}>📊</span>
-          <p>Nenhuma posição aberta no momento</p>
-          <small style={{ color: "var(--text-muted)" }}>
-            Os cestos aparecem aqui assim que o robô abrir operações
-          </small>
-        </div>
-      </div>
-    );
-  }
+  const ALL_SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD"];
 
   return (
     <div className={styles.basketsSection}>
@@ -436,58 +451,77 @@ export default function ActiveBaskets({
       {/* ── Cabeçalho da seção ── */}
       <div className={styles.basketsSectionHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span className={styles.basketsSectionTitle}>Cestos Ativos por Moeda</span>
+          <span className={styles.basketsSectionTitle}>Cestos de Moedas</span>
           <span className={styles.basketsCount}>
-            {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ·{" "}
-            {symbols.length} par{symbols.length !== 1 ? "es" : ""}
+            {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ativo{baskets.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: totalProfitColor, fontFamily: "monospace" }}>
-          {totalPl >= 0 ? "+" : "-"}{formatSecondaryVal(totalPl)} global
+        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
+          {totalPl >= 0 ? "+" : "-"}{formatSecondaryVal(totalPl)} global flutuante
         </span>
       </div>
 
-      {/* ── Grupos por símbolo ── */}
-      <div className={styles.basketsBySymbol}>
-        {symbols.map((sym) => {
-          const symBaskets = grouped[sym];
-          const symPl      = symBaskets.reduce((s, b) => s + b.totalProfit, 0);
-          const symColor   = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
-          const hasBuy     = symBaskets.some((b) => b.direction === "COMPRA");
-          const hasSell    = symBaskets.some((b) => b.direction === "VENDA");
+      {/* ── Grade principal fixa com 6 posições ── */}
+      <div className={styles.basketsGridMain}>
+        {ALL_SYMBOLS.map((sym) => {
+          const symBaskets = grouped[sym] || [];
+          const hasBaskets = symBaskets.length > 0;
 
-          return (
-            <div key={sym} className={styles.symbolGroup}>
-              {/* Cabeçalho do par */}
-              <div className={styles.symbolGroupHeader}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                  <span className={styles.symbolGroupName}>{sym}</span>
-                  {hasBuy && (
-                    <span className={styles.symbolDirTag}
-                      style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.25)", background: "rgba(0,230,118,0.06)" }}>
-                      ▲ COMPRA
-                    </span>
-                  )}
-                  {hasSell && (
-                    <span className={styles.symbolDirTag}
-                      style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.25)", background: "rgba(255,23,68,0.06)" }}>
-                      ▼ VENDA
-                    </span>
-                  )}
+          if (hasBaskets) {
+            const symPl      = symBaskets.reduce((s, b) => s + b.totalProfit, 0);
+            const symColor   = symPl >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+            const hasBuy     = symBaskets.some((b) => b.direction === "COMPRA");
+            const hasSell    = symBaskets.some((b) => b.direction === "VENDA");
+
+            return (
+              <div key={sym} className={styles.symbolGroup}>
+                {/* Cabeçalho do par ativo */}
+                <div className={styles.symbolGroupHeader}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span className={styles.symbolGroupName}>{sym}</span>
+                    {hasBuy && (
+                      <span className={styles.symbolDirTag}
+                        style={{ color: "var(--neon-green)", borderColor: "rgba(0,230,118,0.25)", background: "rgba(0,230,118,0.06)" }}>
+                        ▲ COMPRA
+                      </span>
+                    )}
+                    {hasSell && (
+                      <span className={styles.symbolDirTag}
+                        style={{ color: "var(--neon-red)", borderColor: "rgba(255,23,68,0.25)", background: "rgba(255,23,68,0.06)" }}>
+                        ▼ VENDA
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: symColor, fontFamily: "monospace" }}>
+                    {symPl >= 0 ? "+" : "-"}{formatSecondaryVal(symPl)}
+                  </span>
                 </div>
-                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: symColor, fontFamily: "monospace" }}>
-                  {symPl >= 0 ? "+" : "-"}{formatSecondaryVal(symPl)}
-                </span>
-              </div>
 
-              {/* Cestos do par */}
-              <div className={styles.symbolBaskets}>
-                {symBaskets.map((b, i) => (
-                  <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} currencyMode={currencyMode} brlRate={brlRate} />
-                ))}
+                {/* Cestos do par ativo */}
+                <div className={styles.symbolBaskets}>
+                  {symBaskets.map((b, i) => (
+                    <BasketCard key={`${b.symbol}_${b.direction}_${i}`} b={b} currencyMode={currencyMode} brlRate={brlRate} />
+                  ))}
+                </div>
               </div>
-            </div>
-          );
+            );
+          } else {
+            // Inativo
+            return (
+              <div key={sym} className={styles.symbolGroup}>
+                {/* Cabeçalho do par inativo */}
+                <div className={styles.symbolGroupHeader} style={{ opacity: 0.5 }}>
+                  <span className={styles.symbolGroupName} style={{ color: "var(--text-muted)" }}>{sym}</span>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-muted)", fontFamily: "monospace" }}>
+                    0.00
+                  </span>
+                </div>
+
+                {/* Card inativo */}
+                <InactiveBasketCard symbol={sym} />
+              </div>
+            );
+          }
         })}
       </div>
     </div>

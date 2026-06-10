@@ -207,6 +207,33 @@ export default function DashboardPage() {
   // Extract unique active symbols from trades to allow targeted local panic triggers
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
 
+  // Dynamic SoftStop limit calculation matching MT5 robot formula
+  const calculateSoftStopLimit = (bal: number) => {
+    const InpLotInitial = 0.015;
+    const InpSoftStopEquity = 400.0;
+    const InpBancaRef = 1000.0;
+    const InpLotDeceleration = 0.90;
+
+    let ratio = bal / InpBancaRef;
+    if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
+      ratio = Math.pow(ratio, InpLotDeceleration);
+    }
+    const raw = InpLotInitial * ratio;
+    const step = 0.01;
+    const minV = 0.01;
+    const maxV = 500.0;
+    
+    let loteBase = Math.max(minV, Math.floor(raw / step) * step);
+    if (loteBase > maxV) {
+      loteBase = maxV;
+    }
+    
+    const fat = loteBase / 0.01;
+    return InpSoftStopEquity * fat;
+  };
+
+  const dynamicSoftStopLimit = calculateSoftStopLimit(activeAccount.balance);
+
   return (
     <div className={isFlashActive ? styles.syncFlash : ""}>
       {/* Sleek Polling Sync Progress Line */}
@@ -247,7 +274,7 @@ export default function DashboardPage() {
             floatingPl={activeAccount.floatingPl}
             maxDrawdown={activeAccount.maxDrawdown}
             tradesCount={trades.length}
-            softStopLimit={400.0}
+            softStopLimit={dynamicSoftStopLimit}
             balance={activeAccount.balance}
             currencyMode={currencyMode}
           />
