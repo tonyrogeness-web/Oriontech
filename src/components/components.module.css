@@ -47,6 +47,54 @@
   gap: 1.25rem;
 }
 
+.brandContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logoSubtitle {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+  text-transform: uppercase;
+}
+
+.accountDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  text-align: right;
+}
+
+.syncStatus {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-light);
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.statusBullet {
+  display: inline-block;
+  font-size: 0.75rem;
+  margin-right: 0.2rem;
+  animation: statusBlink 1.5s infinite alternate;
+}
+
+@keyframes statusBlink {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+
 .bellBadge {
   position: absolute;
   top: -6px;
@@ -61,6 +109,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 5px rgba(255, 23, 68, 0.4);
+  animation: bellPulse 1.5s infinite;
+}
+
+@keyframes bellPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.6);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 5px rgba(255, 23, 68, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0);
+  }
 }
 
 .statusActiveBadge {
@@ -68,6 +133,8 @@
   font-weight: 700;
   font-size: 0.75rem;
   text-shadow: 0 0 10px var(--neon-green-glow);
+  display: flex;
+  align-items: center;
 }
 
 .statusPausedBadge {
@@ -75,6 +142,8 @@
   font-weight: 700;
   font-size: 0.75rem;
   text-shadow: 0 0 10px var(--neon-amber-glow);
+  display: flex;
+  align-items: center;
 }
 
 .userProfile {
@@ -371,10 +440,11 @@
   padding: 0.85rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
+  transition: background 0.2s ease-in-out;
 }
 
 .tradesTable tr:hover td {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .flagBadge {
@@ -832,6 +902,114 @@
   background: rgba(255, 23, 68, 0.08);
   color: var(--neon-red);
   border: 1px solid rgba(255, 23, 68, 0.15);
+}
+
+/* KPI Dynamic Card Borders & Glows */
+.kpiCardBorderGold { border-color: rgba(255, 184, 0, 0.25) !important; }
+.kpiCardBorderGold:hover {
+  border-color: rgba(255, 184, 0, 0.5) !important;
+  box-shadow: 0 0 15px rgba(255, 184, 0, 0.15) !important;
+}
+
+.kpiCardBorderGreen { border-color: rgba(0, 230, 118, 0.25) !important; }
+.kpiCardBorderGreen:hover {
+  border-color: rgba(0, 230, 118, 0.5) !important;
+  box-shadow: 0 0 15px rgba(0, 230, 118, 0.15) !important;
+}
+
+.kpiCardBorderRed { border-color: rgba(255, 23, 68, 0.25) !important; }
+.kpiCardBorderRed:hover {
+  border-color: rgba(255, 23, 68, 0.5) !important;
+  box-shadow: 0 0 15px rgba(255, 23, 68, 0.15) !important;
+}
+
+.kpiCardBorderAmber { border-color: rgba(255, 145, 0, 0.25) !important; }
+.kpiCardBorderAmber:hover {
+  border-color: rgba(255, 145, 0, 0.5) !important;
+  box-shadow: 0 0 15px rgba(255, 145, 0, 0.15) !important;
+}
+
+/* Sparklines SVG Styles */
+.sparkline {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sparkline polyline {
+  stroke-dasharray: 250;
+  stroke-dashoffset: 250;
+  animation: drawSparkline 1.8s ease-out forwards;
+}
+
+@keyframes drawSparkline {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Charts Summary Stat Bar */
+.chartSummaryBar {
+  display: flex;
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border-light);
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.summaryLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summaryValue {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+/* Controls Status Dot Anims */
+.controlStatusDotActive {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green-glow);
+  animation: blinkActive 1.2s infinite alternate;
+}
+
+@keyframes blinkActive {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+.controlStatusDotPaused {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--neon-red);
+  box-shadow: 0 0 8px var(--neon-red-glow);
+  animation: blinkPaused 1.5s infinite alternate;
+}
+
+@keyframes blinkPaused {
+  from { opacity: 0.3; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.15); }
 }
 
 .chartFilters {

@@ -21,6 +21,15 @@ export default function Controls({
   const [confirmPanicGlobal, setConfirmPanicGlobal] = useState(false);
   const [showLocalSelector, setShowLocalSelector] = useState(false);
   const [confirmLocalSymbol, setConfirmLocalSymbol] = useState<string | null>(null);
+  const [lastCommand, setLastCommand] = useState<string | null>(null);
+
+  // Load last executed command on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("orion_last_command");
+    if (saved) {
+      setLastCommand(saved);
+    }
+  }, []);
 
   // Global Panic timer
   useEffect(() => {
@@ -38,15 +47,25 @@ export default function Controls({
     }
   }, [confirmLocalSymbol]);
 
+  const trackCommand = (cmdName: string) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const logStr = `✓ Último: ${cmdName} às ${timeStr}`;
+    setLastCommand(logStr);
+    localStorage.setItem("orion_last_command", logStr);
+  };
+
   const handlePause = async () => {
     setLoading("PAUSE");
     await onSendCommand("PAUSE");
+    trackCommand("Pausar Novas Entradas");
     setLoading(null);
   };
 
   const handleResume = async () => {
     setLoading("RESUME");
     await onSendCommand("RESUME");
+    trackCommand("Retomar Operações");
     setLoading(null);
   };
 
@@ -57,6 +76,7 @@ export default function Controls({
     }
     setLoading("PANIC_GLOBAL");
     await onSendCommand("PANIC_GLOBAL");
+    trackCommand("Pânico Global");
     setConfirmPanicGlobal(false);
     setLoading(null);
   };
@@ -68,6 +88,7 @@ export default function Controls({
     }
     setLoading(`PANIC_LOCAL_${symbol}`);
     await onSendCommand("PANIC_LOCAL", symbol);
+    trackCommand(`Zerar Local (${symbol.toUpperCase().replace("C", "")})`);
     setConfirmLocalSymbol(null);
     setShowLocalSelector(false);
     setLoading(null);
@@ -82,20 +103,12 @@ export default function Controls({
           <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
             Controles do Robô
           </h3>
-          <span 
-            className="badge"
-            style={{
-              backgroundColor: isPaused ? "rgba(255, 23, 68, 0.08)" : "rgba(0, 230, 118, 0.08)",
-              color: isPaused ? "var(--neon-red)" : "var(--neon-green)",
-              borderColor: isPaused ? "rgba(255, 23, 68, 0.15)" : "rgba(0, 230, 118, 0.15)",
-              borderWidth: "1px",
-              borderStyle: "solid",
-              fontSize: "0.65rem",
-              fontWeight: 700,
-            }}
-          >
-            {isPaused ? "PAUSADO" : "EXECUTANDO"}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            <span className={isPaused ? styles.controlStatusDotPaused : styles.controlStatusDotActive} />
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: isPaused ? "var(--neon-red)" : "var(--neon-green)", textTransform: "uppercase" }}>
+              {isPaused ? "PAUSADO" : "EXECUTANDO"}
+            </span>
+          </div>
         </div>
 
         {pendingCommandsCount > 0 && (
@@ -224,9 +237,16 @@ export default function Controls({
         )}
       </div>
 
-      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.03)", paddingTop: "0.5rem", display: "flex", justifyContent: "space-between" }}>
-        <span>Sincronizado via MetaTrader 5</span>
-        <span>Ações seguras com dupla confirmação</span>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.03)", paddingTop: "0.5rem" }}>
+        {lastCommand && (
+          <span style={{ fontSize: "0.68rem", color: "var(--neon-gold)", fontWeight: 700, letterSpacing: "0.02em" }}>
+            {lastCommand}
+          </span>
+        )}
+        <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+          <span>Sincronizado via MetaTrader 5</span>
+          <span>Ações seguras com dupla confirmação</span>
+        </div>
       </div>
     </div>
   );

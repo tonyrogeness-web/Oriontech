@@ -4,6 +4,12 @@ import React from "react";
 import { Wallet, Coins, TrendingUp, Globe, ShieldAlert } from "lucide-react";
 import styles from "./components.module.css";
 
+interface PerformancePoint {
+  date: string;
+  profit: number;
+  balance: number;
+}
+
 interface KpiCardsProps {
   balance: number;
   equity: number;
@@ -13,6 +19,46 @@ interface KpiCardsProps {
   maxDrawdown: number;
   brlRate?: number;
   currencyMode: "CENT" | "BRL";
+  history?: PerformancePoint[];
+}
+
+/* ── Sparkline component inside KpiCards.tsx ── */
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  let plotData = [...data];
+  
+  // Render placeholder sine-like wave if history is empty
+  if (plotData.length < 2) {
+    plotData = [10, 13, 11, 14, 13, 16, 15, 18];
+  }
+
+  const min = Math.min(...plotData);
+  const max = Math.max(...plotData);
+  const range = max - min === 0 ? 1 : max - min;
+
+  const width = 85;
+  const height = 24;
+  const padding = 1.5;
+
+  const points = plotData
+    .map((val, idx) => {
+      const x = (idx / (plotData.length - 1)) * (width - padding * 2) + padding;
+      const y = height - ((val - min) / range) * (height - padding * 2) - padding;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg width={width} height={height} className={styles.sparkline}>
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
 }
 
 export default function KpiCards({
@@ -24,6 +70,7 @@ export default function KpiCards({
   maxDrawdown = 0,
   brlRate = 5.45,
   currencyMode = "CENT",
+  history = [],
 }: KpiCardsProps) {
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
@@ -66,27 +113,43 @@ export default function KpiCards({
 
   const dailyPct = balance > 0 ? (dailyProfit / balance) * 100 : 0;
   const periodPct = balance > 0 ? (totalProfit / balance) * 100 : 0;
-  const isLossDaily = dailyProfit < 0;
-  const isLossTotal = totalProfit < 0;
 
-  // Drawdown category
+  // Drawdown zones
   let ddZone = "Zona Verde";
   let ddBadge = "SEGURO";
   let ddColorClass = styles.kpiBadgeGreen;
+  let ddBorderClass = styles.kpiCardBorderGold;
   let ddGlowClass = styles.goldGlow;
   if (maxDrawdown >= 10 && maxDrawdown < 20) {
     ddZone = "Zona Amarela";
     ddBadge = "ALERTA";
     ddColorClass = styles.kpiBadgeGold;
+    ddBorderClass = styles.kpiCardBorderAmber;
     ddGlowClass = styles.amberGlow;
   } else if (maxDrawdown >= 20) {
     ddZone = "Zona Vermelha";
     ddBadge = "CRÍTICO";
     ddColorClass = styles.kpiBadgeRed;
+    ddBorderClass = styles.kpiCardBorderRed;
     ddGlowClass = styles.redGlow;
   }
 
-  // Patrimônio Líquido = Saldo + P/L flutuante (igual ao MT5 ACCOUNT_EQUITY)
+  // Extract history curves
+  const balanceHistory = history.map((h) => h.balance);
+  const equityHistory = history.map((h) => h.balance + h.profit);
+  const dailyProfitHistory = history.map((h) => h.profit);
+  
+  // Cumulative global profit path
+  let globalCum = 0;
+  const globalProfitHistory = history.map((h) => {
+    globalCum += h.profit;
+    return globalCum;
+  });
+
+  // Simulated drawdown risk curves
+  const drawdownTrendHistory = history.map((h) => (h.profit < 0 ? Math.abs(h.profit) : 0));
+
+  // Patrimônio Líquido
   const equityCalc = balance + floatingPl;
   const equityDiffCalc = equityCalc - balance; // = floatingPl
   const equityDiffPctCalc = balance > 0 ? (equityDiffCalc / balance) * 100 : 0;
@@ -94,7 +157,7 @@ export default function KpiCards({
   return (
     <div className={styles.kpiRowGrid}>
       {/* 1. Saldo da Conta */}
-      <div className={styles.kpiCardMockup}>
+      <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
           <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
@@ -106,10 +169,11 @@ export default function KpiCards({
         <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>
           {currencyMode === "CENT" ? "CENT" : "BRL"}
         </span>
+        <Sparkline data={balanceHistory} color="var(--neon-gold)" />
       </div>
 
-      {/* 2. Patrimônio Líquido (balance + floatingPl) */}
-      <div className={styles.kpiCardMockup}>
+      {/* 2. Patrimônio Líquido */}
+      <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>P. Líquido</span>
           <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
@@ -123,12 +187,13 @@ export default function KpiCards({
           {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
         </span>
         <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          P/L: {floatingPl >= 0 ? "+" : "-"}{formatValSecondary(floatingPl)}
+          P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
         </span>
+        <Sparkline data={equityHistory} color={floatingPl >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
       </div>
 
       {/* 3. Lucro Hoje */}
-      <div className={styles.kpiCardMockup}>
+      <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
           <div className={`${styles.kpiIconContainer} ${dailyProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
@@ -136,18 +201,19 @@ export default function KpiCards({
           </div>
         </div>
         <span className={styles.kpiValueMockup} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {dailyProfit >= 0 ? "+" : "-"}{formatValPrimary(dailyProfit)}
+          {dailyProfit >= 0 ? "+" : ""}{formatValPrimary(dailyProfit)}
         </span>
         <span className={styles.kpiSubValueMockup}>
-          {dailyProfit >= 0 ? "+" : "-"}{formatValSecondary(dailyProfit)}
+          {dailyProfit >= 0 ? "+" : ""}{formatValSecondary(dailyProfit)}
         </span>
         <span className={`${styles.kpiBadgeMockup} ${dailyProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
           {dailyProfit >= 0 ? "+" : ""}{dailyPct.toFixed(2)}%
         </span>
+        <Sparkline data={dailyProfitHistory} color={dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
       </div>
 
-      {/* 4. L. Global (Lucro histórico fechado desde o reset) */}
-      <div className={styles.kpiCardMockup}>
+      {/* 4. L. Global */}
+      <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>L. Global</span>
           <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
@@ -155,18 +221,19 @@ export default function KpiCards({
           </div>
         </div>
         <span className={styles.kpiValueMockup} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {totalProfit >= 0 ? "+" : "-"}{formatValPrimary(totalProfit)}
+          {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
         </span>
         <span className={styles.kpiSubValueMockup}>
-          {totalProfit >= 0 ? "+" : "-"}{formatValSecondary(totalProfit)}
+          {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)}
         </span>
         <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
           {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
         </span>
+        <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
       </div>
 
       {/* 5. Drawdown Atual */}
-      <div className={styles.kpiCardMockup}>
+      <div className={`${styles.kpiCardMockup} ${ddBorderClass}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Drawdown Atual</span>
           <div className={`${styles.kpiIconContainer} ${ddGlowClass}`}>
@@ -179,9 +246,25 @@ export default function KpiCards({
         <span className={styles.kpiSubValueMockup}>
           {ddZone} · Limite 40%
         </span>
-        <span className={`${styles.kpiBadgeMockup} ${ddColorClass}`}>
+        <span className={`${styles.kpiBadgeMockup} ${ddColorClass}`} style={{ marginBottom: "0.2rem" }}>
           {ddBadge}
         </span>
+        
+        {/* Mini progress bar of drawdown with limit markers (25% and 50% relative zones) */}
+        <div style={{ marginTop: "0.4rem", width: "100%", height: "4px", background: "rgba(255, 255, 255, 0.05)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${Math.min(100, (maxDrawdown / 40) * 100)}%`,
+              background: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)",
+              transition: "width 0.5s ease"
+            }}
+          />
+          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.15)" }} />
+          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.15)" }} />
+        </div>
+
+        <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />
       </div>
     </div>
   );

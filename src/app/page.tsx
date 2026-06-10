@@ -270,6 +270,7 @@ export default function DashboardPage() {
           maxDrawdown={activeAccount.maxDrawdown}
           brlRate={brlRate}
           currencyMode={currencyMode}
+          history={history}
         />
 
         {/* 3. Chart & Risk Management */}
@@ -291,7 +292,7 @@ export default function DashboardPage() {
 
         {/* 5. Trades Table & Controls */}
         <div className={styles.mainGrid}>
-          <TradesTable trades={trades} currencyMode={currencyMode} />
+          <TradesTable trades={trades} currencyMode={currencyMode} brlRate={brlRate} />
           <Controls
             status={activeAccount.status}
             activeSymbols={activeSymbols}

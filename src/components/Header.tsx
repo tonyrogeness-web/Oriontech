@@ -148,20 +148,33 @@ export default function Header({
 
   return (
     <header className={styles.header}>
-      {/* Left logo section */}
-      <div className={styles.brand}>
-        <Activity size={24} className={styles.logoAccent} />
-        <span className={styles.logoText}>
-          ORION <span className={styles.desktopOnly}>HEDGE</span>
-        </span>
-        {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
+      {/* Left logo section with new brandContainer and logoSubtitle */}
+      <div className={styles.brandContainer}>
+        <div className={styles.brand}>
+          <Activity size={24} className={styles.logoAccent} />
+          <span className={styles.logoText}>
+            ORION <span className={styles.desktopOnly}>HEDGE</span>
+          </span>
+          {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
+        </div>
+        <span className={styles.logoSubtitle}>v3.39 · PRO HEDGE</span>
       </div>
 
-      {/* Middle dashboard title */}
-      <div className={`${styles.centerTitle} ${styles.desktopOnly}`}>PAINEL</div>
+      {/* Middle live sync display */}
+      <div className={`${styles.syncStatus} ${styles.desktopOnly}`} title="Sincronização com o MetaTrader 5">
+        <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>
+          Último sync: <strong style={{ color: "var(--text-primary)" }}>{lastSyncStr}</strong> · {secondsAgo}s atrás
+        </span>
+      </div>
 
       {/* Right side connection info */}
       <div className={styles.rightHeader}>
+        {/* Center-Right MT5 Account display */}
+        <div className={`${styles.accountDisplay} ${styles.desktopOnly}`}>
+          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em" }}>CONTA MT5</span>
+          <span style={{ fontSize: "0.8rem", color: "var(--neon-gold)", fontWeight: 700, fontFamily: "monospace" }}>#{accountNumber}</span>
+        </div>
+
         {/* Currency/Layout Localization Switcher */}
         <div className={styles.currencySelector}>
           <button
@@ -200,7 +213,7 @@ export default function Header({
           </div>
         )}
 
-        {/* Notification Bell */}
+        {/* Notification Bell with pulsing animation */}
         <div 
           ref={bellRef}
           style={{ position: "relative", cursor: "pointer" }}
@@ -250,11 +263,11 @@ export default function Header({
           )}
         </div>
 
-        {/* Status indicator */}
+        {/* Status indicator with animated colored bullet status */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span className={styles.desktopOnly} style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
           <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
-            {isActive ? "ATIVO" : "PAUSADO"}
+            <span className={styles.statusBullet}>●</span> {isActive ? "ATIVO" : "PAUSADO"}
           </span>
         </div>
       </div>
