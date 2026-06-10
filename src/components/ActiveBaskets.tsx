@@ -523,9 +523,14 @@ export default function ActiveBaskets({
             {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ativo{baskets.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
-          {totalPl >= 0 ? "+" : "-"}{formatSecondaryVal(totalPl)} global flutuante
-        </span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
+          <span style={{ fontSize: "0.95rem", fontWeight: 700, color: totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
+            {totalPl >= 0 ? "+" : ""}{formatSecondaryVal(totalPl)}
+          </span>
+          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", marginTop: "0.1rem" }}>
+            Global Flutuante
+          </span>
+        </div>
       </div>
 
       {baskets.length === 0 && (

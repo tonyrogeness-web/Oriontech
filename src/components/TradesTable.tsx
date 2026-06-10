@@ -217,17 +217,6 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                     </span>
                     <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, display: "flex", alignItems: "center" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
-                      {(() => {
-                        const maxLimit = 15.0; // scale limit for visual bar (USC)
-                        const pct = Math.min(100, (Math.abs(group.totalProfit) / maxLimit) * 100);
-                        const isPos = group.totalProfit >= 0;
-                        const barColor = isPos ? "var(--neon-green)" : "var(--neon-red)";
-                        return (
-                          <div style={{ display: "inline-block", width: "40px", height: "4px", backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "2px", overflow: "hidden", marginLeft: "8px", verticalAlign: "middle" }}>
-                            <div style={{ width: `${pct}%`, height: "100%", backgroundColor: barColor }} />
-                          </div>
-                        );
-                      })()}
                     </span>
                   </div>
                 </div>
