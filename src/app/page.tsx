@@ -285,7 +285,7 @@ export default function DashboardPage() {
               <div className={styles.newsAlertContent}>
                 <span className={styles.newsAlertIcon}>🔴</span>
                 <span className={styles.newsAlertText}>
-                  <strong>DD VERMELHO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Alvo de saída reduzido para Break-Even (Lucro Mínimo) em todos os cestos de recompras avançadas.
+                  <strong>DD VERMELHO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento crítico de 20% alcançado no ciclo de equity.
                 </span>
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
               <div className={styles.newsAlertContent}>
                 <span className={styles.newsAlertIcon}>🟡</span>
                 <span className={styles.newsAlertText}>
-                  <strong>DD AMARELO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário alcançado. Trailing de patrimônio reduzido para 25% de alvo.
+                  <strong>DD AMARELO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário de 10% alcançado no ciclo de equity.
                 </span>
               </div>
             </div>

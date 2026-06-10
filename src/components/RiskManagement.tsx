@@ -172,11 +172,12 @@ export default function RiskManagement({
   /* ═══════════════════════════════════════════════════════════════
      4. TRAILING EQUITY
   ═══════════════════════════════════════════════════════════════ */
-  const targetPct = ddReached20 ? 15.0 : (ddReached10 ? 25.0 : 35.0);
+  const targetPct = 5.0; // Alvo fixo do Ciclo de Equity (+5%)
+  const progressPct = targetPct > 0 ? (trailingPeak / targetPct) * 100 : 0;
   const trailingColor = ddReached20 ? "var(--neon-red)" : (ddReached10 ? "var(--neon-gold)" : "var(--neon-green)");
   const trailingStatusText = trailingActive
-    ? `ATIVO (Peak: ${trailingPeak.toFixed(1)}% | Fecha: ${(trailingPeak - 5.0).toFixed(1)}%)`
-    : `PRONTO (Gatilho: ${targetPct.toFixed(1)}%)`;
+    ? `ATIVO (Atual: ${trailingPeak >= 0 ? "+" : ""}${trailingPeak.toFixed(2)}% | Alvo: +${targetPct.toFixed(1)}% | Alcance: ${progressPct.toFixed(0)}%)`
+    : `INATIVO`;
 
   /* ── Worst state → card border ───────────────────────────────── */
   const isCritical = ssStatus === "CRÍTICO" || ddStatus === "CRÍTICO";
@@ -358,7 +359,7 @@ export default function RiskManagement({
           border: "1px solid var(--opacity-border)",
         }}>
           <span style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
-            TRAILING EQUITY
+            CICLO EQUITY
           </span>
           <span style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)", fontWeight: 800, color: trailingColor, fontFamily: "monospace", letterSpacing: "0.02em" }}>
             ● {trailingStatusText}
