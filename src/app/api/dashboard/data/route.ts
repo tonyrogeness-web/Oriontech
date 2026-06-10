@@ -81,7 +81,9 @@ function getMockData() {
 export async function GET() {
   try {
     // Test DB connection first
-    const accounts = await prisma.accountState.findMany();
+    const accounts = await prisma.accountState.findMany({
+      orderBy: { lastUpdated: "desc" },
+    });
 
     // If there is no data in the database yet, return mock data for initial UI rendering
     if (accounts.length === 0) {
