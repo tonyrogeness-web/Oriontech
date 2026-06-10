@@ -222,6 +222,7 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
   const level    = b.trades.length;
   const isAlert  = level >= 4;
+  const sortedTrades = [...b.trades].sort((x, y) => parseFloat(x.ticket) - parseFloat(y.ticket));
 
   const formatBasketProfit = (val: number) => {
     const absVal = Math.abs(val);
@@ -331,6 +332,14 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
           </span>
         </div>
 
+        {/* Lotes Recompra (Sequência) */}
+        <div className={styles.basketRow} style={{ marginTop: "0.25rem", borderTop: "1px dashed rgba(255,255,255,0.05)", paddingTop: "0.25rem" }}>
+          <span className={styles.basketRowLabel}>Lotes Recompra</span>
+          <span className={styles.basketRowValue} style={{ fontSize: "0.68rem", color: "var(--neon-gold)", fontFamily: "monospace" }}>
+            {sortedTrades.map((t) => parseFloat(t.volume.toFixed(3))).join(" + ")}
+          </span>
+        </div>
+
         {/* Grade */}
         <div className={styles.basketRow}>
           <span className={styles.basketRowLabel}>Grade</span>
@@ -352,9 +361,9 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
       </div>
 
       {/* ── Linha de posições individuais (mini) ── */}
-      {b.trades.length > 1 && (
+      {sortedTrades.length > 1 && (
         <div className={styles.basketPositions}>
-          {b.trades.map((t, i) => {
+          {sortedTrades.map((t, i) => {
             const tProfit = t.currentProfit;
             const tColor  = tProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)";
             return (

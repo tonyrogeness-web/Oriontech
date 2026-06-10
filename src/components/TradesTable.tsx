@@ -30,7 +30,10 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
   };
 
   const toggleSymbol = (sym: string) => {
-    setExpandedSymbols(prev => ({ ...prev, [sym]: !prev[sym] }));
+    setExpandedSymbols(prev => {
+      const current = prev[sym] !== false; // default is true
+      return { ...prev, [sym]: !current };
+    });
   };
 
   // Group and sort trades chronologically by ticket to assign grid levels (N1, N2, etc.)
@@ -177,7 +180,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
               </tr>
             </thead>
             {groupedSymbols.map((group) => {
-              const isExpanded = !!expandedSymbols[group.symbol];
+              const isExpanded = expandedSymbols[group.symbol] !== false;
               const isGroupProfit = group.totalProfit >= 0;
               const groupColor = isGroupProfit ? "var(--neon-green)" : "var(--neon-red)";
               
