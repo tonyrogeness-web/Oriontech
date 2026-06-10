@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [brlRate, setBrlRate] = useState(5.45);
-  const [currencyMode, setCurrencyMode] = useState<"CENT" | "BRL">("CENT");
+  const [currencyMode, setCurrencyMode] = useState<"CENT" | "BRL">("BRL");
 
   // Visual polling timer state
   const [syncProgress, setSyncProgress] = useState(0);
@@ -299,6 +299,10 @@ export default function DashboardPage() {
             currencyMode={currencyMode}
             brlRate={brlRate}
             history={history}
+            trailingActive={activeAccount.trailingActive}
+            trailingPeak={activeAccount.trailingPeak}
+            ddReached10={activeAccount.ddReached10}
+            ddReached20={activeAccount.ddReached20}
           />
 
 

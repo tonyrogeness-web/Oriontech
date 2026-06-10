@@ -21,6 +21,10 @@ model AccountState {
   newsActive    Boolean  @default(false)
   newsFrozen    Boolean  @default(false)
   newsName      String   @default("")
+  trailingActive Boolean  @default(false)
+  trailingPeak   Float    @default(0.0)
+  ddReached10    Boolean  @default(false)
+  ddReached20    Boolean  @default(false)
 }
 
 model ActiveTrade {

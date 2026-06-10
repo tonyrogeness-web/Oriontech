@@ -19,6 +19,10 @@ interface RiskManagementProps {
   currencyMode?: "CENT" | "BRL";
   brlRate?: number;
   history?: PerformancePoint[];
+  trailingActive?: boolean;
+  trailingPeak?: number;
+  ddReached10?: boolean;
+  ddReached20?: boolean;
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -91,11 +95,11 @@ function Pill({ label, color }: { label: string; color: string }) {
       display: "inline-flex", alignItems: "center", gap: "0.2rem",
       background: bgMap[label] ?? "rgba(255,255,255,0.07)",
       border: `1px solid ${bdMap[label] ?? "rgba(255,255,255,0.12)"}`,
-      color, fontSize: "0.59rem", fontWeight: 800,
-      padding: "0.08rem 0.42rem", borderRadius: "20px",
+      color, fontSize: "0.68rem", fontWeight: 800,
+      padding: "0.1rem 0.5rem", borderRadius: "20px",
       letterSpacing: "0.04em", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0,
     }}>
-      <span style={{ fontSize: "0.5rem" }}>●</span> {label}
+      <span style={{ fontSize: "0.55rem" }}>●</span> {label}
     </span>
   );
 }
@@ -115,6 +119,10 @@ export default function RiskManagement({
   currencyMode = "CENT",
   brlRate = 5.45,
   history = [],
+  trailingActive = false,
+  trailingPeak = 0,
+  ddReached10 = false,
+  ddReached20 = false,
 }: RiskManagementProps) {
 
   /* ── Formatter ────────────────────────────────────────────────── */
@@ -139,10 +147,15 @@ export default function RiskManagement({
   const plIcon       = plIsPositive ? TrendingUp : TrendingDown;
   const PlIcon       = plIcon;
 
+  const plLoss       = Math.max(0, -floatingPl);
+  // Floating loss percentage relative to total balance
+  const plBalancePct = (floatingPl < 0 && balance > 0) ? clamp(plLoss, balance) : 0;
+  // Dynamic color for the floating loss bar based on the drawdown level (10% Amber, 20% Red)
+  const plBarColor   = plBalancePct >= 20 ? "var(--neon-red)" : plBalancePct >= 10 ? "var(--neon-gold)" : "var(--neon-green)";
+
   /* ═══════════════════════════════════════════════════════════════
      2. SOFT STOP — % do limite consumido
   ═══════════════════════════════════════════════════════════════ */
-  const plLoss       = Math.max(0, -floatingPl);
   const ssBarPct     = floatingPl < 0 ? clamp(plLoss, softStopLimit) : 0;
   const ssColor      = ssBarPct >= 80 ? "var(--neon-red)" : ssBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
   const ssStatus     = ssBarPct >= 80 ? "CRÍTICO" : ssBarPct >= 50 ? "ALERTA" : "SEGURO";
@@ -155,6 +168,15 @@ export default function RiskManagement({
   const ddColor      = maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-gold)" : "var(--neon-green)";
   const ddStatus     = maxDrawdown >= 20 ? "CRÍTICO" : maxDrawdown >= 10 ? "ALERTA" : "SEGURO";
   const ddHeadroom   = Math.max(0, 40 - maxDrawdown);
+
+  /* ═══════════════════════════════════════════════════════════════
+     4. TRAILING EQUITY
+  ═══════════════════════════════════════════════════════════════ */
+  const targetPct = ddReached20 ? 15.0 : (ddReached10 ? 25.0 : 35.0);
+  const trailingColor = ddReached20 ? "var(--neon-red)" : (ddReached10 ? "var(--neon-gold)" : "var(--neon-green)");
+  const trailingStatusText = trailingActive
+    ? `ATIVO (Peak: ${trailingPeak.toFixed(1)}% | Fecha: ${(trailingPeak - 5.0).toFixed(1)}%)`
+    : `PRONTO (Gatilho: ${targetPct.toFixed(1)}%)`;
 
   /* ── Worst state → card border ───────────────────────────────── */
   const isCritical = ssStatus === "CRÍTICO" || ddStatus === "CRÍTICO";
@@ -193,14 +215,14 @@ export default function RiskManagement({
       <div className={styles.riskItemList}>
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 1 — PERDA FLUTUANTE (valor, não barra)
+            SEÇÃO 1 — PERDA FLUTUANTE
         ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 60 }}>
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
           {/* Label row */}
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <PlIcon size={11} style={{ color: plColor }} />
-              <span className={styles.riskSectionLabel}>PERDA FLUTUANTE</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>PERDA FLUTUANTE</span>
             </div>
             <Pill label={plStatus} color={plColor} />
           </div>
@@ -208,19 +230,27 @@ export default function RiskManagement({
           {/* Big value */}
           <div style={{ marginTop: "0.3rem" }}>
             <span style={{
-              fontSize: "1.35rem", fontWeight: 800, color: plColor,
+              fontSize: "1.45rem", fontWeight: 800, color: plColor,
               fontFamily: "monospace", letterSpacing: "-0.02em", lineHeight: 1,
             }}>
               {fmt(floatingPl, true)}
             </span>
           </div>
 
+          {/* Progress bar in relation to total balance */}
+          <div style={{ margin: "0.45rem 0" }}>
+            <ZonedBar fillPct={plBalancePct} fillColor={plBarColor} zone1={10} zone2={20} />
+          </div>
+
           {/* Sub info */}
-          <div style={{ marginTop: "0.25rem" }}>
-            <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontWeight: 500 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
+            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>
               {plIsPositive
                 ? "✓ Sem perda flutuante no momento"
                 : `Perda de ${fmt(plLoss)} sobre posições abertas`}
+            </span>
+            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              {plBalancePct.toFixed(2)}% da banca
             </span>
           </div>
 
@@ -233,23 +263,23 @@ export default function RiskManagement({
         {/* ═══════════════════════════════════════════════════════
             SEÇÃO 2 — SOFT STOP
         ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 60 }}>
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
           {/* Label row */}
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <AlertTriangle size={11} style={{ color: ssColor }} />
-              <span className={styles.riskSectionLabel}>SOFT STOP</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>SOFT STOP</span>
             </div>
             <Pill label={ssStatus} color={ssColor} />
           </div>
 
-          {/* Values */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.3rem 0 0.4rem" }}>
-            <span style={{ fontSize: "0.75rem", fontWeight: 700, color: ssColor, fontFamily: "monospace" }}>
-              {fmt(plLoss)} consumido
+          {/* Values (White numbers contrast) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff", fontFamily: "monospace" }}>
+              {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "0.72rem", fontWeight: 500 }}>consumido</span>
             </span>
-            <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite {fmt(softStopLimit)}
+            <span style={{ fontSize: "0.70rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              limite <span style={{ color: "#ffffff", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
             </span>
           </div>
 
@@ -258,10 +288,10 @@ export default function RiskManagement({
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "0.59rem", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
               <strong style={{ color: ssColor }}>{ssBarPct.toFixed(1)}%</strong> do limite
             </span>
-            <span style={{ fontSize: "0.59rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+            <span style={{ fontSize: "0.68rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
               ↳ {fmt(ssHeadroom)} disponíveis
             </span>
           </div>
@@ -275,41 +305,64 @@ export default function RiskManagement({
         {/* ═══════════════════════════════════════════════════════
             SEÇÃO 3 — REBAIXAMENTO (DRAWDOWN)
         ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 60 }}>
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
           {/* Label row */}
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <TrendingDown size={11} style={{ color: ddColor }} />
-              <span className={styles.riskSectionLabel}>REBAIXAMENTO (DRAWDOWN)</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>REBAIXAMENTO (DRAWDOWN)</span>
             </div>
             <Pill label={ddStatus} color={ddColor} />
           </div>
 
-          {/* Values */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.3rem 0 0.4rem" }}>
-            <span style={{ fontSize: "0.75rem", fontWeight: 700, color: ddColor, fontFamily: "monospace" }}>
-              {maxDrawdown.toFixed(2)}%
+          {/* Values (White numbers contrast) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff", fontFamily: "monospace" }}>
+              {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "0.72rem", fontWeight: 500 }}>atual</span>
             </span>
-            <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite 40.00%
+            <span style={{ fontSize: "0.70rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              limite <span style={{ color: "#ffffff", fontWeight: 600 }}>40.00%</span>
             </span>
           </div>
 
-          {/* Zoned bar: 10%→25% do trilho, 20%→50% do trilho */}
+          {/* Zoned bar */}
           <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={25} zone2={50} />
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "0.59rem", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
               <strong style={{ color: ddColor }}>{ddBarPct.toFixed(1)}%</strong> do limite atingido
             </span>
-            <span style={{ fontSize: "0.59rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+            <span style={{ fontSize: "0.68rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
               ↳ {ddHeadroom.toFixed(2)}% disponíveis
             </span>
           </div>
 
           {/* Sparkline */}
           <RiskSparkline data={sparkBal} color={ddColor} />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════
+            SEÇÃO 4 — TRAILING EQUITY PANEL
+        ═══════════════════════════════════════════════════════ */}
+        <Divider />
+
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "0.2rem",
+          padding: "0.5rem 0.75rem",
+          borderRadius: "8px",
+          background: "rgba(255,255,255,0.015)",
+          border: "1px solid rgba(255,255,255,0.045)",
+        }}>
+          <span style={{ fontSize: "0.70rem", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
+            TRAILING EQUITY
+          </span>
+          <span style={{ fontSize: "0.70rem", fontWeight: 800, color: trailingColor, fontFamily: "monospace", letterSpacing: "0.02em" }}>
+            ● {trailingStatusText}
+          </span>
         </div>
 
       </div>

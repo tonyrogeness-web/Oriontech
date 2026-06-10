@@ -18,6 +18,10 @@ function getMockData() {
     newsActive: false,
     newsFrozen: false,
     newsName: "",
+    trailingActive: false,
+    trailingPeak: 0.0,
+    ddReached10: false,
+    ddReached20: false,
   };
 
   const mockTrades = [

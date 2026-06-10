@@ -27,6 +27,10 @@ export async function POST(request: Request) {
       newsActive = false,
       newsFrozen = false,
       newsName = "",
+      trailingActive = false,
+      trailingPeak = 0,
+      ddReached10 = false,
+      ddReached20 = false,
     } = payload;
 
     // 1. Verify token
@@ -105,6 +109,10 @@ export async function POST(request: Request) {
         newsActive: Boolean(newsActive),
         newsFrozen: Boolean(newsFrozen),
         newsName: String(newsName || ""),
+        trailingActive: Boolean(trailingActive),
+        trailingPeak: parseFloat(trailingPeak || 0),
+        ddReached10: Boolean(ddReached10),
+        ddReached20: Boolean(ddReached20),
       },
       create: {
         account: String(account),
@@ -118,6 +126,10 @@ export async function POST(request: Request) {
         newsActive: Boolean(newsActive),
         newsFrozen: Boolean(newsFrozen),
         newsName: String(newsName || ""),
+        trailingActive: Boolean(trailingActive),
+        trailingPeak: parseFloat(trailingPeak || 0),
+        ddReached10: Boolean(ddReached10),
+        ddReached20: Boolean(ddReached20),
       },
     });
 
