@@ -82,6 +82,8 @@ export async function POST(request: Request) {
           currentPrice: parseFloat(t.currentPrice !== undefined && t.currentPrice !== null ? t.currentPrice : (t.entryPrice || 0)),
           currentProfit: parseFloat(t.currentProfit || 0),
           magicNumber: parseInt(t.magicNumber || "0"),
+          tp: t.tp !== undefined && t.tp !== null ? parseFloat(t.tp) : null,
+          sl: t.sl !== undefined && t.sl !== null ? parseFloat(t.sl) : null,
         })),
       });
     }

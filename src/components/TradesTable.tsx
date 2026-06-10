@@ -283,10 +283,9 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                             </span>
                           </div>
 
-                          {/* Middle: Volume & Price details */}
-                          <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", fontFamily: "monospace" }}>
-                            <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{trade.volume.toFixed(3)} L</span>
-                            <span style={{ color: "var(--text-muted)", marginLeft: "0.35rem" }}>@ {trade.entryPrice.toFixed(digits)}</span>
+                          {/* Middle: Volume details */}
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600 }}>
+                            {trade.volume.toFixed(3)} L
                           </div>
 
                           {/* Right: Profit/Loss */}

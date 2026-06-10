@@ -36,6 +36,8 @@ function getMockData() {
       currentPrice: 1.0832,
       currentProfit: -6.6,
       magicNumber: 88800,
+      tp: 1.0880,
+      sl: 1.0790,
     },
     {
       id: 2,
@@ -48,6 +50,8 @@ function getMockData() {
       currentPrice: 1.0832,
       currentProfit: 3.5,
       magicNumber: 88800,
+      tp: 1.0880,
+      sl: 1.0790,
     },
     {
       id: 3,
@@ -60,6 +64,8 @@ function getMockData() {
       currentPrice: 1.2725,
       currentProfit: -3.0,
       magicNumber: 88800,
+      tp: 1.2670,
+      sl: 1.2750,
     },
   ];
 

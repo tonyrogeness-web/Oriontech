@@ -38,6 +38,8 @@ model ActiveTrade {
   currentPrice  Float
   currentProfit Float
   magicNumber   Int
+  tp            Float?
+  sl            Float?
   createdAt     DateTime @default(now())
 }
 
