@@ -180,40 +180,41 @@ export default function Header({
   }
 
   // Assign timestamps and read status to activeCriticals
-  const now = Date.now();
-  const currentCriticalTimestamps = { ...criticalTimestamps };
-  let timestampsChanged = false;
-
   activeCriticals.forEach((crit) => {
-    if (currentCriticalTimestamps[crit.id]) {
-      crit.createdAt = currentCriticalTimestamps[crit.id];
-    } else {
-      crit.createdAt = now;
-      currentCriticalTimestamps[crit.id] = now;
-      timestampsChanged = true;
-    }
-    
-    // Check read state
+    crit.createdAt = criticalTimestamps[crit.id] || Date.now();
     crit.read = readCriticalIds.includes(crit.id);
   });
 
-  // Clean up old timestamps for resolved criticals
-  const activeIds = activeCriticals.map((c) => c.id);
-  Object.keys(currentCriticalTimestamps).forEach((key) => {
-    if (!activeIds.includes(key)) {
-      delete currentCriticalTimestamps[key];
-      timestampsChanged = true;
-    }
-  });
-
-  // Sync critical timestamps
+  // Sync critical timestamps inside useEffect to keep state pure during render
+  const activeIdsStr = activeCriticals.map((c) => c.id).join(",");
   useEffect(() => {
-    if (timestampsChanged) {
-      setCriticalTimestamps(currentCriticalTimestamps);
-      localStorage.setItem("orion_critical_timestamps", JSON.stringify(currentCriticalTimestamps));
+    const current = { ...criticalTimestamps };
+    let changed = false;
+    const now = Date.now();
+
+    // 1. Add timestamps for new criticals
+    activeCriticals.forEach((crit) => {
+      if (!current[crit.id]) {
+        current[crit.id] = now;
+        changed = true;
+      }
+    });
+
+    // 2. Clean up old timestamps for resolved criticals
+    const activeIds = activeCriticals.map((c) => c.id);
+    Object.keys(current).forEach((key) => {
+      if (!activeIds.includes(key)) {
+        delete current[key];
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      setCriticalTimestamps(current);
+      localStorage.setItem("orion_critical_timestamps", JSON.stringify(current));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIds.join(",")]);
+  }, [activeIdsStr]);
 
   // Load from localStorage on mount
   useEffect(() => {

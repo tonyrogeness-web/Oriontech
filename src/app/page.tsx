@@ -11,6 +11,31 @@ import TradesTable from "@/components/TradesTable";
 import Controls from "@/components/Controls";
 import styles from "@/components/components.module.css";
 
+// Dynamic SoftStop limit calculation matching MT5 robot formula
+const calculateSoftStopLimit = (bal: number) => {
+  const InpLotInitial = 0.015;
+  const InpSoftStopEquity = 400.0;
+  const InpBancaRef = 1000.0;
+  const InpLotDeceleration = 0.90;
+
+  let ratio = bal / InpBancaRef;
+  if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
+    ratio = Math.pow(ratio, InpLotDeceleration);
+  }
+  const raw = InpLotInitial * ratio;
+  const step = 0.01;
+  const minV = 0.01;
+  const maxV = 500.0;
+  
+  let loteBase = Math.max(minV, Math.floor(raw / step) * step);
+  if (loteBase > maxV) {
+    loteBase = maxV;
+  }
+  
+  const fat = loteBase / 0.01;
+  return InpSoftStopEquity * fat;
+};
+
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +48,7 @@ export default function DashboardPage() {
   const [isFlashActive, setIsFlashActive] = useState(false);
   const [loadingAttempts, setLoadingAttempts] = useState(1);
   const [loadingPhase, setLoadingPhase] = useState("Conectando ao servidor...");
+  const [hasFetchedFallback, setHasFetchedFallback] = useState(false);
 
   // Load currency mode preference from localStorage
   useEffect(() => {
@@ -37,43 +63,52 @@ export default function DashboardPage() {
     localStorage.setItem("orion_currency_mode", mode);
   };
 
-  // Fetch USD/BRL rate on mount
+  // Sync BRL rate from robot, fallback to internet APIs if not available
   useEffect(() => {
-    async function fetchBrlRate() {
-      try {
-        const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
-        if (res.ok) {
-          const json = await res.json();
-          if (json && json.USDBRL && json.USDBRL.bid) {
-            const val = parseFloat(json.USDBRL.bid);
-            if (!isNaN(val) && val > 0) {
-              setBrlRate(val);
-              return;
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("Falha ao buscar taxa no AwesomeAPI, tentando fallback...", e);
-      }
-
-      try {
-        const res = await fetch("https://open.er-api.com/v6/latest/USD");
-        if (res.ok) {
-          const json = await res.json();
-          if (json && json.rates && json.rates.BRL) {
-            const val = parseFloat(json.rates.BRL);
-            if (!isNaN(val) && val > 0) {
-              setBrlRate(val);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Falha ao buscar taxa em todos os serviços", e);
-      }
+    const activeAcc = data?.accounts?.[0];
+    if (activeAcc && activeAcc.brlRate && activeAcc.brlRate > 0) {
+      setBrlRate(activeAcc.brlRate);
+      return;
     }
 
-    fetchBrlRate();
-  }, []);
+    // Fallback: fetch from public APIs if no rate is sent by the robot yet
+    if (data && !hasFetchedFallback) {
+      setHasFetchedFallback(true);
+      async function fetchBrlRate() {
+        try {
+          const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.USDBRL && json.USDBRL.bid) {
+              const val = parseFloat(json.USDBRL.bid);
+              if (!isNaN(val) && val > 0) {
+                setBrlRate(val);
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Falha ao buscar taxa no AwesomeAPI, tentando fallback...", e);
+        }
+
+        try {
+          const res = await fetch("https://open.er-api.com/v6/latest/USD");
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.rates && json.rates.BRL) {
+              const val = parseFloat(json.rates.BRL);
+              if (!isNaN(val) && val > 0) {
+                setBrlRate(val);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Falha ao buscar taxa em todos os serviços", e);
+        }
+      }
+      fetchBrlRate();
+    }
+  }, [data, hasFetchedFallback]);
 
   // Poll database every 5 seconds for real-time update feel with smooth progress tracking
   useEffect(() => {
@@ -221,12 +256,7 @@ export default function DashboardPage() {
   const mockReason = data?.mockReason || null;
   const dbError = data?.dbError || null;
 
-  // Sincronizar taxa do dólar (BRL rate) enviada pelo robô do MT5
-  useEffect(() => {
-    if (activeAccount && activeAccount.brlRate && activeAccount.brlRate > 0) {
-      setBrlRate(activeAccount.brlRate);
-    }
-  }, [activeAccount]);
+
 
   const trades = data?.trades || [];
   const history = data?.history || [];
@@ -235,30 +265,7 @@ export default function DashboardPage() {
   // Extract unique active symbols from trades to allow targeted local panic triggers
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
 
-  // Dynamic SoftStop limit calculation matching MT5 robot formula
-  const calculateSoftStopLimit = (bal: number) => {
-    const InpLotInitial = 0.015;
-    const InpSoftStopEquity = 400.0;
-    const InpBancaRef = 1000.0;
-    const InpLotDeceleration = 0.90;
 
-    let ratio = bal / InpBancaRef;
-    if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
-      ratio = Math.pow(ratio, InpLotDeceleration);
-    }
-    const raw = InpLotInitial * ratio;
-    const step = 0.01;
-    const minV = 0.01;
-    const maxV = 500.0;
-    
-    let loteBase = Math.max(minV, Math.floor(raw / step) * step);
-    if (loteBase > maxV) {
-      loteBase = maxV;
-    }
-    
-    const fat = loteBase / 0.01;
-    return InpSoftStopEquity * fat;
-  };
 
   const dynamicSoftStopLimit = calculateSoftStopLimit(activeAccount.balance);
 

@@ -22,6 +22,7 @@ function getMockData() {
     trailingPeak: 0.0,
     ddReached10: false,
     ddReached20: false,
+    brlRate: 5.20,
   };
 
   const mockTrades = [
