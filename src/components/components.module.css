@@ -661,6 +661,8 @@
   .header {
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
   
   .brand {
@@ -673,6 +675,8 @@
   
   .rightHeader {
     gap: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
   
   /* Balance panel adjustments */

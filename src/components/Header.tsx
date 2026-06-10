@@ -470,147 +470,149 @@ export default function Header({
           </div>
         )}
 
-        {/* Theme Toggle Button */}
-        <button
-          onClick={toggleTheme}
-          className={styles.themeToggleBtn}
-          title={theme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
-          style={{ marginRight: "0.25rem" }}
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/* Group container for theme, notifications, and status indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className={styles.themeToggleBtn}
+            title={theme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
-        {/* Notification Bell with pulsing animation */}
-        <div 
-          ref={bellRef}
-          style={{ position: "relative", cursor: "pointer" }}
-          onClick={() => setShowNotifications(!showNotifications)}
-          title="Alertas de Recompra e Risco"
-        >
-          <Bell 
-            size={20} 
-            style={{ 
-              color: !isActive ? "#64748b" : showNotifications ? "var(--neon-gold)" : "var(--text-secondary)", 
-              transition: "color 0.2s" 
-            }} 
-          />
-          
-          {/* Badge render state */}
-          {!isActive ? (
-            <span className={styles.bellBadgeMuted} />
-          ) : unreadCriticalCount > 0 ? (
-            <span className={styles.bellBadgeRedPulse}>{unreadCriticalCount}</span>
-          ) : unreadRecentCount > 0 ? (
-            <span className={styles.bellBadge}>{unreadRecentCount}</span>
-          ) : null}
+          {/* Notification Bell with pulsing animation */}
+          <div 
+            ref={bellRef}
+            style={{ position: "relative", cursor: "pointer", display: "flex", alignItems: "center" }}
+            onClick={() => setShowNotifications(!showNotifications)}
+            title="Alertas de Recompra e Risco"
+          >
+            <Bell 
+              size={20} 
+              style={{ 
+                color: !isActive ? "#64748b" : showNotifications ? "var(--neon-gold)" : "var(--text-secondary)", 
+                transition: "color 0.2s" 
+              }} 
+            />
+            
+            {/* Badge render state */}
+            {!isActive ? (
+              <span className={styles.bellBadgeMuted} />
+            ) : unreadCriticalCount > 0 ? (
+              <span className={styles.bellBadgeRedPulse}>{unreadCriticalCount}</span>
+            ) : unreadRecentCount > 0 ? (
+              <span className={styles.bellBadge}>{unreadRecentCount}</span>
+            ) : null}
 
-          {/* Dynamic notifications drop card */}
-          {showNotifications && (
-            <div className={styles.notificationsDropdown} ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.notificationsHeader}>
-                <span>Notificações</span>
-                <span className={styles.notificationsClear} onClick={(e) => { e.stopPropagation(); markAllReadExplicit(); }}>
-                  Marcar todas lidas
-                </span>
-              </div>
-              
-              <div className={styles.notificationsList}>
-                {/* 1. Critical Alerts Section */}
-                <div className={styles.notificationsSectionHeader}>
-                  CRÍTICAS (persistem até resolver)
+            {/* Dynamic notifications drop card */}
+            {showNotifications && (
+              <div className={styles.notificationsDropdown} ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.notificationsHeader}>
+                  <span>Notificações</span>
+                  <span className={styles.notificationsClear} onClick={(e) => { e.stopPropagation(); markAllReadExplicit(); }}>
+                    Marcar todas lidas
+                  </span>
                 </div>
                 
-                {activeCriticals.length === 0 ? (
-                  <div className={styles.emptyNotifications}>
-                    Nenhuma crítica ativa
+                <div className={styles.notificationsList}>
+                  {/* 1. Critical Alerts Section */}
+                  <div className={styles.notificationsSectionHeader}>
+                    CRÍTICAS (persistem até resolver)
                   </div>
-                ) : (
-                  activeCriticals.map((c) => (
-                    <div 
-                      key={c.id} 
-                      className={`${styles.notificationItem} ${c.severity === "critical" ? styles.critical : styles.warning}`}
-                    >
-                      <div className={styles.notificationItemHeader}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                          <AlertTriangle 
-                            size={12} 
-                            style={{ color: c.severity === "critical" ? "var(--neon-red)" : "var(--neon-gold)" }} 
-                          />
+                  
+                  {activeCriticals.length === 0 ? (
+                    <div className={styles.emptyNotifications}>
+                      Nenhuma crítica ativa
+                    </div>
+                  ) : (
+                    activeCriticals.map((c) => (
+                      <div 
+                        key={c.id} 
+                        className={`${styles.notificationItem} ${c.severity === "critical" ? styles.critical : styles.warning}`}
+                      >
+                        <div className={styles.notificationItemHeader}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <AlertTriangle 
+                              size={12} 
+                              style={{ color: c.severity === "critical" ? "var(--neon-red)" : "var(--neon-gold)" }} 
+                            />
+                            <span 
+                              className={styles.notificationTitle} 
+                              style={{ color: c.severity === "critical" ? "var(--neon-red)" : "var(--neon-gold)" }}
+                            >
+                              {c.title}
+                            </span>
+                          </div>
+                          <span className={styles.notificationTime}>
+                            {formatTimeAgo(c.createdAt)}
+                          </span>
+                        </div>
+                        <p className={styles.notificationDesc}>{c.desc}</p>
+                      </div>
+                    ))
+                  )}
+
+                  {/* 2. Recent Alerts Section */}
+                  <div className={styles.notificationsSectionHeader}>
+                    RECENTES (somem em breve)
+                  </div>
+                  
+                  {recentNotifications.length === 0 ? (
+                    <div className={styles.emptyNotifications}>
+                      Nenhum alerta recente
+                    </div>
+                  ) : (
+                    recentNotifications.map((r) => (
+                      <div key={r.id} className={`${styles.notificationItem} ${styles.recent}`}>
+                        <div className={styles.notificationItemHeader}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <CheckCircle2 size={12} style={{ color: "var(--neon-green)" }} />
+                            <span className={styles.notificationTitle} style={{ color: "var(--neon-green)" }}>
+                              {r.title}
+                            </span>
+                          </div>
+                        </div>
+                        <p className={styles.notificationDesc}>
+                          {r.desc} &rarr; {formatTimeLeft(r.expiresAt)}
+                        </p>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.2rem" }}>
                           <span 
-                            className={styles.notificationTitle} 
-                            style={{ color: c.severity === "critical" ? "var(--neon-red)" : "var(--neon-gold)" }}
+                            className={styles.notificationDismiss} 
+                            onClick={(e) => { e.stopPropagation(); dismissRecent(r.id); }}
                           >
-                            {c.title}
+                            [dispensar]
                           </span>
                         </div>
-                        <span className={styles.notificationTime}>
-                          {formatTimeAgo(c.createdAt)}
-                        </span>
                       </div>
-                      <p className={styles.notificationDesc}>{c.desc}</p>
-                    </div>
-                  ))
-                )}
-
-                {/* 2. Recent Alerts Section */}
-                <div className={styles.notificationsSectionHeader}>
-                  RECENTES (somem em breve)
+                    ))
+                  )}
                 </div>
-                
-                {recentNotifications.length === 0 ? (
-                  <div className={styles.emptyNotifications}>
-                    Nenhum alerta recente
+
+                {recentNotifications.length > 0 && (
+                  <div className={styles.notificationsFooter}>
+                    <button className={styles.clearAllButton} onClick={(e) => { e.stopPropagation(); clearAllRecent(); }}>
+                      Limpar todas as recentes
+                    </button>
                   </div>
-                ) : (
-                  recentNotifications.map((r) => (
-                    <div key={r.id} className={`${styles.notificationItem} ${styles.recent}`}>
-                      <div className={styles.notificationItemHeader}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                          <CheckCircle2 size={12} style={{ color: "var(--neon-green)" }} />
-                          <span className={styles.notificationTitle} style={{ color: "var(--neon-green)" }}>
-                            {r.title}
-                          </span>
-                        </div>
-                      </div>
-                      <p className={styles.notificationDesc}>
-                        {r.desc} &rarr; {formatTimeLeft(r.expiresAt)}
-                      </p>
-                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.2rem" }}>
-                        <span 
-                          className={styles.notificationDismiss} 
-                          onClick={(e) => { e.stopPropagation(); dismissRecent(r.id); }}
-                        >
-                          [dispensar]
-                        </span>
-                      </div>
-                    </div>
-                  ))
                 )}
               </div>
+            )}
+          </div>
 
-              {recentNotifications.length > 0 && (
-                <div className={styles.notificationsFooter}>
-                  <button className={styles.clearAllButton} onClick={(e) => { e.stopPropagation(); clearAllRecent(); }}>
-                    Limpar todas as recentes
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Status indicator with animated colored bullet status */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <span className={styles.desktopOnly} style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
-          {newsActive ? (
-            <span className={styles.statusNewsBadge} title={`Filtro de Notícias Ativo: ${newsName}`}>
-              <span className={styles.statusBullet}>●</span> NOTÍCIA
-            </span>
-          ) : (
-            <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
-              <span className={styles.statusBullet}>●</span> {isActive ? "ATIVO" : "PAUSADO"}
-            </span>
-          )}
+          {/* Status indicator with animated colored bullet status */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span className={styles.desktopOnly} style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
+            {newsActive ? (
+              <span className={styles.statusNewsBadge} title={`Filtro de Notícias Ativo: ${newsName}`}>
+                <span className={styles.statusBullet}>●</span> NOTÍCIA
+              </span>
+            ) : (
+              <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
+                <span className={styles.statusBullet}>●</span> {isActive ? "ATIVO" : "PAUSADO"}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </header>
