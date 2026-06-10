@@ -470,8 +470,17 @@ export default function Header({
           </div>
         )}
 
-        {/* Group container for theme, notifications, and status indicator */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+        {/* Premium capsule container for theme, notifications, and status indicator */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1.1rem",
+          background: "var(--opacity-bg-header)",
+          border: "1px solid var(--border-light)",
+          padding: "0.35rem 0.75rem 0.35rem 0.85rem",
+          borderRadius: "12px",
+          marginLeft: "0.25rem"
+        }}>
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}

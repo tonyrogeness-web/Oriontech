@@ -1995,6 +1995,20 @@
   animation: slideDownFade 0.2s ease-out;
 }
 
+@media (max-width: 560px) {
+  .notificationsDropdown {
+    right: -105px !important; /* Align dropdown to the right edge of the capsule container on mobile */
+    width: 290px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .notificationsDropdown {
+    right: -95px !important;
+    width: 270px !important;
+  }
+}
+
 @keyframes slideDownFade {
   from {
     opacity: 0;
