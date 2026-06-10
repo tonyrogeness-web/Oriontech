@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
   --font-primary: 'Plus Jakarta Sans', sans-serif;
   --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   /* Color Palette - Premium OLED Dark Crypto */
   --bg-deep: #030305;
@@ -20,15 +21,15 @@
   --text-muted: #64748b;
   --text-dark: #020203;
 
-  /* Accents */
-  --neon-green: #00e676;
-  --neon-green-glow: rgba(0, 230, 118, 0.25);
+  /* Accents - Softer, accessible green and red for dark mode dashboards */
+  --neon-green: #00c853;
+  --neon-green-glow: rgba(0, 200, 83, 0.25);
   
   --neon-amber: #ff9100;
   --neon-amber-glow: rgba(255, 145, 0, 0.25);
   
-  --neon-red: #ff1744;
-  --neon-red-glow: rgba(255, 23, 68, 0.25);
+  --neon-red: #d24444;
+  --neon-red-glow: rgba(210, 68, 68, 0.25);
 
   --neon-gold: #ffb800;
   --neon-gold-glow: rgba(255, 184, 0, 0.25);
@@ -234,4 +235,10 @@ body {
   .dashboard-container {
     padding: 0.75rem !important;
   }
+}
+
+/* Monospace & Tabular numbers rules for stable visual positioning */
+.tabular-nums {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
 }

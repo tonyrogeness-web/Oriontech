@@ -466,6 +466,18 @@ export default function ActiveBaskets({
         </span>
       </div>
 
+      {baskets.length === 0 && (
+        <div className={styles.emptyStateBasketsContainer}>
+          <span className={styles.emptyStateBasketsIcon}>💤</span>
+          <div className={styles.emptyStateBasketsTextContainer}>
+            <span className={styles.emptyStateBasketsTitle}>Nenhum cesto ativo no momento</span>
+            <span className={styles.emptyStateBasketsSubtitle}>
+              O robô está ativamente monitorando o mercado. Aguardando confirmação do gatilho M5/H1 para novas operações.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ── Grade principal fixa com 6 posições ── */}
       <div className={styles.basketsGridMain}>
         {ALL_SYMBOLS.map((sym) => {

@@ -21,6 +21,8 @@ export default function DashboardPage() {
   // Visual polling timer state
   const [syncProgress, setSyncProgress] = useState(0);
   const [isFlashActive, setIsFlashActive] = useState(false);
+  const [loadingAttempts, setLoadingAttempts] = useState(1);
+  const [loadingPhase, setLoadingPhase] = useState("Conectando ao servidor...");
 
   // Load currency mode preference from localStorage
   useEffect(() => {
@@ -82,6 +84,14 @@ export default function DashboardPage() {
 
     async function fetchData() {
       try {
+        if (!data) {
+          if (loadingAttempts === 1) setLoadingPhase("Conectando ao servidor...");
+          else if (loadingAttempts === 2) setLoadingPhase("Autenticando sessão...");
+          else if (loadingAttempts === 3) setLoadingPhase("Carregando base de dados...");
+          else if (loadingAttempts === 4) setLoadingPhase("Verificando conexão com MT5...");
+          else setLoadingPhase("Sincronizando estatísticas...");
+        }
+
         const response = await fetch("/api/dashboard/data", { cache: "no-store" });
         if (!response.ok) {
           throw new Error("Falha ao carregar dados do servidor.");
@@ -90,6 +100,7 @@ export default function DashboardPage() {
         if (active) {
           setData(json);
           setError(null);
+          setLoadingAttempts(1); // reset attempts on success
           // Trigger sync flash effect
           setIsFlashActive(true);
           setTimeout(() => {
@@ -98,7 +109,14 @@ export default function DashboardPage() {
         }
       } catch (err: any) {
         if (active) {
-          setError(err.message);
+          if (!data && loadingAttempts < 5) {
+            setLoadingAttempts((prev) => prev + 1);
+            setTimeout(() => {
+              if (active) setRefreshTrigger((prev) => prev + 1);
+            }, 1500);
+          } else {
+            setError(err.message || "Sem sinal do servidor após 5 tentativas de conexão. Verifique se o banco de dados está online.");
+          }
         }
       }
     }
@@ -154,7 +172,7 @@ export default function DashboardPage() {
         <div className="glass-card glow-red" style={{ maxWidth: "480px", textAlign: "center" }}>
           <h2 style={{ color: "var(--neon-red)", marginBottom: "1rem" }}>Erro de Sincronização</h2>
           <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>{error}</p>
-          <button className="btn btn-secondary" onClick={() => setRefreshTrigger((p) => p + 1)}>
+          <button className="btn btn-secondary" onClick={() => { setLoadingAttempts(1); setRefreshTrigger((p) => p + 1); }}>
             Tentar Novamente
           </button>
         </div>
@@ -175,9 +193,12 @@ export default function DashboardPage() {
             <span className={styles.loadingSubtitle}>Painel de Sincronização Web</span>
           </div>
           <div className={styles.loadingBarContainer}>
-            <div className={styles.loadingBarProgress} />
+            <div className={styles.loadingBarProgress} style={{ width: `${(loadingAttempts / 5) * 100}%` }} />
           </div>
-          <span className={styles.loadingStatusText}>Estabelecendo conexão segura...</span>
+          <span className={styles.loadingStatusText}>{loadingPhase}</span>
+          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
+            Tentativa {loadingAttempts} de 5
+          </span>
         </div>
       </div>
     );
@@ -245,17 +266,53 @@ export default function DashboardPage() {
       </div>
 
       <div className="dashboard-container">
-        {activeAccount.newsActive && (
-          <div className={styles.newsAlertBanner}>
-            <div className={styles.newsAlertContent}>
-              <span className={styles.newsAlertIcon}>⚠️</span>
-              <span className={styles.newsAlertText}>
-                <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
-                {activeAccount.newsFrozen ? " (Novas entradas bloqueadas e grade congelada)" : " (Operações suspensas)"}
-              </span>
+        {/* Contextual Alert Banners */}
+        <div className={styles.alertBannersContainer}>
+          {activeAccount.newsActive && (
+            <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
+              <div className={styles.newsAlertContent}>
+                <span className={styles.newsAlertIcon}>⚠️</span>
+                <span className={styles.newsAlertText}>
+                  <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
+                  {activeAccount.newsFrozen ? " (Novas recompras bloqueadas e grade congelada)" : " (Novas entradas bloqueadas)"}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {activeAccount.ddReached20 && (
+            <div className={`${styles.newsAlertBanner} ${styles.alertBannerCritical}`}>
+              <div className={styles.newsAlertContent}>
+                <span className={styles.newsAlertIcon}>🔴</span>
+                <span className={styles.newsAlertText}>
+                  <strong>DD VERMELHO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Alvo de saída reduzido para Break-Even (Lucro Mínimo) em todos os cestos de recompras avançadas.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {!activeAccount.ddReached20 && activeAccount.ddReached10 && (
+            <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
+              <div className={styles.newsAlertContent}>
+                <span className={styles.newsAlertIcon}>🟡</span>
+                <span className={styles.newsAlertText}>
+                  <strong>DD AMARELO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário alcançado. Trailing de patrimônio reduzido para 25% de alvo.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {activeAccount.floatingPl < 0 && Math.abs(activeAccount.floatingPl) >= dynamicSoftStopLimit && (
+            <div className={`${styles.newsAlertBanner} ${styles.alertBannerCritical}`}>
+              <div className={styles.newsAlertContent}>
+                <span className={styles.newsAlertIcon}>🔴</span>
+                <span className={styles.newsAlertText}>
+                  <strong>SOFTSTOP ATIVADO:</strong> Perda flutuante ({Math.abs(activeAccount.floatingPl).toFixed(2)} USC) atingiu ou superou o limite SoftStop de {dynamicSoftStopLimit.toFixed(2)} USC. Abertura de novos cestos bloqueada!
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 1. Header component */}
         <Header

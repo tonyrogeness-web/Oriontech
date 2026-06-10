@@ -157,15 +157,15 @@ export default function KpiCards({
   return (
     <div className={styles.kpiRowGrid}>
       {/* 1. Saldo da Conta */}
-      <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold}`}>
+      <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold} ${styles.kpiCardLarge}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
           <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
             <Wallet size={14} />
           </div>
         </div>
-        <span className={styles.kpiValueMockup}>{formatValPrimary(balance)}</span>
-        <span className={styles.kpiSubValueMockup}>{formatValSecondary(balance)}</span>
+        <span className={`${styles.kpiValueMockup} tabular-nums`}>{formatValPrimary(balance)}</span>
+        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>{formatValSecondary(balance)}</span>
         <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>
           {currencyMode === "CENT" ? "CENT" : "BRL"}
         </span>
@@ -173,17 +173,17 @@ export default function KpiCards({
       </div>
 
       {/* 2. Patrimônio Líquido */}
-      <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed}`}>
+      <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardLarge}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>P. Líquido</span>
           <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
             <Coins size={14} />
           </div>
         </div>
-        <span className={styles.kpiValueMockup} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
           {formatValPrimary(equityCalc)}
         </span>
-        <span className={styles.kpiSubValueMockup}>
+        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
           {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
         </span>
         <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
@@ -193,17 +193,17 @@ export default function KpiCards({
       </div>
 
       {/* 3. Lucro Hoje */}
-      <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber}`}>
+      <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
           <div className={`${styles.kpiIconContainer} ${dailyProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
             <TrendingUp size={14} />
           </div>
         </div>
-        <span className={styles.kpiValueMockup} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
+        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
           {dailyProfit >= 0 ? "+" : ""}{formatValPrimary(dailyProfit)}
         </span>
-        <span className={styles.kpiSubValueMockup}>
+        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
           {dailyProfit >= 0 ? "+" : ""}{formatValSecondary(dailyProfit)}
         </span>
         <span className={`${styles.kpiBadgeMockup} ${dailyProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
@@ -213,17 +213,17 @@ export default function KpiCards({
       </div>
 
       {/* 4. L. Global */}
-      <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber}`}>
+      <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>L. Global</span>
           <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
             <Globe size={14} />
           </div>
         </div>
-        <span className={styles.kpiValueMockup} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
+        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
           {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
         </span>
-        <span className={styles.kpiSubValueMockup}>
+        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
           {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)}
         </span>
         <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
@@ -233,14 +233,14 @@ export default function KpiCards({
       </div>
 
       {/* 5. Drawdown Atual */}
-      <div className={`${styles.kpiCardMockup} ${ddBorderClass}`}>
+      <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardSmall}`}>
         <div className={styles.kpiHeaderRow}>
           <span className={styles.kpiLabelMockup}>Drawdown Atual</span>
           <div className={`${styles.kpiIconContainer} ${ddGlowClass}`}>
             <ShieldAlert size={14} />
           </div>
         </div>
-        <span className={styles.kpiValueMockup} style={{ color: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)" }}>
+        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)" }}>
           {maxDrawdown.toFixed(1)}%
         </span>
         <span className={styles.kpiSubValueMockup}>

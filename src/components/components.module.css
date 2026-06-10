@@ -99,6 +99,23 @@
   position: absolute;
   top: -6px;
   right: -6px;
+  background-color: #3b82f6; /* Slate/Blue badge */
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.4);
+}
+
+.bellBadgeRedPulse {
+  position: absolute;
+  top: -6px;
+  right: -6px;
   background-color: var(--neon-red);
   color: #fff;
   font-size: 0.65rem;
@@ -111,6 +128,18 @@
   justify-content: center;
   box-shadow: 0 0 5px rgba(255, 23, 68, 0.4);
   animation: bellPulse 1.5s infinite;
+}
+
+.bellBadgeMuted {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: #94a3b8; /* White/grey dot for sleeping state */
+  border: 1px solid #0f172a;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
 @keyframes bellPulse {
@@ -691,29 +720,42 @@
 
 .kpiRowGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.65rem;
   margin-bottom: 1.25rem;
 }
 
-@media (max-width: 1280px) {
-  .kpiRowGrid {
-    grid-template-columns: repeat(5, 1fr);
-  }
+.kpiCardLarge {
+  grid-column: span 3;
+}
+
+.kpiCardSmall {
+  grid-column: span 2;
 }
 
 @media (max-width: 900px) {
   .kpiRowGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .kpiCardLarge {
+    grid-column: span 3;
+  }
+  .kpiCardSmall {
+    grid-column: span 2;
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .kpiRowGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
-  /* Span the 5th card (Drawdown) across both columns on mobile for a balanced layout */
+  .kpiCardLarge {
+    grid-column: span 2;
+  }
+  .kpiCardSmall {
+    grid-column: span 1;
+  }
   .kpiRowGrid > div:nth-child(5) {
     grid-column: span 2;
   }
@@ -1346,11 +1388,11 @@
 }
 
 .basketCardBorderBuy {
-  border-left: 2px solid rgba(0, 230, 118, 0.4);
+  border-left: 4px solid var(--neon-green);
 }
 
 .basketCardBorderSell {
-  border-left: 2px solid rgba(255, 23, 68, 0.4);
+  border-left: 4px solid var(--neon-red);
 }
 
 .basketHeader {
@@ -1984,6 +2026,191 @@
 .newsAlertText {
   font-weight: 500;
   letter-spacing: 0.01em;
+}
+
+/* Custom success and error button glows for action feedback */
+.btnSuccessGlow {
+  background: rgba(0, 200, 83, 0.15) !important;
+  border-color: var(--neon-green) !important;
+  color: var(--neon-green) !important;
+  box-shadow: 0 0 10px rgba(0, 200, 83, 0.2) !important;
+}
+
+.btnErrorGlow {
+  background: rgba(210, 68, 68, 0.15) !important;
+  border-color: var(--neon-red) !important;
+  color: var(--neon-red) !important;
+  box-shadow: 0 0 10px rgba(210, 68, 68, 0.2) !important;
+}
+
+/* Sync status badges styling */
+.syncStatusBadgeContainer {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-light);
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.syncStatusGreen {
+  color: var(--neon-green);
+}
+
+.syncStatusAmber {
+  color: var(--neon-amber);
+}
+
+.syncStatusRed {
+  color: var(--neon-red);
+}
+
+.bulletPulse {
+  animation: statusBlink 0.8s infinite alternate;
+}
+
+/* Alert banners container and severities */
+.alertBannersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alertBannerWarning {
+  background: rgba(224, 155, 0, 0.06) !important;
+  border: 1px solid rgba(224, 155, 0, 0.25) !important;
+}
+
+.alertBannerWarning .newsAlertContent {
+  color: var(--neon-gold) !important;
+}
+
+.alertBannerCritical {
+  background: rgba(210, 68, 68, 0.08) !important;
+  border: 1px solid rgba(210, 68, 68, 0.35) !important;
+  box-shadow: 0 0 12px rgba(210, 68, 68, 0.08) !important;
+  animation: pulseRedBanner 2s infinite alternate ease-in-out !important;
+}
+
+.alertBannerCritical .newsAlertContent {
+  color: #ff5252 !important;
+}
+
+@keyframes pulseRedBanner {
+  from {
+    border-color: rgba(210, 68, 68, 0.25);
+    box-shadow: 0 0 8px rgba(210, 68, 68, 0.04);
+  }
+  to {
+    border-color: rgba(210, 68, 68, 0.55);
+    box-shadow: 0 0 16px rgba(210, 68, 68, 0.18);
+  }
+}
+
+/* ActiveBaskets Empty State Warning */
+.emptyStateBasketsContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed var(--border-active);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.emptyStateBasketsIcon {
+  font-size: 1.4rem;
+}
+
+.emptyStateBasketsTextContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyStateBasketsTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.emptyStateBasketsSubtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.emptyNotifications {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.notificationsSectionHeader {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.notificationsSectionHeader:first-of-type {
+  border-top: none;
+}
+
+.notificationDismiss {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+.notificationDismiss:hover {
+  color: var(--text-primary);
+}
+
+.notificationsFooter {
+  padding: 0.65rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
+  justify-content: center;
+}
+
+.clearAllButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.clearAllButton:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notificationItem.recent {
+  border-left: 3px solid var(--neon-green);
+  background: rgba(0, 200, 83, 0.02);
 }
 
 

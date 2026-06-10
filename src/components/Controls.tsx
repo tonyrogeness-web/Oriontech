@@ -17,7 +17,7 @@ export default function Controls({
   pendingCommandsCount = 0,
   onSendCommand,
 }: ControlsProps) {
-  const [loading, setLoading] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<Record<string, "idle" | "sending" | "success" | "error">>({});
   const [confirmZerarGlobal, setConfirmZerarGlobal] = useState(false);
   const [showLocalSelector, setShowLocalSelector] = useState(false);
   const [confirmLocalSymbol, setConfirmLocalSymbol] = useState<string | null>(null);
@@ -56,17 +56,29 @@ export default function Controls({
   };
 
   const handlePause = async () => {
-    setLoading("PAUSE");
-    await onSendCommand("PAUSE");
-    trackCommand("Pausar Novas Entradas");
-    setLoading(null);
+    setActionStatus(prev => ({ ...prev, PAUSE: "sending" }));
+    try {
+      await onSendCommand("PAUSE");
+      setActionStatus(prev => ({ ...prev, PAUSE: "success" }));
+      trackCommand("Pausar Novas Entradas");
+      setTimeout(() => setActionStatus(prev => ({ ...prev, PAUSE: "idle" })), 2000);
+    } catch (e) {
+      setActionStatus(prev => ({ ...prev, PAUSE: "error" }));
+      setTimeout(() => setActionStatus(prev => ({ ...prev, PAUSE: "idle" })), 2500);
+    }
   };
 
   const handleResume = async () => {
-    setLoading("RESUME");
-    await onSendCommand("RESUME");
-    trackCommand("Retomar Operações");
-    setLoading(null);
+    setActionStatus(prev => ({ ...prev, RESUME: "sending" }));
+    try {
+      await onSendCommand("RESUME");
+      setActionStatus(prev => ({ ...prev, RESUME: "success" }));
+      trackCommand("Retomar Operações");
+      setTimeout(() => setActionStatus(prev => ({ ...prev, RESUME: "idle" })), 2000);
+    } catch (e) {
+      setActionStatus(prev => ({ ...prev, RESUME: "error" }));
+      setTimeout(() => setActionStatus(prev => ({ ...prev, RESUME: "idle" })), 2500);
+    }
   };
 
   const handleZerarGlobal = async () => {
@@ -74,14 +86,18 @@ export default function Controls({
       setConfirmZerarGlobal(true);
       return;
     }
-    setLoading("PANIC_GLOBAL");
-    // 1. Fecha todas as posições
-    await onSendCommand("PANIC_GLOBAL");
-    // 2. Pausa o robô automaticamente para não abrir novas entradas
-    await onSendCommand("PAUSE");
-    trackCommand("Zerar Global + Pausar Robô");
-    setConfirmZerarGlobal(false);
-    setLoading(null);
+    setActionStatus(prev => ({ ...prev, PANIC_GLOBAL: "sending" }));
+    try {
+      await onSendCommand("PANIC_GLOBAL");
+      await onSendCommand("PAUSE");
+      setActionStatus(prev => ({ ...prev, PANIC_GLOBAL: "success" }));
+      trackCommand("Zerar Global + Pausar Robô");
+      setConfirmZerarGlobal(false);
+      setTimeout(() => setActionStatus(prev => ({ ...prev, PANIC_GLOBAL: "idle" })), 2000);
+    } catch (e) {
+      setActionStatus(prev => ({ ...prev, PANIC_GLOBAL: "error" }));
+      setTimeout(() => setActionStatus(prev => ({ ...prev, PANIC_GLOBAL: "idle" })), 2500);
+    }
   };
 
   const handlePanicLocal = async (symbol: string) => {
@@ -89,12 +105,19 @@ export default function Controls({
       setConfirmLocalSymbol(symbol);
       return;
     }
-    setLoading(`PANIC_LOCAL_${symbol}`);
-    await onSendCommand("PANIC_LOCAL", symbol);
-    trackCommand(`Zerar Local (${symbol.toUpperCase().replace("C", "")})`);
-    setConfirmLocalSymbol(null);
-    setShowLocalSelector(false);
-    setLoading(null);
+    const actionId = `PANIC_LOCAL_${symbol}`;
+    setActionStatus(prev => ({ ...prev, [actionId]: "sending" }));
+    try {
+      await onSendCommand("PANIC_LOCAL", symbol);
+      setActionStatus(prev => ({ ...prev, [actionId]: "success" }));
+      trackCommand(`Zerar Local (${symbol.toUpperCase().replace("C", "")})`);
+      setConfirmLocalSymbol(null);
+      setShowLocalSelector(false);
+      setTimeout(() => setActionStatus(prev => ({ ...prev, [actionId]: "idle" })), 2000);
+    } catch (e) {
+      setActionStatus(prev => ({ ...prev, [actionId]: "error" }));
+      setTimeout(() => setActionStatus(prev => ({ ...prev, [actionId]: "idle" })), 2500);
+    }
   };
 
   const isPaused = status === "PAUSED";
@@ -129,14 +152,18 @@ export default function Controls({
         <div className={styles.controlsGrid2x2}>
           {/* Button 1: Pausar */}
           <button
-            className={`${styles.btnControlMockup} ${styles.btnControlPause}`}
+            className={`${styles.btnControlMockup} ${styles.btnControlPause} ${
+              actionStatus.PAUSE === "success" ? styles.btnSuccessGlow : 
+              actionStatus.PAUSE === "error" ? styles.btnErrorGlow : ""
+            }`}
             onClick={handlePause}
-            disabled={loading !== null || isPaused}
+            disabled={actionStatus.PAUSE === "sending" || actionStatus.PAUSE === "success" || actionStatus.PAUSE === "error" || isPaused}
             title="Pausar todas as novas entradas"
           >
-            {loading === "PAUSE" ? (
-              <RefreshCw className="spin" size={14} />
-            ) : (
+            {actionStatus.PAUSE === "sending" && <><RefreshCw className="spin" size={14} /> Enviando...</>}
+            {actionStatus.PAUSE === "success" && <>✓ Pausado</>}
+            {actionStatus.PAUSE === "error" && <>✕ Falhou</>}
+            {(!actionStatus.PAUSE || actionStatus.PAUSE === "idle") && (
               <>
                 <Pause size={14} /> Pausar
               </>
@@ -145,14 +172,18 @@ export default function Controls({
 
           {/* Button 2: Retomar */}
           <button
-            className={`${styles.btnControlMockup} ${styles.btnControlResume}`}
+            className={`${styles.btnControlMockup} ${styles.btnControlResume} ${
+              actionStatus.RESUME === "success" ? styles.btnSuccessGlow : 
+              actionStatus.RESUME === "error" ? styles.btnErrorGlow : ""
+            }`}
             onClick={handleResume}
-            disabled={loading !== null || !isPaused}
+            disabled={actionStatus.RESUME === "sending" || actionStatus.RESUME === "success" || actionStatus.RESUME === "error" || !isPaused}
             title="Retomar operações normais"
           >
-            {loading === "RESUME" ? (
-              <RefreshCw className="spin" size={14} />
-            ) : (
+            {actionStatus.RESUME === "sending" && <><RefreshCw className="spin" size={14} /> Enviando...</>}
+            {actionStatus.RESUME === "success" && <>✓ Ativo</>}
+            {actionStatus.RESUME === "error" && <>✕ Falhou</>}
+            {(!actionStatus.RESUME || actionStatus.RESUME === "idle") && (
               <>
                 <Play size={14} /> Retomar
               </>
@@ -163,7 +194,7 @@ export default function Controls({
           <button
             className={`${styles.btnControlMockup} ${styles.btnControlZerar}`}
             onClick={() => setShowLocalSelector(!showLocalSelector)}
-            disabled={loading !== null || activeSymbols.length === 0}
+            disabled={actionStatus.PANIC_LOCAL === "sending" || activeSymbols.length === 0}
             title="Zerar posições de um ativo específico"
           >
             <Zap size={14} /> Zerar Local
@@ -171,23 +202,29 @@ export default function Controls({
 
           {/* Button 4: Zerar Global */}
           <button
-            className={`${styles.btnControlMockup} ${styles.btnControlPanic}`}
+            className={`${styles.btnControlMockup} ${styles.btnControlPanic} ${
+              actionStatus.PANIC_GLOBAL === "success" ? styles.btnSuccessGlow : 
+              actionStatus.PANIC_GLOBAL === "error" ? styles.btnErrorGlow : ""
+            }`}
             onClick={handleZerarGlobal}
-            disabled={loading !== null}
+            disabled={actionStatus.PANIC_GLOBAL === "sending" || actionStatus.PANIC_GLOBAL === "success" || actionStatus.PANIC_GLOBAL === "error"}
             style={{
-              backgroundColor: confirmZerarGlobal ? "var(--neon-red)" : "rgba(255, 23, 68, 0.05)",
-              color: confirmZerarGlobal ? "#fff" : "var(--neon-red)",
+              backgroundColor: confirmZerarGlobal ? "var(--neon-red)" : actionStatus.PANIC_GLOBAL === "error" ? "rgba(210,68,68,0.2)" : "rgba(255, 23, 68, 0.05)",
+              color: confirmZerarGlobal || actionStatus.PANIC_GLOBAL === "error" ? "#fff" : "var(--neon-red)",
             }}
             title="Zerar todas as posições e pausar o robô imediatamente"
           >
-            {loading === "PANIC_GLOBAL" ? (
-              <RefreshCw className="spin" size={14} />
-            ) : confirmZerarGlobal ? (
-              "⚠ CONFIRMAR ZERAR?"
-            ) : (
-              <>
-                <XCircle size={14} /> Zerar Global
-              </>
+            {actionStatus.PANIC_GLOBAL === "sending" && <><RefreshCw className="spin" size={14} /> Zerando...</>}
+            {actionStatus.PANIC_GLOBAL === "success" && <>✓ Zerado</>}
+            {actionStatus.PANIC_GLOBAL === "error" && <>✕ Falhou</>}
+            {(!actionStatus.PANIC_GLOBAL || actionStatus.PANIC_GLOBAL === "idle") && (
+              confirmZerarGlobal ? (
+                "⚠ CONFIRMAR?"
+              ) : (
+                <>
+                  <XCircle size={14} /> Zerar Global
+                </>
+              )
             )}
           </button>
         </div>
@@ -206,30 +243,32 @@ export default function Controls({
             </span>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {activeSymbols.map((symbol) => {
+                const actionId = `PANIC_LOCAL_${symbol}`;
                 const isConfirming = confirmLocalSymbol === symbol;
                 return (
                   <button
                     key={symbol}
                     className="btn btn-secondary"
                     onClick={() => handlePanicLocal(symbol)}
-                    disabled={loading !== null}
+                    disabled={actionStatus[actionId] === "sending" || actionStatus[actionId] === "success" || actionStatus[actionId] === "error"}
                     style={{
                       width: "100%",
                       justifyContent: "space-between",
                       fontSize: "0.75rem",
-                      borderColor: isConfirming ? "var(--neon-amber)" : "var(--border-light)",
-                      color: isConfirming ? "var(--neon-amber)" : "var(--text-primary)",
+                      borderColor: actionStatus[actionId] === "success" ? "var(--neon-green)" : actionStatus[actionId] === "error" ? "var(--neon-red)" : isConfirming ? "var(--neon-amber)" : "var(--border-light)",
+                      color: actionStatus[actionId] === "success" ? "var(--neon-green)" : actionStatus[actionId] === "error" ? "var(--neon-red)" : isConfirming ? "var(--neon-amber)" : "var(--text-primary)",
                       padding: "0.35rem 0.6rem",
                     }}
                   >
                     <span>{symbol.toUpperCase().replace("C", "")}</span>
                     <span>
-                      {loading === `PANIC_LOCAL_${symbol}` ? (
+                      {actionStatus[actionId] === "sending" && (
                         <RefreshCw className="spin" size={10} />
-                      ) : isConfirming ? (
-                        "Confirmar Fechar?"
-                      ) : (
-                        "Zerar Par"
+                      )}
+                      {actionStatus[actionId] === "success" && "✓ Zerado"}
+                      {actionStatus[actionId] === "error" && "✕ Falhou"}
+                      {(!actionStatus[actionId] || actionStatus[actionId] === "idle") && (
+                        isConfirming ? "Confirmar Fechar?" : "Zerar Par"
                       )}
                     </span>
                   </button>

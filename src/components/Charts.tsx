@@ -76,6 +76,11 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   const minBalance = balances.length > 0 ? Math.min(...balances) : 0;
   const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
   
+  const startBalance = lineData.length > 0 ? lineData[0].balance : 0;
+  const off = (maxBalance - minBalance) === 0
+    ? 0.5
+    : Math.max(0, Math.min(1, (maxBalance - startBalance) / (maxBalance - minBalance)));
+
   let growthPct = 0;
   if (lineData.length > 1) {
     const startVal = lineData[0].balance;
@@ -160,9 +165,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={lineData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="performanceGlowGreen" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--neon-green)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--neon-green)" stopOpacity={0} />
+                  <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset={off} stopColor="var(--neon-green)" stopOpacity={0.25} />
+                    <stop offset={off} stopColor="var(--neon-red)" stopOpacity={0.25} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.02)" />
@@ -215,7 +220,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   stroke="var(--neon-green)"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#performanceGlowGreen)"
+                  fill="url(#splitColor)"
                   dot={false}
                   name="balance"
                 />
