@@ -52,7 +52,7 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="1.0"
         strokeLinecap="round"
         strokeLinejoin="round"
         points={points}
@@ -251,17 +251,18 @@ export default function KpiCards({
         </span>
         
         {/* Mini progress bar of drawdown with limit markers (25% and 50% relative zones) */}
-        <div style={{ marginTop: "0.4rem", width: "100%", height: "4px", background: "rgba(255, 255, 255, 0.05)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
+        <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
           <div
             style={{
               height: "100%",
               width: `${Math.min(100, (maxDrawdown / 40) * 100)}%`,
               background: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)",
+              opacity: 0.8,
               transition: "width 0.5s ease"
             }}
           />
-          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.15)" }} />
-          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.15)" }} />
+          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
+          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
         </div>
 
         <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />

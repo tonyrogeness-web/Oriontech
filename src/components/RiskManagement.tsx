@@ -39,10 +39,10 @@ function RiskSparkline({ data, color }: { data: number[]; color: string }) {
   return (
     <svg
       width={W} height={H}
-      style={{ position: "absolute", right: 10, bottom: 8, opacity: 0.55, pointerEvents: "none" }}
+      className={styles.riskSparkline}
     >
       <polyline
-        fill="none" stroke={color} strokeWidth="1.5"
+        fill="none" stroke={color} strokeWidth="1.0"
         strokeLinecap="round" strokeLinejoin="round" points={points}
         style={{ strokeDasharray: 250, strokeDashoffset: 250, animation: "drawSparkline 1.8s ease-out forwards" }}
       />
