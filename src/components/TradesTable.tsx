@@ -171,51 +171,54 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                 overflow: "hidden",
                 width: "100%"
               }}>
-                {/* Accordion Group Summary Header */}
-                <div 
-                  onClick={() => toggleSymbol(group.symbol)} 
-                  style={{ 
-                    cursor: "pointer", 
+                {/* Accordion Group Summary Header — 4-col grid matching data rows */}
+                <div
+                  onClick={() => toggleSymbol(group.symbol)}
+                  style={{
+                    cursor: "pointer",
                     backgroundColor: "rgba(255, 255, 255, 0.02)",
-                    padding: "0.55rem 0.75rem",
-                    display: "flex",
-                    justifyContent: "space-between",
+                    padding: "0.5rem 0.75rem",
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto auto auto",
                     alignItems: "center",
-                    gap: "0.4rem",
-                    userSelect: "none"
+                    userSelect: "none",
                   }}
                   className={styles.symbolGroupRow}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                      {isExpanded ? <ChevronDown size={14} style={{ color: "var(--text-secondary)" }} /> : <ChevronRight size={14} style={{ color: "var(--text-secondary)" }} />}
-                      <strong style={{ fontSize: "0.85rem", color: "var(--text-primary)" }}>{group.symbol}</strong>
-                    </div>
-                    
-                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>
-                      {group.buyCount > 0 && `Buy x${group.buyCount}`}
-                      {group.buyCount > 0 && group.sellCount > 0 && " + "}
-                      {group.sellCount > 0 && `Sell x${group.sellCount}`}
-                    </span>
-                    
+                  {/* Col 1: chevron + symbol name */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    {isExpanded
+                      ? <ChevronDown size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+                      : <ChevronRight size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />}
+                    <strong style={{ fontSize: "0.85rem", color: "var(--text-primary)", whiteSpace: "nowrap" }}>{group.symbol}</strong>
+                  </div>
+
+                  {/* Col 2: Grade badge */}
+                  <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
                     <span style={{
-                      fontSize: "0.62rem",
+                      fontSize: "0.6rem",
                       color: "var(--neon-gold)",
                       backgroundColor: "rgba(255, 184, 0, 0.06)",
                       border: "1px solid rgba(255, 184, 0, 0.15)",
-                      padding: "0.05rem 0.3rem",
+                      padding: "0.05rem 0.35rem",
                       borderRadius: "3px",
-                      fontWeight: 700
+                      fontWeight: 700,
+                      whiteSpace: "nowrap"
                     }}>
-                      Grade: {group.maxLevel}
+                      {group.maxLevel}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
-                    <span style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                  {/* Col 3: Total Volume */}
+                  <div style={{ paddingLeft: "0.75rem", textAlign: "center" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                       {group.totalVolume.toFixed(3)}L
                     </span>
-                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, whiteSpace: "nowrap" }}>
+                  </div>
+
+                  {/* Col 4: Total P&L */}
+                  <div style={{ paddingLeft: "0.75rem", textAlign: "right" }}>
+                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.75rem", color: groupColor, whiteSpace: "nowrap" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
                     </span>
                   </div>
