@@ -12,10 +12,11 @@ interface PerformancePoint {
 
 interface ChartsProps {
   history: PerformancePoint[];
-  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode?: "CENT" | "BRL";
+  brlRate?: number;
 }
 
-export default function Charts({ history = [], currencyMode = "CENT_BRL" }: ChartsProps) {
+export default function Charts({ history = [], currencyMode = "CENT", brlRate = 5.45 }: ChartsProps) {
   const [timeframe, setTimeframe] = useState("7D");
 
   const formatDate = (dateStr: string) => {
@@ -28,13 +29,10 @@ export default function Charts({ history = [], currencyMode = "CENT_BRL" }: Char
   };
 
   const formatCurrency = (val: number) => {
-    if (currencyMode === "CENT_BRL") {
+    if (currencyMode === "CENT") {
       if (val >= 1000) return `${(val / 1000).toFixed(0)}k USC`;
       return `${val} USC`;
-    } else if (currencyMode === "USD_STAND") {
-      if (val >= 1000) return `$ ${(val / 1000).toFixed(0)}k`;
-      return `$ ${val}`;
-    } else {
+    } else { // BRL
       if (val >= 1000) return `R$ ${(val / 1000).toFixed(0)}k`;
       return `R$ ${val}`;
     }
@@ -50,10 +48,16 @@ export default function Charts({ history = [], currencyMode = "CENT_BRL" }: Char
   };
 
   const filteredHistory = getFilteredHistory();
-  const lineData = filteredHistory.map((h) => ({
-    name: formatDate(h.date),
-    balance: parseFloat(h.balance.toFixed(2)),
-  }));
+  const lineData = filteredHistory.map((h) => {
+    let balVal = h.balance;
+    if (currencyMode === "BRL") {
+      balVal = (h.balance / 100) * brlRate;
+    }
+    return {
+      name: formatDate(h.date),
+      balance: parseFloat(balVal.toFixed(2)),
+    };
+  });
 
   // Calculate growth percentage for the filtered period
   let growthPct = 0;
@@ -142,10 +146,8 @@ export default function Charts({ history = [], currencyMode = "CENT_BRL" }: Char
                   }}
                   formatter={(value: any) => {
                     const formatted = value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    if (currencyMode === "CENT_BRL") {
+                    if (currencyMode === "CENT") {
                       return [`${formatted} USC`, "Saldo"];
-                    } else if (currencyMode === "USD_STAND") {
-                      return [`$ ${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Saldo"];
                     } else {
                       return [`R$ ${formatted}`, "Saldo"];
                     }

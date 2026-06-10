@@ -12,7 +12,7 @@ interface KpiCardsProps {
   totalProfit: number;
   maxDrawdown: number;
   brlRate?: number;
-  currencyMode: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode: "CENT" | "BRL";
 }
 
 export default function KpiCards({
@@ -23,45 +23,44 @@ export default function KpiCards({
   totalProfit = 0,
   maxDrawdown = 0,
   brlRate = 5.45,
-  currencyMode = "CENT_BRL",
+  currencyMode = "CENT",
 }: KpiCardsProps) {
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
     const absVal = Math.abs(val);
-    if (currencyMode === "CENT_BRL") {
-      const convertedBrl = (val / 100) * brlRate;
-      return `R$ ${convertedBrl.toLocaleString("pt-BR", {
+    const isNeg = val < 0;
+    const sign = isNeg ? "-" : "";
+
+    if (currencyMode === "CENT") {
+      const formattedNum = absVal.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      })}`;
-    } else if (currencyMode === "USD_STAND") {
-      return `$ ${absVal.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
-    } else {
-      // BRL_STAND
-      return `R$ ${absVal.toLocaleString("pt-BR", {
+      });
+      return `${sign}${formattedNum} USC`;
+    } else { // BRL
+      const convertedBrl = (absVal / 100) * brlRate;
+      return `${sign}R$ ${convertedBrl.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
     }
   };
 
-  // Format secondary value (sub-label)
+  // Format secondary value (sub-label) - returns absolute value without sign
   const formatValSecondary = (val: number) => {
     const absVal = Math.abs(val);
-    const formattedNum = absVal.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    
-    if (currencyMode === "CENT_BRL") {
+    if (currencyMode === "CENT") {
+      const convertedBrl = (absVal / 100) * brlRate;
+      return `R$ ${convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} BRL`;
+    } else { // BRL
+      const formattedNum = absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
       return `${formattedNum} USC`;
-    } else if (currencyMode === "USD_STAND") {
-      return `${formattedNum} USD`;
-    } else {
-      return `${formattedNum} BRL`;
     }
   };
 
@@ -105,7 +104,7 @@ export default function KpiCards({
         <span className={styles.kpiValueMockup}>{formatValPrimary(balance)}</span>
         <span className={styles.kpiSubValueMockup}>{formatValSecondary(balance)}</span>
         <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>
-          {currencyMode === "CENT_BRL" ? "CENT" : currencyMode === "USD_STAND" ? "USD" : "BRL"}
+          {currencyMode === "CENT" ? "CENT" : "BRL"}
         </span>
       </div>
 

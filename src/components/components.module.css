@@ -1557,4 +1557,128 @@
   color: var(--text-primary);
 }
 
+/* Dynamic Notification Dropdown */
+.notificationsDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -80px;
+  width: 320px;
+  background: rgba(13, 17, 23, 0.96);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 184, 0, 0.05);
+  z-index: 1000;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  animation: slideDownFade 0.2s ease-out;
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notificationsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notificationsHeader span {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notificationsClear {
+  cursor: pointer;
+  font-size: 0.65rem !important;
+  color: var(--text-muted) !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  transition: var(--transition-smooth);
+}
+
+.notificationsClear:hover {
+  color: var(--text-primary) !important;
+}
+
+.notificationsList {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.notificationItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  transition: var(--transition-smooth);
+}
+
+.notificationItem:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notificationTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.notificationTime {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.notificationDesc {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
+  padding: 0;
+}
+
+/* Border colors for severity */
+.notificationItem.critical {
+  border-left: 3px solid var(--neon-red);
+}
+
+.notificationItem.warning {
+  border-left: 3px solid var(--neon-gold);
+}
+
+.notificationItem.info {
+  border-left: 3px solid #00e5ff;
+}
+
+.notificationItem.success {
+  border-left: 3px solid var(--neon-green);
+}
+
 

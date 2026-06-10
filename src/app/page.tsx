@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [brlRate, setBrlRate] = useState(5.45);
-  const [currencyMode, setCurrencyMode] = useState<"CENT_BRL" | "USD_STAND" | "BRL_STAND">("CENT_BRL");
+  const [currencyMode, setCurrencyMode] = useState<"CENT" | "BRL">("CENT");
 
   // Visual polling timer state
   const [syncProgress, setSyncProgress] = useState(0);
@@ -25,12 +25,12 @@ export default function DashboardPage() {
   // Load currency mode preference from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("orion_currency_mode");
-    if (saved === "CENT_BRL" || saved === "USD_STAND" || saved === "BRL_STAND") {
+    if (saved === "CENT" || saved === "BRL") {
       setCurrencyMode(saved);
     }
   }, []);
 
-  const handleCurrencyModeChange = (mode: "CENT_BRL" | "USD_STAND" | "BRL_STAND") => {
+  const handleCurrencyModeChange = (mode: "CENT" | "BRL") => {
     setCurrencyMode(mode);
     localStorage.setItem("orion_currency_mode", mode);
   };
@@ -253,6 +253,11 @@ export default function DashboardPage() {
           brlRate={brlRate}
           currencyMode={currencyMode}
           setCurrencyMode={handleCurrencyModeChange}
+          trades={trades}
+          maxDrawdown={activeAccount.maxDrawdown}
+          floatingPl={activeAccount.floatingPl}
+          balance={activeAccount.balance}
+          softStopLimit={dynamicSoftStopLimit}
         />
 
         {/* 2. Row of 5 KPI Cards */}
@@ -269,7 +274,7 @@ export default function DashboardPage() {
 
         {/* 3. Chart & Risk Management */}
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
-          <Charts history={history} currencyMode={currencyMode} />
+          <Charts history={history} currencyMode={currencyMode} brlRate={brlRate} />
           <RiskManagement
             floatingPl={activeAccount.floatingPl}
             maxDrawdown={activeAccount.maxDrawdown}
@@ -277,6 +282,7 @@ export default function DashboardPage() {
             softStopLimit={dynamicSoftStopLimit}
             balance={activeAccount.balance}
             currencyMode={currencyMode}
+            brlRate={brlRate}
           />
         </div>
 

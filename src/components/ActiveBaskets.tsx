@@ -212,7 +212,7 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
 /* ── Card de um cesto ─────────────────────────────────────────── */
 interface BasketCardProps {
   b: Basket;
-  currencyMode: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode: "CENT" | "BRL";
   brlRate: number;
 }
 
@@ -225,19 +225,15 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
 
   const formatBasketProfit = (val: number) => {
     const absVal = Math.abs(val);
-    if (currencyMode === "CENT_BRL") {
-      const convertedBrl = (val / 100) * brlRate;
+    if (currencyMode === "CENT") {
+      const formattedNum = absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return `${formattedNum} USC`;
+    } else { // BRL
+      const convertedBrl = (absVal / 100) * brlRate;
       return `R$ ${convertedBrl.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
-    } else if (currencyMode === "USD_STAND") {
-      return `$ ${absVal.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
-    } else {
-      return `R$ ${absVal.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
@@ -246,17 +242,18 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
 
   const formatBasketProfitSub = (val: number) => {
     const absVal = Math.abs(val);
-    const formattedNum = absVal.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    
-    if (currencyMode === "CENT_BRL") {
+    if (currencyMode === "CENT") {
+      const convertedBrl = (absVal / 100) * brlRate;
+      return `R$ ${convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} flutuante`;
+    } else { // BRL
+      const formattedNum = absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
       return `${formattedNum} USC flutuante`;
-    } else if (currencyMode === "USD_STAND") {
-      return `${formattedNum} USD flutuante`;
-    } else {
-      return `${formattedNum} BRL flutuante`;
     }
   };
 
@@ -366,7 +363,7 @@ function BasketCard({ b, currencyMode, brlRate }: BasketCardProps) {
                   #{i + 1} · {t.entryPrice.toFixed(b.digits)} · {t.volume.toFixed(2)}L
                 </span>
                 <span style={{ color: tColor, fontSize: "0.65rem", fontWeight: 700, fontFamily: "monospace" }}>
-                  {tProfit >= 0 ? "+" : "-"}{Math.abs(tProfit).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currencyMode === "CENT_BRL" ? "USC" : currencyMode === "USD_STAND" ? "USD" : "BRL"}
+                  {tProfit >= 0 ? "+" : "-"}{currencyMode === "CENT" ? Math.abs(tProfit).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ((Math.abs(tProfit) / 100) * brlRate).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currencyMode === "CENT" ? "USC" : "BRL"}
                 </span>
               </div>
             );
@@ -414,13 +411,13 @@ function InactiveBasketCard({ symbol }: InactiveBasketCardProps) {
 interface ActiveBasketsProps {
   trades: Trade[];
   brlRate?: number;
-  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode?: "CENT" | "BRL";
 }
 
 export default function ActiveBaskets({
   trades = [],
   brlRate = 5.45,
-  currencyMode = "CENT_BRL",
+  currencyMode = "CENT",
 }: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
@@ -429,17 +426,18 @@ export default function ActiveBaskets({
 
   const formatSecondaryVal = (val: number) => {
     const absVal = Math.abs(val);
-    const formattedNum = absVal.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    
-    if (currencyMode === "CENT_BRL") {
+    if (currencyMode === "CENT") {
+      const formattedNum = absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
       return `${formattedNum} USC`;
-    } else if (currencyMode === "USD_STAND") {
-      return `${formattedNum} USD`;
-    } else {
-      return `${formattedNum} BRL`;
+    } else { // BRL
+      const convertedBrl = (absVal / 100) * brlRate;
+      return `R$ ${convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
     }
   };
 

@@ -17,10 +17,10 @@ interface Trade {
 
 interface TradesTableProps {
   trades: Trade[];
-  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode?: "CENT" | "BRL";
 }
 
-export default function TradesTable({ trades = [], currencyMode = "CENT_BRL" }: TradesTableProps) {
+export default function TradesTable({ trades = [], currencyMode = "CENT" }: TradesTableProps) {
   const cleanSymbol = (sym: string) => {
     return sym.toUpperCase().replace("C", "").replace("/", "");
   };

@@ -9,7 +9,8 @@ interface RiskManagementProps {
   tradesCount: number;  // Total de posições abertas
   softStopLimit?: number; // Limite do SoftStop (USC)
   balance?: number;     // Saldo da conta (USC)
-  currencyMode?: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
+  currencyMode?: "CENT" | "BRL";
+  brlRate?: number;
 }
 
 export default function RiskManagement({
@@ -18,31 +19,32 @@ export default function RiskManagement({
   tradesCount = 0,
   softStopLimit = 400.0,
   balance = 0,
-  currencyMode = "CENT_BRL",
+  currencyMode = "CENT",
+  brlRate = 5.45,
 }: RiskManagementProps) {
 
   /* ── helpers ──────────────────────────────────────────────────── */
   const formatRiskCurrency = (val: number, keepSign = false) => {
     const isNeg = val < 0;
     const absVal = Math.abs(val);
-    const formattedNum = absVal.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
     
     let signStr = "";
     if (keepSign) {
       signStr = isNeg ? "-" : val > 0 ? "+" : "";
     }
 
-    if (currencyMode === "CENT_BRL") {
-      return `${signStr}${formattedNum} USC`;
-    } else if (currencyMode === "USD_STAND") {
-      return `${signStr}$ ${absVal.toLocaleString("en-US", {
+    if (currencyMode === "CENT") {
+      const formattedNum = absVal.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      })} USD`;
-    } else {
+      });
+      return `${signStr}${formattedNum} USC`;
+    } else { // BRL
+      const convertedBrl = (absVal / 100) * brlRate;
+      const formattedNum = convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
       return `${signStr}R$ ${formattedNum} BRL`;
     }
   };

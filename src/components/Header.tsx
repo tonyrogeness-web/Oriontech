@@ -1,14 +1,31 @@
-import React from "react";
-import { Bell, User, Activity } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Bell, Activity, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 import styles from "./components.module.css";
+
+interface Trade {
+  id: number;
+  ticket: string;
+  symbol: string;
+  type: string;
+  volume: number;
+  entryPrice: number;
+  currentPrice: number;
+  currentProfit: number;
+  magicNumber: number;
+}
 
 interface HeaderProps {
   accountNumber: string;
   status: string;
   isMock?: boolean;
   brlRate: number;
-  currencyMode: "CENT_BRL" | "USD_STAND" | "BRL_STAND";
-  setCurrencyMode: (mode: "CENT_BRL" | "USD_STAND" | "BRL_STAND") => void;
+  currencyMode: "CENT" | "BRL";
+  setCurrencyMode: (mode: "CENT" | "BRL") => void;
+  trades?: Trade[];
+  maxDrawdown?: number;
+  floatingPl?: number;
+  balance?: number;
+  softStopLimit?: number;
 }
 
 export default function Header({
@@ -18,8 +35,116 @@ export default function Header({
   brlRate,
   currencyMode,
   setCurrencyMode,
+  trades = [],
+  maxDrawdown = 0,
+  floatingPl = 0,
+  balance = 0,
+  softStopLimit = 400.0,
 }: HeaderProps) {
   const isActive = status === "RUNNING";
+  const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  // Close notifications dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        bellRef.current &&
+        !bellRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Generate dynamic system alerts/notifications from trades and risk metrics
+  const getNotifications = () => {
+    const alerts: { title: string; desc: string; severity: "critical" | "warning" | "info" | "success" }[] = [];
+
+    // 1. Group trades by symbol to find levels (recompras)
+    const counts: Record<string, number> = {};
+    trades.forEach((t) => {
+      const sym = t.symbol.toUpperCase().replace("C", "").replace("/", "");
+      counts[sym] = (counts[sym] || 0) + 1;
+    });
+
+    // Add level warning alerts
+    Object.entries(counts).forEach(([sym, level]) => {
+      if (level >= 4) {
+        alerts.push({
+          title: `${sym} - Nível ${level}`,
+          desc: `${level} recompras abertas (Atenção: Recompra Elevada!)`,
+          severity: "critical",
+        });
+      } else if (level > 0) {
+        alerts.push({
+          title: `${sym} - Nível ${level}`,
+          desc: `${level} ${level === 1 ? "recompra aberta" : "recompras abertas"}`,
+          severity: "info",
+        });
+      }
+    });
+
+    // 2. Drawdown alerts
+    if (maxDrawdown >= 20) {
+      alerts.push({
+        title: "Drawdown Crítico",
+        desc: `Drawdown atual está em ${maxDrawdown.toFixed(2)}% (Limite máximo 40%)`,
+        severity: "critical",
+      });
+    } else if (maxDrawdown >= 10) {
+      alerts.push({
+        title: "Drawdown Alerta",
+        desc: `Drawdown atual está em ${maxDrawdown.toFixed(2)}%`,
+        severity: "warning",
+      });
+    }
+
+    // 3. SoftStop alerts
+    if (floatingPl < 0) {
+      const absLoss = Math.abs(floatingPl);
+      const reachPct = softStopLimit > 0 ? (absLoss / softStopLimit) * 100 : 0;
+      if (reachPct >= 80) {
+        alerts.push({
+          title: "SoftStop Crítico",
+          desc: `${reachPct.toFixed(1)}% do limite de perda atingido (${absLoss.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} USC consumido)`,
+          severity: "critical",
+        });
+      } else if (reachPct >= 50) {
+        alerts.push({
+          title: "SoftStop Alerta",
+          desc: `${reachPct.toFixed(1)}% do limite de perda atingido`,
+          severity: "warning",
+        });
+      }
+    }
+
+    // Sort: critical first, then warning, then info
+    alerts.sort((a, b) => {
+      const sevWeight = { critical: 3, warning: 2, info: 1, success: 0 };
+      return sevWeight[b.severity] - sevWeight[a.severity];
+    });
+
+    // Default if no alerts
+    if (alerts.length === 0) {
+      alerts.push({
+        title: "Orion Hedge Seguro",
+        desc: "Nenhum alerta de risco ou recompra pendente no momento.",
+        severity: "success",
+      });
+    }
+
+    return alerts;
+  };
+
+  const notifications = getNotifications();
+  // We only show badge for non-success alerts
+  const activeAlertCount = notifications.filter((n) => n.severity !== "success").length;
 
   return (
     <header className={styles.header}>
@@ -40,30 +165,23 @@ export default function Header({
         {/* Currency/Layout Localization Switcher */}
         <div className={styles.currencySelector}>
           <button
-            className={`${styles.currencyOption} ${currencyMode === "CENT_BRL" ? styles.currencyOptionActive : ""}`}
-            onClick={() => setCurrencyMode("CENT_BRL")}
-            title="Exibir em BRL convertido de Dólar Cent (USC)"
+            className={`${styles.currencyOption} ${currencyMode === "CENT" ? styles.currencyOptionActive : ""}`}
+            onClick={() => setCurrencyMode("CENT")}
+            title="Exibir valores em Dólar Cent (USC)"
           >
-            CENT → BRL
+            CENT
           </button>
           <button
-            className={`${styles.currencyOption} ${currencyMode === "USD_STAND" ? styles.currencyOptionActive : ""}`}
-            onClick={() => setCurrencyMode("USD_STAND")}
-            title="Exibir em Dólar Standard (USD)"
-          >
-            USD
-          </button>
-          <button
-            className={`${styles.currencyOption} ${currencyMode === "BRL_STAND" ? styles.currencyOptionActive : ""}`}
-            onClick={() => setCurrencyMode("BRL_STAND")}
-            title="Exibir em Real Standard (BRL)"
+            className={`${styles.currencyOption} ${currencyMode === "BRL" ? styles.currencyOptionActive : ""}`}
+            onClick={() => setCurrencyMode("BRL")}
+            title="Exibir valores em Real (BRL)"
           >
             BRL
           </button>
         </div>
 
         {/* Exchange rate indicator - only visible/relevant when doing BRL conversions */}
-        {currencyMode === "CENT_BRL" && (
+        {currencyMode === "BRL" && (
           <div 
             className={styles.desktopOnly} 
             style={{ 
@@ -83,9 +201,53 @@ export default function Header({
         )}
 
         {/* Notification Bell */}
-        <div style={{ position: "relative", cursor: "pointer" }}>
-          <Bell size={20} style={{ color: "var(--text-secondary)" }} />
-          <span className={styles.bellBadge}>3</span>
+        <div 
+          ref={bellRef}
+          style={{ position: "relative", cursor: "pointer" }}
+          onClick={() => setShowNotifications(!showNotifications)}
+          title="Alertas de Recompra e Risco"
+        >
+          <Bell size={20} style={{ color: showNotifications ? "var(--neon-gold)" : "var(--text-secondary)", transition: "color 0.2s" }} />
+          {activeAlertCount > 0 && (
+            <span className={styles.bellBadge}>{activeAlertCount}</span>
+          )}
+
+          {/* Dynamic notifications drop card */}
+          {showNotifications && (
+            <div className={styles.notificationsDropdown} ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.notificationsHeader}>
+                <span>Alertas do Robô</span>
+                <span className={styles.notificationsClear} onClick={() => setShowNotifications(false)}>Fechar</span>
+              </div>
+              <div className={styles.notificationsList}>
+                {notifications.map((n, idx) => {
+                  const isCrit = n.severity === "critical";
+                  const isWarn = n.severity === "warning";
+                  const isSucc = n.severity === "success";
+                  const iconColor = isCrit ? "var(--neon-red)" : isWarn ? "var(--neon-gold)" : isSucc ? "var(--neon-green)" : "#00e5ff";
+                  
+                  return (
+                    <div key={idx} className={`${styles.notificationItem} ${styles[n.severity]}`}>
+                      <div className={styles.notificationItemHeader}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                          {isCrit || isWarn ? (
+                            <AlertTriangle size={12} style={{ color: iconColor }} />
+                          ) : isSucc ? (
+                            <CheckCircle2 size={12} style={{ color: iconColor }} />
+                          ) : (
+                            <Info size={12} style={{ color: iconColor }} />
+                          )}
+                          <span className={styles.notificationTitle} style={{ color: iconColor }}>{n.title}</span>
+                        </div>
+                        <span className={styles.notificationTime}>Agora</span>
+                      </div>
+                      <p className={styles.notificationDesc}>{n.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Status indicator */}
@@ -94,11 +256,6 @@ export default function Header({
           <span className={isActive ? styles.statusActiveBadge : styles.statusPausedBadge}>
             {isActive ? "ATIVO" : "PAUSADO"}
           </span>
-        </div>
-
-        {/* User icon */}
-        <div className={styles.userProfile}>
-          <User size={18} style={{ color: "var(--text-primary)" }} />
         </div>
       </div>
     </header>
