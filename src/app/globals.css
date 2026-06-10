@@ -254,3 +254,36 @@ body {
   font-family: var(--font-mono) !important;
   font-variant-numeric: tabular-nums;
 }
+
+/* Proposta Light Theme Override */
+[data-theme="light"] {
+  --bg-deep: #f0f2f5;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-panel-solid: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  
+  --bg-card-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  --bg-card-gradient-hover: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-active: rgba(255, 184, 0, 0.6);
+  --border-glow: rgba(255, 184, 0, 0.08);
+
+  --text-primary: #0f172a;       /* Slate-900 */
+  --text-secondary: #475569;     /* Slate-600 */
+  --text-muted: #64748b;         /* Slate-500 */
+
+  --neon-green-glow: rgba(0, 200, 83, 0.08);
+  --neon-amber-glow: rgba(255, 145, 0, 0.08);
+  --neon-red-glow: rgba(210, 68, 68, 0.08);
+  --neon-gold-glow: rgba(255, 184, 0, 0.08);
+  --neon-orange-glow: rgba(255, 85, 0, 0.08);
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255, 184, 0, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 85, 0, 0.02) 0%, transparent 40%);
+  background-color: #f0f2f5;
+}

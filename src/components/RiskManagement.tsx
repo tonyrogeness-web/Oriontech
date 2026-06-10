@@ -222,7 +222,7 @@ export default function RiskManagement({
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <PlIcon size={11} style={{ color: plColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>PERDA FLUTUANTE</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)" }}>PERDA FLUTUANTE</span>
             </div>
             <Pill label={plStatus} color={plColor} />
           </div>
@@ -230,7 +230,7 @@ export default function RiskManagement({
           {/* Big value */}
           <div style={{ marginTop: "0.3rem" }}>
             <span style={{
-              fontSize: "1.45rem", fontWeight: 800, color: plColor,
+              fontSize: "clamp(1.2rem, 4.5vw, 1.6rem)", fontWeight: 800, color: plColor,
               fontFamily: "monospace", letterSpacing: "-0.02em", lineHeight: 1,
             }}>
               {fmt(floatingPl, true)}
@@ -244,12 +244,12 @@ export default function RiskManagement({
 
           {/* Sub info */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
-            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--text-muted)", fontWeight: 500 }}>
               {plIsPositive
                 ? "✓ Sem perda flutuante no momento"
                 : `Perda de ${fmt(plLoss)} sobre posições abertas`}
             </span>
-            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
               {plBalancePct.toFixed(2)}% da banca
             </span>
           </div>
@@ -268,18 +268,18 @@ export default function RiskManagement({
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <AlertTriangle size={11} style={{ color: ssColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>SOFT STOP</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)" }}>SOFT STOP</span>
             </div>
             <Pill label={ssStatus} color={ssColor} />
           </div>
 
-          {/* Values (White numbers contrast) */}
+          {/* Values (Dynamic theme colors) */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff", fontFamily: "monospace" }}>
-              {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "0.72rem", fontWeight: 500 }}>consumido</span>
+            <span style={{ fontSize: "clamp(0.75rem, 2.2vw, 0.85rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
+              {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "clamp(0.65rem, 2vw, 0.75rem)", fontWeight: 500 }}>consumido</span>
             </span>
-            <span style={{ fontSize: "0.70rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite <span style={{ color: "#ffffff", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
+            <span style={{ fontSize: "clamp(0.65rem, 2vw, 0.75rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
             </span>
           </div>
 
@@ -288,10 +288,10 @@ export default function RiskManagement({
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--text-muted)" }}>
               <strong style={{ color: ssColor }}>{ssBarPct.toFixed(1)}%</strong> do limite
             </span>
-            <span style={{ fontSize: "0.68rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
               ↳ {fmt(ssHeadroom)} disponíveis
             </span>
           </div>
@@ -310,18 +310,18 @@ export default function RiskManagement({
           <div className={styles.riskHeaderRow}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <TrendingDown size={11} style={{ color: ddColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "0.70rem" }}>REBAIXAMENTO (DRAWDOWN)</span>
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)" }}>REBAIXAMENTO (DRAWDOWN)</span>
             </div>
             <Pill label={ddStatus} color={ddColor} />
           </div>
 
-          {/* Values (White numbers contrast) */}
+          {/* Values (Dynamic theme colors) */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff", fontFamily: "monospace" }}>
-              {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "0.72rem", fontWeight: 500 }}>atual</span>
+            <span style={{ fontSize: "clamp(0.75rem, 2.2vw, 0.85rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
+              {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "clamp(0.65rem, 2vw, 0.75rem)", fontWeight: 500 }}>atual</span>
             </span>
-            <span style={{ fontSize: "0.70rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite <span style={{ color: "#ffffff", fontWeight: 600 }}>40.00%</span>
+            <span style={{ fontSize: "clamp(0.65rem, 2vw, 0.75rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>40.00%</span>
             </span>
           </div>
 
@@ -330,10 +330,10 @@ export default function RiskManagement({
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--text-muted)" }}>
               <strong style={{ color: ddColor }}>{ddBarPct.toFixed(1)}%</strong> do limite atingido
             </span>
-            <span style={{ fontSize: "0.68rem", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+            <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.7rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
               ↳ {ddHeadroom.toFixed(2)}% disponíveis
             </span>
           </div>
@@ -357,10 +357,10 @@ export default function RiskManagement({
           background: "rgba(255,255,255,0.015)",
           border: "1px solid rgba(255,255,255,0.045)",
         }}>
-          <span style={{ fontSize: "0.70rem", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
+          <span style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
             TRAILING EQUITY
           </span>
-          <span style={{ fontSize: "0.70rem", fontWeight: 800, color: trailingColor, fontFamily: "monospace", letterSpacing: "0.02em" }}>
+          <span style={{ fontSize: "clamp(0.62rem, 1.8vw, 0.72rem)", fontWeight: 800, color: trailingColor, fontFamily: "monospace", letterSpacing: "0.02em" }}>
             ● {trailingStatusText}
           </span>
         </div>

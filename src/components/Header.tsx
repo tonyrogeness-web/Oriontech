@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, Activity, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { Bell, Activity, AlertTriangle, Info, CheckCircle2, Sun, Moon } from "lucide-react";
 import styles from "./components.module.css";
 
 interface Trade {
@@ -45,6 +45,26 @@ export default function Header({
   newsActive = false,
   newsName = "",
 }: HeaderProps) {
+  // Theme state and toggle logic
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("orion_theme") as "dark" | "light" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    localStorage.setItem("orion_theme", nextTheme);
+  };
+
   interface RecentNotification {
     id: string;
     title: string;
@@ -449,6 +469,16 @@ export default function Header({
             <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
           </div>
         )}
+
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className={styles.themeToggleBtn}
+          title={theme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
+          style={{ marginRight: "0.25rem" }}
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
 
         {/* Notification Bell with pulsing animation */}
         <div 
