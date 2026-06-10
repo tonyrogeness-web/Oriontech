@@ -77,7 +77,7 @@ export default function Header({
     setLastSyncStr(timeStr);
     setSecondsAgo(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trades.length, status]);
+  }, [trades.length, status, floatingPl]);
 
   // Count elapsed seconds since last sync
   useEffect(() => {

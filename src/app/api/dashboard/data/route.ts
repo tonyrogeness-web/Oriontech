@@ -14,6 +14,10 @@ function getMockData() {
     maxDrawdown: 1.49,
     status: "RUNNING",
     lastUpdated: new Date().toISOString(),
+    // [BUG-N4 FIX] Campos de filtro de noticias ausentes no mock — adicionados com defaults
+    newsActive: false,
+    newsFrozen: false,
+    newsName: "",
   };
 
   const mockTrades = [
