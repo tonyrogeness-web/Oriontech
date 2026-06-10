@@ -22,6 +22,36 @@
   position: relative;
   z-index: 2000;
 }
+.headerCapsule {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: var(--opacity-bg-header);
+  border: 1px solid var(--border-light);
+  padding: 0.35rem 0.75rem 0.35rem 0.85rem;
+  border-radius: 12px;
+  margin-left: 0.25rem;
+  transition: var(--transition-smooth);
+}
+
+.capsuleDivider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-light);
+}
+
+.bellContainer {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 
 .themeToggleBtn {
   background: rgba(255, 255, 255, 0.03);
@@ -644,11 +674,6 @@
     margin-bottom: 1rem !important;
   }
 
-  .notificationsDropdown {
-    right: -25px !important;
-    width: 290px !important;
-  }
-
   .mobileOnly {
     display: block !important;
   }
@@ -661,8 +686,9 @@
   .header {
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
   
   .brand {
@@ -674,9 +700,44 @@
   }
   
   .rightHeader {
-    gap: 0.85rem;
-    flex-wrap: wrap;
+    gap: 0;
+    flex-wrap: nowrap;
     justify-content: flex-end;
+  }
+
+  .bellContainer {
+    position: static !important;
+  }
+
+  .headerCapsule {
+    gap: 0.6rem !important;
+    padding: 0.3rem 0.5rem !important;
+    margin-left: 0 !important;
+  }
+
+  .currencySelector {
+    gap: 0.1rem !important;
+    padding: 0.1rem !important;
+    border: none !important;
+    background: rgba(255, 255, 255, 0.01) !important;
+  }
+
+  .currencyOption {
+    padding: 0.2rem 0.35rem !important;
+    font-size: 0.62rem !important;
+  }
+
+  .capsuleDivider {
+    height: 12px !important;
+  }
+
+  .notificationsDropdown {
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
   }
   
   /* Balance panel adjustments */
@@ -1995,19 +2056,7 @@
   animation: slideDownFade 0.2s ease-out;
 }
 
-@media (max-width: 560px) {
-  .notificationsDropdown {
-    right: -105px !important; /* Align dropdown to the right edge of the capsule container on mobile */
-    width: 290px !important;
-  }
-}
-
-@media (max-width: 380px) {
-  .notificationsDropdown {
-    right: -95px !important;
-    width: 270px !important;
-  }
-}
+/* Mobile dropdown positioning managed by 768px media query using static relative-parent layout */
 
 @keyframes slideDownFade {
   from {

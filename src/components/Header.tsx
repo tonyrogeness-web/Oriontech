@@ -432,55 +432,48 @@ export default function Header({
           <span style={{ fontSize: "0.8rem", color: "var(--neon-gold)", fontWeight: 700, fontFamily: "monospace" }}>#{accountNumber}</span>
         </div>
 
-        {/* Currency/Layout Localization Switcher */}
-        <div className={styles.currencySelector}>
-          <button
-            className={`${styles.currencyOption} ${currencyMode === "CENT" ? styles.currencyOptionActive : ""}`}
-            onClick={() => setCurrencyMode("CENT")}
-            title="Exibir valores em Dólar Cent (USC)"
-          >
-            CENT
-          </button>
-          <button
-            className={`${styles.currencyOption} ${currencyMode === "BRL" ? styles.currencyOptionActive : ""}`}
-            onClick={() => setCurrencyMode("BRL")}
-            title="Exibir valores em Real (BRL)"
-          >
-            BRL
-          </button>
-        </div>
-
-        {/* Exchange rate indicator - only visible/relevant when doing BRL conversions */}
-        {currencyMode === "BRL" && (
-          <div 
-            className={styles.desktopOnly} 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "0.4rem", 
-              background: "var(--opacity-bg-header)", 
-              padding: "0.25rem 0.6rem", 
-              borderRadius: "8px", 
-              border: "1px solid var(--border-light)" 
-            }}
-            title="Cotação em tempo real obtida via API AwesomeAPI"
-          >
-            <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>USD/BRL</span>
-            <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
+        {/* Unified Premium Control Capsule */}
+        <div className={styles.headerCapsule}>
+          {/* Currency/Layout Localization Switcher */}
+          <div className={styles.currencySelector}>
+            <button
+              className={`${styles.currencyOption} ${currencyMode === "CENT" ? styles.currencyOptionActive : ""}`}
+              onClick={() => setCurrencyMode("CENT")}
+              title="Exibir valores em Dólar Cent (USC)"
+            >
+              CENT
+            </button>
+            <button
+              className={`${styles.currencyOption} ${currencyMode === "BRL" ? styles.currencyOptionActive : ""}`}
+              onClick={() => setCurrencyMode("BRL")}
+              title="Exibir valores em Real (BRL)"
+            >
+              BRL
+            </button>
           </div>
-        )}
 
-        {/* Premium capsule container for theme, notifications, and status indicator */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1.1rem",
-          background: "var(--opacity-bg-header)",
-          border: "1px solid var(--border-light)",
-          padding: "0.35rem 0.75rem 0.35rem 0.85rem",
-          borderRadius: "12px",
-          marginLeft: "0.25rem"
-        }}>
+          {/* Exchange rate indicator - only visible/relevant when doing BRL conversions */}
+          {currencyMode === "BRL" && (
+            <div 
+              className={styles.desktopOnly} 
+              style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "0.4rem", 
+                background: "rgba(255, 255, 255, 0.02)", 
+                padding: "0.25rem 0.6rem", 
+                borderRadius: "8px", 
+                border: "1px solid var(--border-light)" 
+              }}
+              title="Cotação em tempo real obtida via API AwesomeAPI"
+            >
+              <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>USD/BRL</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--neon-gold)", fontWeight: 700 }}>R$ {brlRate.toFixed(2)}</span>
+            </div>
+          )}
+
+          <div className={styles.capsuleDivider} />
+
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
@@ -490,10 +483,12 @@ export default function Header({
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
+          <div className={styles.capsuleDivider} />
+
           {/* Notification Bell with pulsing animation */}
           <div 
             ref={bellRef}
-            style={{ position: "relative", cursor: "pointer", display: "flex", alignItems: "center" }}
+            className={styles.bellContainer}
             onClick={() => setShowNotifications(!showNotifications)}
             title="Alertas de Recompra e Risco"
           >
@@ -609,8 +604,10 @@ export default function Header({
             )}
           </div>
 
+          <div className={styles.capsuleDivider} />
+
           {/* Status indicator with animated colored bullet status */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <div className={styles.statusContainer}>
             <span className={styles.desktopOnly} style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>Status</span>
             {newsActive ? (
               <span className={styles.statusNewsBadge} title={`Filtro de Notícias Ativo: ${newsName}`}>
