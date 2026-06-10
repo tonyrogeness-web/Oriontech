@@ -775,7 +775,7 @@
 }
 
 .kpiCardLarge .kpiSubValueMockup {
-  font-size: clamp(1.02rem, 2.8vw, 1.25rem) !important;
+  font-size: clamp(1.15rem, 3.2vw, 1.4rem) !important;
   margin-top: 0.25rem !important;
   color: var(--text-secondary) !important;
 }
@@ -795,7 +795,7 @@
 }
 
 .kpiCardSmall .kpiSubValueMockup {
-  font-size: clamp(0.88rem, 2.2vw, 1.02rem) !important;
+  font-size: clamp(0.98rem, 2.5vw, 1.15rem) !important;
   margin-top: 0.18rem !important;
   color: var(--text-secondary) !important;
 }
@@ -908,7 +908,7 @@
 }
 
 .kpiLabelMockup {
-  font-size: 0.6rem;
+  font-size: clamp(0.68rem, 1.8vw, 0.76rem);
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -1014,7 +1014,7 @@
 
 /* Valor USC — destaque como sub-valor */
 .kpiSubValueMockup {
-  font-size: 0.72rem;
+  font-size: clamp(0.8rem, 2.2vw, 0.95rem);
   font-weight: 600;
   color: var(--text-primary);
   margin-top: 0.1rem;
@@ -2325,5 +2325,22 @@
   background: rgba(0, 200, 83, 0.02);
 }
 
+/* ===================================================================
+   LIGHT THEME OVERRIDES FOR CARDS & SHADOWS
+   =================================================================== */
+:global([data-theme="light"]) .chartsCard,
+:global([data-theme="light"]) .controlsCard,
+:global([data-theme="light"]) .tradesCard,
+:global([data-theme="light"]) .riskManagementCard,
+:global([data-theme="light"]) .kpiCardMockup {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02) !important;
+}
 
-
+:global([data-theme="light"]) .chartsCard:hover,
+:global([data-theme="light"]) .controlsCard:hover,
+:global([data-theme="light"]) .tradesCard:hover,
+:global([data-theme="light"]) .riskManagementCard:hover,
+:global([data-theme="light"]) .kpiCardMockup:hover {
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+  border-color: var(--border-active) !important;
+}

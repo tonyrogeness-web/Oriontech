@@ -254,31 +254,35 @@ body {
   font-family: var(--font-mono) !important;
   font-variant-numeric: tabular-nums;
 }
-
 /* Proposta Light Theme Override */
 [data-theme="light"] {
   --bg-deep: #f0f2f5;
-  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-panel: rgba(255, 255, 255, 0.45); /* Refined glassmorphism overlay */
   --bg-panel-solid: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.7);
-  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --bg-card: rgba(255, 255, 255, 0.6);   /* Refined card frosted overlay */
+  --bg-card-hover: rgba(255, 255, 255, 0.85);
   
-  --bg-card-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  --bg-card-gradient-hover: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --bg-card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.75) 100%);
+  --bg-card-gradient-hover: linear-gradient(135deg, rgba(248, 250, 252, 0.85) 0%, rgba(241, 245, 249, 0.85) 100%);
   
-  --border-light: rgba(0, 0, 0, 0.08);
-  --border-active: rgba(255, 184, 0, 0.6);
-  --border-glow: rgba(255, 184, 0, 0.08);
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-active: rgba(255, 184, 0, 0.5);
+  --border-glow: rgba(255, 184, 0, 0.05);
 
   --text-primary: #0f172a;       /* Slate-900 */
-  --text-secondary: #475569;     /* Slate-600 */
+  --text-secondary: #334155;     /* Slate-700 - increased contrast for light background */
   --text-muted: #64748b;         /* Slate-500 */
 
-  --neon-green-glow: rgba(0, 200, 83, 0.08);
-  --neon-amber-glow: rgba(255, 145, 0, 0.08);
-  --neon-red-glow: rgba(210, 68, 68, 0.08);
-  --neon-gold-glow: rgba(255, 184, 0, 0.08);
-  --neon-orange-glow: rgba(255, 85, 0, 0.08);
+  --neon-green: #0d8a4e; /* Darker green for text readability on white */
+  --neon-red: #b91c1c;   /* Darker red for text readability on white */
+  --neon-amber: #b45309; /* Darker amber */
+  --neon-gold: #c27803;  /* Darker gold */
+
+  --neon-green-glow: rgba(13, 138, 78, 0.08);
+  --neon-amber-glow: rgba(180, 83, 9, 0.08);
+  --neon-red-glow: rgba(185, 28, 28, 0.08);
+  --neon-gold-glow: rgba(194, 120, 3, 0.08);
+  --neon-orange-glow: rgba(255, 85, 0, 0.05);
 }
 
 [data-theme="light"] body {

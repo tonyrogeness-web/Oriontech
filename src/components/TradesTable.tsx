@@ -241,10 +241,10 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                       borderBottom: "1px solid rgba(255,255,255,0.04)",
                       background: "rgba(255,255,255,0.012)",
                     }}>
-                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Ordem</span>
-                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Grade</span>
-                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Lotes</span>
-                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>P&L</span>
+                      <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Ordem</span>
+                      <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Grade</span>
+                      <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Lotes</span>
+                      <span style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>P&L</span>
                     </div>
 
                     {/* Data rows — same grid */}
@@ -271,25 +271,25 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.1rem" }}>
                             <span
                               className={isBuy ? styles.badgeLong : styles.badgeShort}
-                              style={{ fontSize: "0.55rem", padding: "0.05rem 0.28rem", fontWeight: 800, borderRadius: "3px", whiteSpace: "nowrap" }}
+                              style={{ fontSize: "clamp(0.6rem, 1.6vw, 0.68rem)", padding: "0.05rem 0.28rem", fontWeight: 800, borderRadius: "3px", whiteSpace: "nowrap" }}
                             >
                               {isBuy ? "COMPRA" : "VENDA"}
                             </span>
-                            <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.01em" }}>
+                            <span style={{ fontSize: "clamp(0.55rem, 1.5vw, 0.62rem)", color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.01em" }}>
                               #{trade.ticket}
                             </span>
                           </div>
 
                           {/* Col 2: grade — centered */}
                           <div style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: "0.62rem", color: "var(--neon-gold)", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                            <span style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.75rem)", color: "var(--neon-gold)", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
                               {trade.level}
                             </span>
                           </div>
 
                           {/* Col 3: volume — centered */}
                           <div style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: "0.65rem", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap" }}>
+                            <span style={{ fontSize: "clamp(0.7rem, 1.8vw, 0.78rem)", color: "var(--text-primary)", fontFamily: "monospace", fontWeight: 600, whiteSpace: "nowrap" }}>
                               {trade.volume.toFixed(3)}L
                             </span>
                           </div>
@@ -302,7 +302,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                               border: `1px solid ${profitBorder}`,
                               padding: "0.08rem 0.3rem",
                               borderRadius: "4px",
-                              fontSize: "0.6rem",
+                              fontSize: "clamp(0.68rem, 1.8vw, 0.75rem)",
                               fontWeight: 700,
                               display: "inline-block",
                               whiteSpace: "nowrap",
