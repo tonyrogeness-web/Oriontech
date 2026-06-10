@@ -122,18 +122,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
   // Sort by profit: worst (lowest) first
   groupedSymbols.sort((a, b) => a.totalProfit - b.totalProfit);
 
-  // Render mini visual bar for P&L scale inline
-  const renderMiniBar = (profit: number) => {
-    const maxLimit = 15.0; // scale limit for visual bar (USC)
-    const pct = Math.min(100, (Math.abs(profit) / maxLimit) * 100);
-    const isPos = profit >= 0;
-    const barColor = isPos ? "var(--neon-green)" : "var(--neon-red)";
-    return (
-      <div style={{ display: "inline-block", width: "40px", height: "4px", backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "2px", overflow: "hidden", marginLeft: "8px", verticalAlign: "middle" }}>
-        <div style={{ width: `${pct}%`, height: "100%", backgroundColor: barColor }} />
-      </div>
-    );
-  };
+
 
   return (
     <div className={styles.tradesCard} style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -190,7 +179,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                     backgroundColor: "rgba(255, 255, 255, 0.02)",
                     padding: "0.55rem 0.75rem",
                     display: "flex",
-                    justify-content: "space-between",
+                    justifyContent: "space-between",
                     alignItems: "center",
                     gap: "0.4rem",
                     userSelect: "none"
@@ -228,7 +217,17 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                     </span>
                     <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: groupColor, display: "flex", alignItems: "center" }}>
                       {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
-                      {renderMiniBar(group.totalProfit)}
+                      {(() => {
+                        const maxLimit = 15.0; // scale limit for visual bar (USC)
+                        const pct = Math.min(100, (Math.abs(group.totalProfit) / maxLimit) * 100);
+                        const isPos = group.totalProfit >= 0;
+                        const barColor = isPos ? "var(--neon-green)" : "var(--neon-red)";
+                        return (
+                          <div style={{ display: "inline-block", width: "40px", height: "4px", backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "2px", overflow: "hidden", marginLeft: "8px", verticalAlign: "middle" }}>
+                            <div style={{ width: `${pct}%`, height: "100%", backgroundColor: barColor }} />
+                          </div>
+                        );
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -251,7 +250,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                           key={trade.ticket} 
                           style={{ 
                             display: "flex", 
-                            justify-content: "space-between", 
+                            justifyContent: "space-between", 
                             alignItems: "center", 
                             padding: "0.45rem 0.75rem", 
                             borderBottom: "1px solid rgba(255, 255, 255, 0.02)",
