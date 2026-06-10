@@ -150,8 +150,8 @@ export default function KpiCards({
   const drawdownTrendHistory = history.map((h) => (h.profit < 0 ? Math.abs(h.profit) : 0));
 
   // Patrimônio Líquido
-  const equityCalc = balance + floatingPl;
-  const equityDiffCalc = equityCalc - balance; // = floatingPl
+  const equityCalc = equity;
+  const equityDiffCalc = equityCalc - balance;
   const equityDiffPctCalc = balance > 0 ? (equityDiffCalc / balance) * 100 : 0;
 
   return (

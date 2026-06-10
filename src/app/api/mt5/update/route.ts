@@ -95,7 +95,7 @@ export async function POST(request: Request) {
       });
       const globalFloatingPl = allActiveTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
       const parsedBalance = parseFloat(balance);
-      const globalEquity = parsedBalance + globalFloatingPl;
+      const parsedEquity = parseFloat(equity !== undefined && equity !== null ? equity : balance);
       const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
 
       // 5. Upsert AccountState with global unified calculations
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         where: { account: String(account) },
         update: {
           balance: parsedBalance,
-          equity: globalEquity,
+          equity: parsedEquity,
           dailyProfit: parseFloat(dailyProfit),
           floatingPl: globalFloatingPl,
           totalProfit: parseFloat(totalProfit || 0),
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         create: {
           account: String(account),
           balance: parsedBalance,
-          equity: globalEquity,
+          equity: parsedEquity,
           dailyProfit: parseFloat(dailyProfit),
           floatingPl: globalFloatingPl,
           totalProfit: parseFloat(totalProfit || 0),
