@@ -284,7 +284,10 @@ export default function DashboardPage() {
             balance={activeAccount.balance}
             currencyMode={currencyMode}
             brlRate={brlRate}
+            history={history}
           />
+
+
         </div>
 
         {/* 4. Active Baskets (por moeda) */}

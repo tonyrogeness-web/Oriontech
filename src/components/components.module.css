@@ -1126,7 +1126,42 @@
   font-weight: 600;
 }
 
-/* ── Baskets Section ─────────────────────────────────────────── */
+/* ── Zoned Risk Bar ─────────────────────────────────────────────── */
+.riskBarTrack {
+  position: relative;
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.riskBarZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.riskBarDivider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  z-index: 1;
+}
+
+.riskBarFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+
 .basketsSection {
   margin-bottom: 1.5rem;
 }
