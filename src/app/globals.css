@@ -12,13 +12,17 @@
   --bg-card: rgba(20, 24, 35, 0.45);
   --bg-card-hover: rgba(30, 36, 50, 0.6);
   
-  --border-glow: rgba(255, 184, 0, 0.15);
-  --border-light: rgba(255, 255, 255, 0.05);
-  --border-active: rgba(255, 184, 0, 0.25);
+  --border-glow: rgba(255, 184, 0, 0.18);
+  --border-light: rgba(255, 255, 255, 0.07);  /* ↑ era 0.05 — bordas um pouco mais visíveis */
+  --border-active: rgba(255, 184, 0, 0.3);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  /* B: Card gradient backgrounds — profundidade sem perder o dark mode */
+  --bg-card-gradient: linear-gradient(135deg, #1a2235 0%, #141924 100%);
+  --bg-card-gradient-hover: linear-gradient(135deg, #1e2a40 0%, #17202e 100%);
+
+  --text-primary: #f1f5f9;      /* ↑ brighter white — máxima legibilidade */
+  --text-secondary: #a8bccf;    /* ↑ #94a3b8 → #a8bccf — labels mais visíveis */
+  --text-muted: #8a9ab8;        /* ↑ #64748b → #8a9ab8 — era muito escuro */
   --text-dark: #020203;
 
   /* Accents - Softer, accessible green and red for dark mode dashboards */

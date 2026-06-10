@@ -305,7 +305,7 @@
 }
 
 .kpiCard {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 1.25rem;
@@ -317,7 +317,8 @@
 
 .kpiCard:hover {
   transform: translateY(-2px);
-  background: var(--bg-card-hover);
+  background: var(--bg-card-gradient-hover);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .kpiDailyCard { border-color: rgba(0, 230, 118, 0.25); }
@@ -373,7 +374,7 @@
 
 /* Charts Card */
 .chartsCard {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 1.5rem;
@@ -403,7 +404,7 @@
 
 /* Controls Card */
 .controlsCard {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 1.5rem;
@@ -444,7 +445,7 @@
 
 /* Active Trades Table */
 .tradesCard {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 1.5rem;
@@ -849,7 +850,7 @@
 }
 
 .kpiCardMockup {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 12px;
   padding: 0.65rem 0.85rem 0.65rem 0.85rem;
@@ -862,8 +863,8 @@
 
 .kpiCardMockup:hover {
   transform: translateY(-2px);
-  background: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--bg-card-gradient-hover);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .kpiLabelMockup {
@@ -1431,7 +1432,7 @@
 
 /* ── Basket Card ── */
 .basketCard {
-  background: var(--bg-panel);
+  background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
   border-radius: 14px;
   padding: 1rem;
@@ -1444,17 +1445,28 @@
 }
 
 .basketCard:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
 }
 
+/* C: Borda colorida com glow — estado de lucro/perda imediato ao olhar */
 .basketCardBorderBuy {
-  border-left: 4px solid var(--neon-green);
+  border-left: 3.5px solid var(--neon-green);
+  box-shadow: inset 3px 0 12px rgba(0, 200, 83, 0.08), 0 0 0 0 transparent;
+}
+
+.basketCardBorderBuy:hover {
+  box-shadow: inset 3px 0 18px rgba(0, 200, 83, 0.15), 0 6px 24px rgba(0, 200, 83, 0.07);
 }
 
 .basketCardBorderSell {
-  border-left: 4px solid var(--neon-red);
+  border-left: 3.5px solid var(--neon-red);
+  box-shadow: inset 3px 0 12px rgba(210, 68, 68, 0.08), 0 0 0 0 transparent;
+}
+
+.basketCardBorderSell:hover {
+  box-shadow: inset 3px 0 18px rgba(210, 68, 68, 0.15), 0 6px 24px rgba(210, 68, 68, 0.07);
 }
 
 .basketHeader {
