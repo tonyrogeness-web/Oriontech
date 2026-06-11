@@ -123,6 +123,7 @@ export default function Header({
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarFilter, setCalendarFilter] = useState<"ALL" | "HIGH">("HIGH");
+  const [showPastEvents, setShowPastEvents] = useState(false);
   
   const calendarRef = useRef<HTMLDivElement>(null);
   const calendarBtnRef = useRef<HTMLButtonElement>(null);
@@ -826,7 +827,30 @@ export default function Header({
                       );
                     }
 
-                    return filteredEvents.map((ev, idx) => {
+                    const now = new Date();
+                    const upcomingEvents: any[] = [];
+                    const pastEvents: any[] = [];
+
+                    filteredEvents.forEach((ev) => {
+                      if (ev.date) {
+                        const evDate = new Date(ev.date);
+                        if (evDate >= now) {
+                          upcomingEvents.push(ev);
+                        } else {
+                          pastEvents.push(ev);
+                        }
+                      } else {
+                        upcomingEvents.push(ev);
+                      }
+                    });
+
+                    // Sort upcoming ascending (closest first)
+                    upcomingEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                    
+                    // Sort past descending (most recent first)
+                    pastEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                    const renderEventItem = (ev: any, itemKey: string, isUpcoming: boolean) => {
                       let impactColor = "var(--text-muted)";
                       let impactBg = "rgba(255, 255, 255, 0.05)";
                       let impactBorder = "rgba(255, 255, 255, 0.1)";
@@ -863,7 +887,7 @@ export default function Header({
                       }
 
                       return (
-                        <div key={idx} className={styles.calendarItem}>
+                        <div key={itemKey} className={`${styles.calendarItem} ${!isUpcoming ? styles.calendarItemPast : ""}`}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
@@ -910,7 +934,40 @@ export default function Header({
                           )}
                         </div>
                       );
-                    });
+                    };
+
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                        <div className={styles.calendarSectionHeader}>
+                          Próximos Eventos
+                        </div>
+
+                        {upcomingEvents.length === 0 ? (
+                          <div className={styles.emptyCalendar} style={{ padding: "1.5rem 1rem" }}>
+                            Nenhum evento agendado para esta semana.
+                          </div>
+                        ) : (
+                          upcomingEvents.map((ev, idx) => renderEventItem(ev, `up_${idx}`, true))
+                        )}
+
+                        {pastEvents.length > 0 && (
+                          <>
+                            <div 
+                              className={styles.calendarPastToggle} 
+                              onClick={() => setShowPastEvents(!showPastEvents)}
+                            >
+                              <span>{showPastEvents ? "▼ Ocultar" : "▶ Exibir"} Histórico Anterior ({pastEvents.length})</span>
+                            </div>
+
+                            {showPastEvents && (
+                              <div className={styles.calendarPastList}>
+                                {pastEvents.map((ev, idx) => renderEventItem(ev, `past_${idx}`, false))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
                   })()}
                 </div>
               </div>

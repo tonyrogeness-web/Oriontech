@@ -2362,6 +2362,54 @@
   color: var(--text-muted);
 }
 
+.calendarSectionHeader {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--neon-gold);
+  background: rgba(255, 184, 0, 0.04);
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid rgba(255, 184, 0, 0.1);
+  border-top: 1px solid rgba(255, 184, 0, 0.05);
+}
+
+.calendarPastToggle {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.calendarPastToggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.calendarPastList {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendarItemPast {
+  opacity: 0.4;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.calendarItemPast:hover {
+  opacity: 0.85;
+}
+
 /* ── News Alert Banner & Badge ── */
 .newsAlertBanner {
   background: rgba(224, 155, 0, 0.07);
@@ -2826,6 +2874,24 @@
 
 :global([data-theme="light"]) .calendarItem:hover {
   background: rgba(0, 0, 0, 0.015) !important;
+}
+
+:global([data-theme="light"]) .calendarSectionHeader {
+  background: rgba(255, 184, 0, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 184, 0, 0.15) !important;
+  color: #c48c00 !important;
+}
+
+:global([data-theme="light"]) .calendarPastToggle {
+  background: rgba(0, 0, 0, 0.01) !important;
+  border-top: 1px solid var(--border-light) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  color: var(--text-secondary) !important;
+}
+
+:global([data-theme="light"]) .calendarPastToggle:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+  color: var(--text-primary) !important;
 }
 
 :global([data-theme="light"]) .clearAllButton {
