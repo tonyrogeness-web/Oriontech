@@ -900,13 +900,13 @@
   .kpiCardSmall {
     grid-column: span 1;
   }
-  .kpiRowGrid > div:nth-child(1) { order: 3; }
-  .kpiRowGrid > div:nth-child(2) { order: 4; }
-  .kpiRowGrid > div:nth-child(3) { order: 1; }
-  .kpiRowGrid > div:nth-child(4) { order: 2; }
+  .kpiRowGrid > div:nth-child(1) { grid-row: 2; }
+  .kpiRowGrid > div:nth-child(2) { grid-row: 3; }
+  .kpiRowGrid > div:nth-child(3) { grid-row: 1; grid-column: 1; }
+  .kpiRowGrid > div:nth-child(4) { grid-row: 1; grid-column: 2; }
   .kpiRowGrid > div:nth-child(5) {
     grid-column: span 2;
-    order: 5;
+    grid-row: 4;
   }
 }
 

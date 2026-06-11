@@ -938,23 +938,13 @@ export default function Header({
 
                     return (
                       <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-                        <div className={styles.calendarSectionHeader}>
-                          Próximos Eventos
-                        </div>
-
-                        {upcomingEvents.length === 0 ? (
-                          <div className={styles.emptyCalendar} style={{ padding: "1.5rem 1rem" }}>
-                            Nenhum evento agendado para esta semana.
-                          </div>
-                        ) : (
-                          upcomingEvents.map((ev, idx) => renderEventItem(ev, `up_${idx}`, true))
-                        )}
-
+                        {/* Exibir Histórico Anterior no topo do dropdown */}
                         {pastEvents.length > 0 && (
                           <>
                             <div 
                               className={styles.calendarPastToggle} 
                               onClick={() => setShowPastEvents(!showPastEvents)}
+                              style={{ borderTop: "none" }}
                             >
                               <span>{showPastEvents ? "▼ Ocultar" : "▶ Exibir"} Histórico Anterior ({pastEvents.length})</span>
                             </div>
@@ -965,6 +955,18 @@ export default function Header({
                               </div>
                             )}
                           </>
+                        )}
+
+                        <div className={styles.calendarSectionHeader}>
+                          Próximos Eventos
+                        </div>
+
+                        {upcomingEvents.length === 0 ? (
+                          <div className={styles.emptyCalendar} style={{ padding: "1.5rem 1rem" }}>
+                            Nenhum evento agendado para esta semana.
+                          </div>
+                        ) : (
+                          upcomingEvents.map((ev, idx) => renderEventItem(ev, `up_${idx}`, true))
                         )}
                       </div>
                     );
