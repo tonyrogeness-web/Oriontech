@@ -203,6 +203,9 @@ export default function KpiCards({
   const emptyCount = 10 - solidCount;
   const barStr = "[" + "█".repeat(solidCount) + "░".repeat(emptyCount) + "]";
 
+  const isProfitPositive = profitNet >= 0;
+  const profitColor = isProfitPositive ? "var(--neon-green)" : "var(--neon-red)";
+
   return (
     <>
       <div className={styles.kpiRowGrid}>
@@ -352,22 +355,19 @@ export default function KpiCards({
           )}
         </div>
 
-        {/* Right Side: Profit / Progress bar */}
+        {/* Right Side: Progress Bar & Profit Inline */}
         <div className={styles.eqCycleRight}>
           {trailingActive ? (
-            <>
-              <div className={styles.eqCycleProfitRow}>
-                <span className={styles.eqCycleValueLabel}>LUCRO:</span>
-                <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: cycleColorVal }}>
-                  {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
-                </span>
-              </div>
-              <div className={styles.eqCycleProgressBarContainer}>
-                <span className={`${styles.eqCycleProgressText} tabular-nums`}>
-                  {barStr} {progressPercentText}%
-                </span>
-              </div>
-            </>
+            <div className={styles.eqCycleProgressRow}>
+              <span className={`${styles.eqCycleProgressText} tabular-nums`}>
+                {barStr} {progressPercentText}%
+              </span>
+              <span className={styles.eqCycleSeparator}>·</span>
+              <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO:</span>
+              <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
+                {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
+              </span>
+            </div>
           ) : (
             <span className={styles.eqCycleInactiveSub}>Aguardando início do próximo ciclo</span>
           )}
