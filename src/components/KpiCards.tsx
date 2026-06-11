@@ -164,6 +164,10 @@ export default function KpiCards({
   const equityDiffCalc = equityCalc - balance;
   const equityDiffPctCalc = balance > 0 ? (equityDiffCalc / balance) * 100 : 0;
 
+  // Lucro Global Líquido (Realizado + Flutuante)
+  const netProfitCalc = totalProfit + floatingPl;
+  const netProfitPctCalc = balance > 0 ? (netProfitCalc / balance) * 100 : 0;
+
   // 6. Ciclo Equity Calculations
   const targetPct = equityCycleTargetPct > 0 ? equityCycleTargetPct : 5.0;
   const progressPct = targetPct > 0 ? (trailingPeak / targetPct) * 100 : 0;
@@ -277,10 +281,10 @@ export default function KpiCards({
             {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
           </span>
           <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-            {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)}
+            Fechado: {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)} ({totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%)
           </span>
-          <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
+          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ textTransform: "none" }}>
+            Líq: {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)} ({netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%)
           </span>
           <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
