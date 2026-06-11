@@ -750,7 +750,7 @@ export default function Header({
           <div className={styles.capsuleDivider} />
 
           {/* Forex Factory Economic Calendar Button */}
-          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <div className={styles.calendarContainer}>
             <button
               ref={calendarBtnRef}
               onClick={() => {

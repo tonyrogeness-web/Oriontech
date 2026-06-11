@@ -741,6 +741,10 @@
     width: auto !important;
     max-width: none !important;
   }
+
+  .calendarContainer {
+    position: static !important;
+  }
   
   /* Balance panel adjustments */
   .balancePanel {
@@ -2204,6 +2208,13 @@
 
 .notificationItem.success {
   border-left: 3px solid var(--neon-green);
+}
+
+.calendarContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Economic Calendar Dropdown */
