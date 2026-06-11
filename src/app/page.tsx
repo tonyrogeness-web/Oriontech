@@ -345,7 +345,7 @@ export default function DashboardPage() {
           newsName={activeAccount.newsName}
         />
 
-        {/* 2. Row of 5 KPI Cards */}
+        {/* 2. Row of 6 KPI Cards */}
         <KpiCards
           balance={activeAccount.balance}
           equity={activeAccount.equity}
@@ -356,6 +356,12 @@ export default function DashboardPage() {
           brlRate={brlRate}
           currencyMode={currencyMode}
           history={history}
+          trailingActive={activeAccount.trailingActive}
+          trailingPeak={activeAccount.trailingPeak}
+          ddReached10={activeAccount.ddReached10}
+          ddReached20={activeAccount.ddReached20}
+          equityCycleBase={activeAccount.equityCycleBase}
+          equityCycleTargetPct={activeAccount.equityCycleTargetPct}
         />
 
         {/* 3. Chart & Risk Management */}
@@ -370,12 +376,6 @@ export default function DashboardPage() {
             currencyMode={currencyMode}
             brlRate={brlRate}
             history={history}
-            trailingActive={activeAccount.trailingActive}
-            trailingPeak={activeAccount.trailingPeak}
-            ddReached10={activeAccount.ddReached10}
-            ddReached20={activeAccount.ddReached20}
-            equityCycleBase={activeAccount.equityCycleBase}
-            equityCycleTargetPct={activeAccount.equityCycleTargetPct}
           />
 
 

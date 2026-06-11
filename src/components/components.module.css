@@ -819,13 +819,13 @@
 
 .kpiRowGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(12, 1fr);
   gap: 0.65rem;
   margin-bottom: 1.25rem;
 }
 
 .kpiCardLarge {
-  grid-column: span 3;
+  grid-column: span 6;
 }
 
 .kpiCardLarge .kpiValueMockup {
@@ -845,7 +845,7 @@
 }
 
 .kpiCardSmall {
-  grid-column: span 2;
+  grid-column: span 3;
 }
 
 .kpiCardSmall .kpiValueMockup {
@@ -866,13 +866,13 @@
 
 @media (max-width: 900px) {
   .kpiRowGrid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(12, 1fr);
   }
   .kpiCardLarge {
-    grid-column: span 3;
+    grid-column: span 6;
   }
   .kpiCardSmall {
-    grid-column: span 2;
+    grid-column: span 3;
   }
 }
 
@@ -886,9 +886,6 @@
   }
   .kpiCardSmall {
     grid-column: span 1;
-  }
-  .kpiRowGrid > div:nth-child(5) {
-    grid-column: span 2;
   }
 }
 
@@ -1116,6 +1113,18 @@
   border: 1px solid rgba(255, 23, 68, 0.15);
 }
 
+.kpiBadgeBlue {
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+.kpiBadgeMuted {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+}
+
 /* KPI Dynamic Card Borders & Glows */
 .kpiCardBorderGold { border-color: rgba(255, 184, 0, 0.25) !important; }
 .kpiCardBorderGold:hover {
@@ -1139,6 +1148,18 @@
 .kpiCardBorderAmber:hover {
   border-color: rgba(255, 145, 0, 0.5) !important;
   box-shadow: 0 0 15px rgba(255, 145, 0, 0.15) !important;
+}
+
+.kpiCardBorderBlue { border-color: rgba(0, 229, 255, 0.25) !important; }
+.kpiCardBorderBlue:hover {
+  border-color: rgba(0, 229, 255, 0.5) !important;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15) !important;
+}
+
+.kpiCardBorderMuted { border-color: var(--border-light) !important; }
+.kpiCardBorderMuted:hover {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05) !important;
 }
 
 /* Sparklines SVG Styles */

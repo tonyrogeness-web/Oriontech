@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Wallet, Coins, TrendingUp, Globe, ShieldAlert } from "lucide-react";
+import { Wallet, Coins, TrendingUp, Globe, ShieldAlert, Target } from "lucide-react";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
@@ -20,6 +20,12 @@ interface KpiCardsProps {
   brlRate?: number;
   currencyMode: "CENT" | "BRL";
   history?: PerformancePoint[];
+  trailingActive?: boolean;
+  trailingPeak?: number;
+  ddReached10?: boolean;
+  ddReached20?: boolean;
+  equityCycleBase?: number;
+  equityCycleTargetPct?: number;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
@@ -71,6 +77,12 @@ export default function KpiCards({
   brlRate = 5.45,
   currencyMode = "CENT",
   history = [],
+  trailingActive = false,
+  trailingPeak = 0,
+  ddReached10 = false,
+  ddReached20 = false,
+  equityCycleBase = 0,
+  equityCycleTargetPct = 5.0,
 }: KpiCardsProps) {
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
@@ -153,6 +165,43 @@ export default function KpiCards({
   const equityCalc = equity;
   const equityDiffCalc = equityCalc - balance;
   const equityDiffPctCalc = balance > 0 ? (equityDiffCalc / balance) * 100 : 0;
+
+  // 6. Ciclo Equity Calculations
+  const targetPct = equityCycleTargetPct > 0 ? equityCycleTargetPct : 5.0;
+  const progressPct = targetPct > 0 ? (trailingPeak / targetPct) * 100 : 0;
+  const clampedProgress = Math.min(100, Math.max(0, progressPct));
+  
+  const targetValue = equityCycleBase * (1 + targetPct / 100);
+  const profitNet = equityCycleBase * (trailingPeak / 100);
+
+  let cycleBadge = "ATIVO";
+  let cycleBadgeColorClass = styles.kpiBadgeGreen;
+  let cycleBorderClass = styles.kpiCardBorderGreen;
+  let cycleGlowClass = styles.greenGlow;
+  let cycleColorVal = "var(--neon-green)";
+
+  if (!trailingActive) {
+    cycleBadge = "INATIVO";
+    cycleBadgeColorClass = styles.kpiBadgeMuted;
+    cycleBorderClass = styles.kpiCardBorderMuted;
+    cycleGlowClass = "";
+    cycleColorVal = "var(--text-muted)";
+  } else if (ddReached20) {
+    cycleBadge = "CRÍTICO";
+    cycleBadgeColorClass = styles.kpiBadgeRed;
+    cycleBorderClass = styles.kpiCardBorderRed;
+    cycleGlowClass = styles.redGlow;
+    cycleColorVal = "var(--neon-red)";
+  } else if (ddReached10) {
+    cycleBadge = "ALERTA";
+    cycleBadgeColorClass = styles.kpiBadgeGold;
+    cycleBorderClass = styles.kpiCardBorderAmber;
+    cycleGlowClass = styles.amberGlow;
+    cycleColorVal = "var(--neon-amber)";
+  }
+
+  const primaryValText = trailingActive ? `${profitNet >= 0 ? "+" : ""}${formatValPrimary(profitNet)}` : formatValPrimary(0);
+  const secondaryValText = trailingActive ? `Alvo: ${formatValSecondary(targetValue)}` : "Sem ciclo ativo";
 
   return (
     <div className={styles.kpiRowGrid}>
@@ -265,6 +314,44 @@ export default function KpiCards({
         </div>
 
         <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />
+      </div>
+
+      {/* 6. Ciclo Equity */}
+      <div className={`${styles.kpiCardMockup} ${cycleBorderClass} ${styles.kpiCardSmall}`}>
+        <div className={styles.kpiHeaderRow}>
+          <span className={styles.kpiLabelMockup}>Ciclo Equity</span>
+          <div className={`${styles.kpiIconContainer} ${cycleGlowClass}`}>
+            <Target size={14} />
+          </div>
+        </div>
+        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: cycleColorVal }}>
+          {primaryValText}
+        </span>
+        <span className={styles.kpiSubValueMockup}>
+          {secondaryValText}
+        </span>
+        <span className={`${styles.kpiBadgeMockup} ${cycleBadgeColorClass}`} style={{ marginBottom: "0.2rem" }}>
+          {cycleBadge}
+        </span>
+        
+        {trailingActive && (
+          <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "var(--opacity-divider)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
+            <div
+              style={{
+                height: "100%",
+                width: `${clampedProgress}%`,
+                background: cycleColorVal,
+                opacity: 0.8,
+                transition: "width 0.5s ease"
+              }}
+            />
+            <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+            <div style={{ position: "absolute", left: "75%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+          </div>
+        )}
+
+        <Sparkline data={equityHistory} color={cycleColorVal} />
       </div>
     </div>
   );
