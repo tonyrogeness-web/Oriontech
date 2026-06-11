@@ -449,9 +449,15 @@ export default function Header({
   }, []);
 
   // Drawdown changes tracker
+  const isFirstDrawdownRef = useRef(true);
   const prevDrawdownRef = useRef<number>(0);
   useEffect(() => {
     if (maxDrawdown === undefined) return;
+    if (isFirstDrawdownRef.current) {
+      isFirstDrawdownRef.current = false;
+      prevDrawdownRef.current = maxDrawdown;
+      return;
+    }
     const prev = prevDrawdownRef.current;
     if (prev < 10 && maxDrawdown >= 10 && maxDrawdown < 20) {
       addToast("🟡 Alerta de Drawdown", `Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Amarela)`, "warning");
@@ -464,13 +470,20 @@ export default function Header({
   }, [maxDrawdown, addToast]);
 
   // SoftStop changes tracker
+  const isFirstSoftStopRef = useRef(true);
   const prevSoftStopReachRef = useRef<number>(0);
   useEffect(() => {
     if (floatingPl === undefined || softStopLimit === undefined || softStopLimit <= 0) return;
     const absLoss = Math.abs(floatingPl);
     const reachPct = (absLoss / softStopLimit) * 100;
-    const prev = prevSoftStopReachRef.current;
 
+    if (isFirstSoftStopRef.current) {
+      isFirstSoftStopRef.current = false;
+      prevSoftStopReachRef.current = reachPct;
+      return;
+    }
+
+    const prev = prevSoftStopReachRef.current;
     if (floatingPl < 0) {
       if (prev < 50 && reachPct >= 50 && reachPct < 80) {
         addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${absLoss.toFixed(2)} USC)`, "warning");
@@ -484,10 +497,15 @@ export default function Header({
   }, [floatingPl, softStopLimit, addToast]);
 
   // Trailing active / peak cycle tracker
+  const isFirstTrailingActiveRef = useRef(true);
   const prevTrailingActiveRef = useRef<boolean>(false);
-  const prevTrailingPeakRef = useRef<number>(0);
   useEffect(() => {
     if (trailingActive === undefined) return;
+    if (isFirstTrailingActiveRef.current) {
+      isFirstTrailingActiveRef.current = false;
+      prevTrailingActiveRef.current = trailingActive;
+      return;
+    }
     const prevActive = prevTrailingActiveRef.current;
     
     if (!prevActive && trailingActive) {
@@ -498,8 +516,15 @@ export default function Header({
     prevTrailingActiveRef.current = trailingActive;
   }, [trailingActive, balance, currencyMode, brlRate, addToast]);
 
+  const isFirstTrailingPeakRef = useRef(true);
+  const prevTrailingPeakRef = useRef<number>(0);
   useEffect(() => {
     if (trailingPeak === undefined || !trailingActive) return;
+    if (isFirstTrailingPeakRef.current) {
+      isFirstTrailingPeakRef.current = false;
+      prevTrailingPeakRef.current = trailingPeak;
+      return;
+    }
     const prevPeak = prevTrailingPeakRef.current;
     
     if (prevPeak < 2.5 && trailingPeak >= 2.5 && trailingPeak < 4.5) {
