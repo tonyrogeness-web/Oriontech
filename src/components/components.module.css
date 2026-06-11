@@ -900,14 +900,12 @@
   .kpiCardSmall {
     grid-column: span 1;
   }
-  .kpiRowGrid > div:nth-child(1) { grid-row: 2; }
-  .kpiRowGrid > div:nth-child(2) { grid-row: 3; }
-  .kpiRowGrid > div:nth-child(3) { grid-row: 1; grid-column: 1; }
-  .kpiRowGrid > div:nth-child(4) { grid-row: 1; grid-column: 2; }
-  .kpiRowGrid > div:nth-child(5) {
-    grid-column: span 2;
-    grid-row: 4;
-  }
+  .kpiRowGrid > div:nth-child(1) { grid-row: 3; grid-column: 1; } /* Saldo da Conta */
+  .kpiRowGrid > div:nth-child(2) { grid-row: 3; grid-column: 2; } /* Saldo Líquido */
+  .kpiRowGrid > div:nth-child(3) { grid-row: 2; grid-column: 1; } /* L. Líquido */
+  .kpiRowGrid > div:nth-child(4) { grid-row: 1; grid-column: 1; } /* Lucro Hoje */
+  .kpiRowGrid > div:nth-child(5) { grid-row: 1; grid-column: 2; } /* L. Global */
+  .kpiRowGrid > div:nth-child(6) { grid-row: 2; grid-column: 2; } /* Drawdown Atual */
 }
 
 @media (max-width: 480px) {
