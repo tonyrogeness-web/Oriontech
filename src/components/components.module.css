@@ -3061,3 +3061,136 @@
 :global([data-theme="light"]) .toastCloseBtn:hover {
   background: rgba(0, 0, 0, 0.05);
 }
+
+/* ── Orion Redesign: Section headers and Unified Patrimônio card ── */
+.kpiSectionHeader {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.65rem;
+  margin-top: 1.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.kpiSectionHeader::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--opacity-divider);
+}
+
+.patrimonioUnifiedCard {
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: var(--transition-smooth);
+  margin-bottom: 1.25rem;
+}
+.patrimonioUnifiedCard:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-gradient-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.patrimonioHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--opacity-divider);
+  padding-bottom: 0.65rem;
+}
+.patrimonioTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.patrimonioMainTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.08em;
+}
+.patrimonioPlBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+.badgeGreen {
+  color: var(--neon-green);
+  background: rgba(0, 230, 118, 0.1);
+  border: 1px solid rgba(0, 230, 118, 0.2);
+}
+.badgeRed {
+  color: var(--neon-red);
+  background: rgba(255, 23, 68, 0.1);
+  border: 1px solid rgba(255, 23, 68, 0.2);
+}
+
+.patrimonioColsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.patrimonioCol {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-right: 1px solid var(--opacity-divider);
+  padding-right: 1.25rem;
+}
+.patrimonioCol:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+.patrimonioColLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.45rem;
+}
+.patrimonioColValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 3.2vw, 1.6rem);
+  line-height: 1.2;
+}
+.patrimonioColSubValue {
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+.patrimonioColBadgeContainer {
+  margin-top: 0.6rem;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .patrimonioColsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+  .patrimonioCol {
+    border-right: none;
+    border-bottom: 1px solid var(--opacity-divider);
+    padding-right: 0;
+    padding-bottom: 1.1rem;
+  }
+  .patrimonioCol:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
