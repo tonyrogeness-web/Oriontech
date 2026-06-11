@@ -53,6 +53,8 @@ model PerformanceHistory {
   profit        Float
   balance       Float
   equity        Float?
+  gain          Float    @default(0.0)
+  loss          Float    @default(0.0)
 
   @@unique([account, date])
 }

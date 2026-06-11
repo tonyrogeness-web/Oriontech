@@ -73,13 +73,13 @@ function getMockData() {
   ];
 
   const mockHistory = [
-    { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), profit: 45.2, balance: 10045.2 },
-    { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), profit: -12.5, balance: 10032.7 },
-    { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), profit: 89.1, balance: 10121.8 },
-    { date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), profit: 34.0, balance: 10155.8 },
-    { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), profit: -22.4, balance: 10133.4 },
-    { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), profit: 95.8, balance: 10229.2 },
-    { date: new Date().toISOString(), profit: 154.2, balance: 10383.4 },
+    { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), profit: 45.2, balance: 10045.2, equity: 10020.2, gain: 55.2, loss: -10.0 },
+    { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), profit: -12.5, balance: 10032.7, equity: 10012.7, gain: 15.0, loss: -27.5 },
+    { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), profit: 89.1, balance: 10121.8, equity: 10111.8, gain: 95.0, loss: -5.9 },
+    { date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), profit: 34.0, balance: 10155.8, equity: 10105.8, gain: 40.0, loss: -6.0 },
+    { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), profit: -22.4, balance: 10133.4, equity: 10093.4, gain: 10.0, loss: -32.4 },
+    { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), profit: 95.8, balance: 10229.2, equity: 10219.2, gain: 110.0, loss: -14.2 },
+    { date: new Date().toISOString(), profit: 154.2, balance: 10383.4, equity: 10233.4, gain: 180.0, loss: -25.8 },
   ];
 
   return {
@@ -129,6 +129,9 @@ export async function GET() {
         date: h.date.toISOString(),
         profit: h.profit,
         balance: h.balance,
+        equity: h.equity,
+        gain: h.gain,
+        loss: h.loss,
       })),
       pendingCommandsCount,
     });

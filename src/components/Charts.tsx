@@ -51,18 +51,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     }
   };
 
-  // Filter history based on timeframe
-  const getFilteredHistory = () => {
-    if (!history || history.length === 0) return [];
-    if (timeframe === "7D") return history.slice(-7);
-    if (timeframe === "30D") return history.slice(-30);
-    if (timeframe === "MÊS") return history.slice(-30);
-    return history;
-  };
-
-  const filteredHistory = getFilteredHistory();
-  let cumProfit = 0;
-  const lineData = filteredHistory.map((h) => {
+  // Process the full history to calculate cumulative curves first, avoiding reset when filtering timeframes
+  let runningCumProfit = 0;
+  const fullProcessedHistory = history.map((h) => {
     let balVal = h.balance;
     let profitVal = h.profit;
     let eqVal = h.equity !== null && h.equity !== undefined ? h.equity : h.balance;
@@ -72,22 +63,43 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
       profitVal = (h.profit / 100) * brlRate;
       eqVal = (eqVal / 100) * brlRate;
     }
-    
-    cumProfit += profitVal;
+
+    runningCumProfit += profitVal;
     const floatingPl = eqVal - balVal;
-    const netProfit = cumProfit + floatingPl;
-    
+    const netProfit = runningCumProfit + floatingPl;
+
+    // Use actual gain and loss if sent by the robot, otherwise fallback
+    const gainVal = (h as any).gain !== undefined && (h as any).gain !== null
+      ? (currencyMode === "BRL" ? ((h as any).gain / 100) * brlRate : (h as any).gain)
+      : (profitVal > 0 ? profitVal : 0);
+
+    const lossVal = (h as any).loss !== undefined && (h as any).loss !== null
+      ? (currencyMode === "BRL" ? ((h as any).loss / 100) * brlRate : (h as any).loss)
+      : (profitVal < 0 ? profitVal : 0);
+
     return {
+      dateRaw: h.date,
       name: formatDate(h.date),
       balance: parseFloat(balVal.toFixed(2)),
       profit: parseFloat(profitVal.toFixed(2)),
-      gain: profitVal > 0 ? parseFloat(profitVal.toFixed(2)) : 0,
-      loss: profitVal < 0 ? parseFloat(profitVal.toFixed(2)) : 0,
+      gain: parseFloat(gainVal.toFixed(2)),
+      loss: parseFloat(lossVal.toFixed(2)),
       floating: parseFloat(floatingPl.toFixed(2)),
-      cumProfit: parseFloat(cumProfit.toFixed(2)),
+      cumProfit: parseFloat(runningCumProfit.toFixed(2)),
       netProfit: parseFloat(netProfit.toFixed(2)),
     };
   });
+
+  // Filter history based on timeframe from the processed data
+  const getFilteredHistory = () => {
+    if (!fullProcessedHistory || fullProcessedHistory.length === 0) return [];
+    if (timeframe === "7D") return fullProcessedHistory.slice(-7);
+    if (timeframe === "30D") return fullProcessedHistory.slice(-30);
+    if (timeframe === "MÊS") return fullProcessedHistory.slice(-30);
+    return fullProcessedHistory;
+  };
+
+  const lineData = getFilteredHistory();
 
   // Calculate statistics for the filtered period
   const tradingDays = lineData.filter((d) => d.profit !== 0);

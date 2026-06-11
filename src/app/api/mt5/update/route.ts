@@ -175,6 +175,8 @@ export async function POST(request: Request) {
             profit: parseFloat(h.profit),
             balance: parseFloat(h.balance),
             equity: isToday ? parseFloat(equity) : undefined,
+            gain: h.gain !== undefined ? parseFloat(h.gain) : undefined,
+            loss: h.loss !== undefined ? parseFloat(h.loss) : undefined,
           },
           create: {
             account: String(account),
@@ -182,6 +184,8 @@ export async function POST(request: Request) {
             profit: parseFloat(h.profit),
             balance: parseFloat(h.balance),
             equity: isToday ? parseFloat(equity) : null,
+            gain: h.gain !== undefined ? parseFloat(h.gain) : 0.0,
+            loss: h.loss !== undefined ? parseFloat(h.loss) : 0.0,
           },
         });
       }
