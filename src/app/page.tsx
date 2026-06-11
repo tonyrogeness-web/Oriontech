@@ -343,6 +343,8 @@ export default function DashboardPage() {
           softStopLimit={dynamicSoftStopLimit}
           newsActive={activeAccount.newsActive}
           newsName={activeAccount.newsName}
+          trailingActive={activeAccount.trailingActive}
+          trailingPeak={activeAccount.trailingPeak}
         />
 
         {/* 2. Row of 6 KPI Cards */}

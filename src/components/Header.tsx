@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Bell, Activity, AlertTriangle, Info, CheckCircle2, Sun, Moon } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Bell, Activity, AlertTriangle, Info, CheckCircle2, Sun, Moon, X } from "lucide-react";
 import styles from "./components.module.css";
 
 interface Trade {
@@ -28,6 +28,8 @@ interface HeaderProps {
   softStopLimit?: number;
   newsActive?: boolean;
   newsName?: string;
+  trailingActive?: boolean;
+  trailingPeak?: number;
 }
 
 export default function Header({
@@ -44,6 +46,8 @@ export default function Header({
   softStopLimit = 400.0,
   newsActive = false,
   newsName = "",
+  trailingActive = false,
+  trailingPeak = 0,
 }: HeaderProps) {
   // Theme state and toggle logic
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -96,6 +100,29 @@ export default function Header({
   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([]);
   const [readCriticalIds, setReadCriticalIds] = useState<string[]>([]);
   const [criticalTimestamps, setCriticalTimestamps] = useState<Record<string, number>>({});
+
+  interface Toast {
+    id: string;
+    title: string;
+    desc: string;
+    type: "success" | "warning" | "error" | "info";
+  }
+
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const addToast = useCallback((title: string, desc: string, type: "success" | "warning" | "error" | "info") => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, title, desc, type }]);
+    
+    // Auto-remove after 6 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 6000);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   // 1. Generate active critical alerts list dynamically
   const activeCriticals: CriticalNotification[] = [];
@@ -347,12 +374,21 @@ export default function Header({
           localStorage.setItem("orion_recent_notifications", JSON.stringify(updated));
           return updated;
         });
+        newItems.forEach((item) => {
+          let toastType: "success" | "warning" | "error" | "info" = "info";
+          if (item.id.startsWith("trade_close_")) {
+            toastType = "success";
+          } else if (item.id.startsWith("trade_recompra_")) {
+            toastType = "warning";
+          }
+          addToast(item.title, item.desc, toastType);
+        });
       }
     }
 
     prevTradesRef.current = trades;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trades]);
+  }, [trades, addToast]);
 
   // Clean expired recent notifications every tick
   useEffect(() => {
@@ -411,6 +447,68 @@ export default function Header({
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Drawdown changes tracker
+  const prevDrawdownRef = useRef<number>(0);
+  useEffect(() => {
+    if (maxDrawdown === undefined) return;
+    const prev = prevDrawdownRef.current;
+    if (prev < 10 && maxDrawdown >= 10 && maxDrawdown < 20) {
+      addToast("🟡 Alerta de Drawdown", `Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Amarela)`, "warning");
+    } else if (prev < 20 && maxDrawdown >= 20) {
+      addToast("🔴 Drawdown Crítico", `Perigo: Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Vermelha)`, "error");
+    } else if (prev >= 10 && maxDrawdown < 10) {
+      addToast("🟢 Risco Normalizado", `Drawdown reduziu para ${maxDrawdown.toFixed(1)}% (Zona Verde)`, "success");
+    }
+    prevDrawdownRef.current = maxDrawdown;
+  }, [maxDrawdown, addToast]);
+
+  // SoftStop changes tracker
+  const prevSoftStopReachRef = useRef<number>(0);
+  useEffect(() => {
+    if (floatingPl === undefined || softStopLimit === undefined || softStopLimit <= 0) return;
+    const absLoss = Math.abs(floatingPl);
+    const reachPct = (absLoss / softStopLimit) * 100;
+    const prev = prevSoftStopReachRef.current;
+
+    if (floatingPl < 0) {
+      if (prev < 50 && reachPct >= 50 && reachPct < 80) {
+        addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${absLoss.toFixed(2)} USC)`, "warning");
+      } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
+        addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${absLoss.toFixed(2)} USC)`, "error");
+      } else if (prev < 100 && reachPct >= 100) {
+        addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${absLoss.toFixed(2)} / ${softStopLimit.toFixed(2)} USC). Novas ordens bloqueadas!`, "error");
+      }
+    }
+    prevSoftStopReachRef.current = reachPct;
+  }, [floatingPl, softStopLimit, addToast]);
+
+  // Trailing active / peak cycle tracker
+  const prevTrailingActiveRef = useRef<boolean>(false);
+  const prevTrailingPeakRef = useRef<number>(0);
+  useEffect(() => {
+    if (trailingActive === undefined) return;
+    const prevActive = prevTrailingActiveRef.current;
+    
+    if (!prevActive && trailingActive) {
+      addToast("🎯 Ciclo Equity Iniciado", `Novo ciclo de Trailing de Patrimônio foi ativado (Base: ${currencyMode === "CENT" ? (balance ? balance.toFixed(2) : "0.00") + " USC" : "R$ " + ((balance || 0) / 100 * brlRate).toFixed(2)}).`, "success");
+    } else if (prevActive && !trailingActive) {
+      addToast("🏁 Ciclo Equity Concluído", "O ciclo de trailing atual foi encerrado (alvo alcançado ou resetado).", "info");
+    }
+    prevTrailingActiveRef.current = trailingActive;
+  }, [trailingActive, balance, currencyMode, brlRate, addToast]);
+
+  useEffect(() => {
+    if (trailingPeak === undefined || !trailingActive) return;
+    const prevPeak = prevTrailingPeakRef.current;
+    
+    if (prevPeak < 2.5 && trailingPeak >= 2.5 && trailingPeak < 4.5) {
+      addToast("📈 Progresso do Ciclo", `Alcançou +${trailingPeak.toFixed(2)}% de lucro flutuante (metade do caminho para o alvo!).`, "info");
+    } else if (prevPeak < 4.5 && trailingPeak >= 4.5) {
+      addToast("🚀 Quase lá!", `Lucro flutuante atingiu +${trailingPeak.toFixed(2)}%. Próximo de bater o alvo do ciclo!`, "success");
+    }
+    prevTrailingPeakRef.current = trailingPeak;
+  }, [trailingPeak, trailingActive, addToast]);
 
   // Actions
   const dismissRecent = (id: string) => {
@@ -678,6 +776,39 @@ export default function Header({
             )}
           </div>
         </div>
+      </div>
+      {/* Toasts Container */}
+      <div className={styles.toastContainer}>
+        {toasts.map((t) => {
+          let IconComp = Info;
+          let toastClass = styles.toastInfo;
+          if (t.type === "success") {
+            IconComp = CheckCircle2;
+            toastClass = styles.toastSuccess;
+          } else if (t.type === "warning") {
+            IconComp = AlertTriangle;
+            toastClass = styles.toastWarning;
+          } else if (t.type === "error") {
+            IconComp = AlertTriangle;
+            toastClass = styles.toastError;
+          }
+          return (
+            <div key={t.id} className={`${styles.toast} ${toastClass}`}>
+              <div className={styles.toastHeader}>
+                <div className={styles.toastTitleGroup}>
+                  <IconComp size={14} />
+                  <span className={t.type === "error" ? styles.valueRed : styles.toastTitle}>
+                    {t.title}
+                  </span>
+                </div>
+                <button className={styles.toastCloseBtn} onClick={() => removeToast(t.id)}>
+                  <X size={14} />
+                </button>
+              </div>
+              <p className={styles.toastDesc}>{t.desc}</p>
+            </div>
+          );
+        })}
       </div>
     </header>
   );

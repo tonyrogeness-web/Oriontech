@@ -65,7 +65,7 @@ function PinModal({
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: "rgba(0,0,0,0.75)",
+        background: "rgba(0,0,0,0.6)",
         backdropFilter: "blur(6px)",
         display: "flex",
         alignItems: "center",
@@ -76,12 +76,12 @@ function PinModal({
       {/* Card */}
       <div
         style={{
-          background: "linear-gradient(135deg, #0f1117 0%, #161b27 100%)",
-          border: "1px solid var(--opacity-border)",
+          background: "var(--bg-panel-solid)",
+          border: "1px solid var(--border-light)",
           borderRadius: "20px",
           padding: "2rem 1.75rem",
           width: "min(320px, 90vw)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.25)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -94,8 +94,8 @@ function PinModal({
             width: "48px",
             height: "48px",
             borderRadius: "50%",
-            background: "rgba(99,102,241,0.15)",
-            border: "1px solid rgba(99,102,241,0.3)",
+            background: "rgba(129,140,248,0.15)",
+            border: "1px solid rgba(129,140,248,0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -126,7 +126,7 @@ function PinModal({
                 width: "14px",
                 height: "14px",
                 borderRadius: "50%",
-                border: `2px solid ${wrongAttempt ? "var(--neon-red)" : "rgba(99,102,241,0.5)"}`,
+                border: `2px solid ${wrongAttempt ? "var(--neon-red)" : "rgba(129,140,248,0.5)"}`,
                 background:
                   digits.length > i
                     ? wrongAttempt
@@ -169,10 +169,10 @@ function PinModal({
                 style={{
                   height: "52px",
                   borderRadius: "10px",
-                  border: "1px solid var(--opacity-border)",
+                  border: "1px solid var(--border-light)",
                   background: isDelete
-                    ? "rgba(255,23,68,0.07)"
-                    : "var(--opacity-bg-soft)",
+                    ? "rgba(210,68,68,0.1)"
+                    : "var(--opacity-bg-hover)",
                   color: isDelete ? "var(--neon-red)" : "var(--text-primary)",
                   fontSize: isDelete ? "1rem" : "1.25rem",
                   fontWeight: 700,
@@ -202,8 +202,8 @@ function PinModal({
             width: "100%",
             padding: "0.6rem",
             borderRadius: "10px",
-            border: "1px solid var(--opacity-border)",
-            background: "transparent",
+            border: "1px solid var(--border-light)",
+            background: "var(--opacity-bg-soft)",
             color: "var(--text-muted)",
             fontSize: "0.78rem",
             fontWeight: 600,
