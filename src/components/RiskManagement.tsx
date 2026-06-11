@@ -23,6 +23,8 @@ interface RiskManagementProps {
   trailingPeak?: number;
   ddReached10?: boolean;
   ddReached20?: boolean;
+  equityCycleBase?: number;
+  equityCycleTargetPct?: number;
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -123,6 +125,8 @@ export default function RiskManagement({
   trailingPeak = 0,
   ddReached10 = false,
   ddReached20 = false,
+  equityCycleBase = 0,
+  equityCycleTargetPct = 5.0,
 }: RiskManagementProps) {
 
   /* ── Formatter ────────────────────────────────────────────────── */
@@ -172,12 +176,19 @@ export default function RiskManagement({
   /* ═══════════════════════════════════════════════════════════════
      4. TRAILING EQUITY
   ═══════════════════════════════════════════════════════════════ */
-  const targetPct = 5.0; // Alvo fixo do Ciclo de Equity (+5%)
+  const targetPct = equityCycleTargetPct > 0 ? equityCycleTargetPct : 5.0;
   const progressPct = targetPct > 0 ? (trailingPeak / targetPct) * 100 : 0;
+  const clampedProgress = Math.min(100, Math.max(0, progressPct));
   const trailingColor = ddReached20 ? "var(--neon-red)" : (ddReached10 ? "var(--neon-gold)" : "var(--neon-green)");
-  const trailingStatusText = trailingActive
-    ? `ATIVO (Atual: ${trailingPeak >= 0 ? "+" : ""}${trailingPeak.toFixed(2)}% | Alvo: +${targetPct.toFixed(1)}% | Alcance: ${progressPct.toFixed(0)}%)`
-    : `INATIVO`;
+  
+  const targetValue = equityCycleBase * (1 + targetPct / 100);
+  const profitNet = equityCycleBase * (trailingPeak / 100);
+
+  const totalChars = 10;
+  const solidCount = Math.max(0, Math.min(totalChars, Math.round(clampedProgress / (100 / totalChars))));
+  const emptyCount = totalChars - solidCount;
+  const barStr = "█".repeat(solidCount) + "░".repeat(emptyCount);
+  const progressPercentText = clampedProgress.toFixed(0);
 
   /* ── Worst state → card border ───────────────────────────────── */
   const isCritical = ssStatus === "CRÍTICO" || ddStatus === "CRÍTICO";
@@ -349,21 +360,33 @@ export default function RiskManagement({
         <Divider />
 
         <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "0.2rem",
-          padding: "0.5rem 0.75rem",
+          marginTop: "0.5rem",
+          padding: "0.6rem 0.8rem",
           borderRadius: "8px",
           background: "var(--opacity-bg-soft)",
           border: "1px solid var(--opacity-border)",
+          fontFamily: "monospace",
+          fontSize: "0.72rem",
+          lineHeight: "1.45",
+          color: trailingActive ? trailingColor : "var(--text-muted)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.25rem"
         }}>
-          <span style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)", fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.06em" }}>
-            CICLO EQUITY
-          </span>
-          <span style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)", fontWeight: 800, color: trailingColor, fontFamily: "monospace", letterSpacing: "0.02em" }}>
-            ● {trailingStatusText}
-          </span>
+          {trailingActive ? (
+            <>
+              <div>
+                <span style={{ color: "var(--text-secondary)", fontWeight: "bold" }}>CICLO EQ  │</span> Base: {fmt(equityCycleBase)} &nbsp;➔&nbsp; Alvo (+{targetPct.toFixed(0)}%): {fmt(targetValue)}
+              </div>
+              <div>
+                <span style={{ color: "var(--text-secondary)", fontWeight: "bold" }}>PROGRESSO │</span> Lucro: {fmt(profitNet, true)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%) &nbsp;[{barStr}]&nbsp; {progressPercentText}%
+              </div>
+            </>
+          ) : (
+            <div>
+              <span style={{ color: "var(--text-secondary)", fontWeight: "bold" }}>CICLO EQ  │</span> INATIVO
+            </div>
+          )}
         </div>
 
       </div>

@@ -374,6 +374,8 @@ export default function DashboardPage() {
             trailingPeak={activeAccount.trailingPeak}
             ddReached10={activeAccount.ddReached10}
             ddReached20={activeAccount.ddReached20}
+            equityCycleBase={activeAccount.equityCycleBase}
+            equityCycleTargetPct={activeAccount.equityCycleTargetPct}
           />
 
 

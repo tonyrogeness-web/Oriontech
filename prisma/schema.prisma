@@ -26,6 +26,8 @@ model AccountState {
   ddReached10    Boolean  @default(false)
   ddReached20    Boolean  @default(false)
   brlRate        Float    @default(5.20)
+  equityCycleBase      Float    @default(0.0)
+  equityCycleTargetPct Float    @default(5.0)
 }
 
 model ActiveTrade {

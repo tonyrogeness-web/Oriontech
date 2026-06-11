@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       ddReached10 = false,
       ddReached20 = false,
       brlRate = 5.20,
+      equityCycleBase = 0.0,
+      equityCycleTargetPct = 5.0,
     } = payload;
 
     // 1. Verify token
@@ -119,6 +121,8 @@ export async function POST(request: Request) {
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
           brlRate: parsedBrlRate,
+          equityCycleBase: parseFloat(equityCycleBase || 0.0),
+          equityCycleTargetPct: parseFloat(equityCycleTargetPct || 5.0),
         },
         create: {
           account: String(account),
@@ -137,6 +141,8 @@ export async function POST(request: Request) {
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
           brlRate: parsedBrlRate,
+          equityCycleBase: parseFloat(equityCycleBase || 0.0),
+          equityCycleTargetPct: parseFloat(equityCycleTargetPct || 5.0),
         },
       });
     });

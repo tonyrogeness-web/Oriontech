@@ -23,6 +23,8 @@ function getMockData() {
     ddReached10: false,
     ddReached20: false,
     brlRate: 5.20,
+    equityCycleBase: 10000.0,
+    equityCycleTargetPct: 5.0,
   };
 
   const mockTrades = [
