@@ -92,6 +92,15 @@ export default function Header({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
 
+  // Calendar Economic Dropdown States
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [calendarFilter, setCalendarFilter] = useState<"ALL" | "HIGH">("HIGH");
+  
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const calendarBtnRef = useRef<HTMLButtonElement>(null);
+
   // Sync timer state
   const [secondsAgo, setSecondsAgo] = useState(0);
   const [lastSyncStr, setLastSyncStr] = useState("--:--:--");
@@ -131,7 +140,7 @@ export default function Header({
   const counts: Record<string, number> = {};
   const symbolPl: Record<string, number> = {};
   trades.forEach((t) => {
-    const sym = t.symbol.toUpperCase().replace("C", "").replace("/", "");
+    const sym = t.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
     counts[sym] = (counts[sym] || 0) + 1;
     symbolPl[sym] = (symbolPl[sym] || 0) + t.currentProfit;
   });
@@ -299,13 +308,13 @@ export default function Header({
 
       // 1. Process closed trades
       closedTrades.forEach((t) => {
-        const symbol = t.symbol.toUpperCase().replace("C", "").replace("/", "");
+        const symbol = t.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
         const isBuy = t.type.toUpperCase() === "BUY" || t.type === "0";
         const direction = isBuy ? "BUY" : "SELL";
         
         // Compute level (count of trades for this symbol/direction in previous state)
         const level = prevTradesRef.current.filter((pt) => {
-          const ptSymbol = pt.symbol.toUpperCase().replace("C", "").replace("/", "");
+          const ptSymbol = pt.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
           const ptIsBuy = pt.type.toUpperCase() === "BUY" || pt.type === "0";
           return ptSymbol === symbol && ptIsBuy === isBuy;
         }).length;
@@ -328,14 +337,14 @@ export default function Header({
 
       // 2. Process new trades (Nova entrada / Recompra)
       newTrades.forEach((t) => {
-        const symbol = t.symbol.toUpperCase().replace("C", "").replace("/", "");
+        const symbol = t.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
         const isBuy = t.type.toUpperCase() === "BUY" || t.type === "0";
         const direction = isBuy ? "BUY" : "SELL";
 
         // Compute level in the *current* trades state
         const sameGroupTrades = trades
           .filter((ct) => {
-            const ctSymbol = ct.symbol.toUpperCase().replace("C", "").replace("/", "");
+            const ctSymbol = ct.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
             const ctIsBuy = ct.type.toUpperCase() === "BUY" || ct.type === "0";
             return ctSymbol === symbol && ctIsBuy === isBuy;
           })
@@ -415,9 +424,28 @@ export default function Header({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNotifications]);
 
-  // Close notifications dropdown on click outside
+  // Fetch calendar events
+  useEffect(() => {
+    if (showCalendar && calendarEvents.length === 0) {
+      setCalendarLoading(true);
+      fetch("/api/dashboard/calendar")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setCalendarEvents(data);
+          } else {
+            console.error("Formato inválido de dados do calendário:", data);
+          }
+        })
+        .catch((err) => console.error("Erro ao buscar calendário:", err))
+        .finally(() => setCalendarLoading(false));
+    }
+  }, [showCalendar, calendarEvents.length]);
+
+  // Close dropdowns on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Notifications outside click
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
@@ -425,6 +453,16 @@ export default function Header({
         !bellRef.current.contains(event.target as Node)
       ) {
         setShowNotifications(false);
+      }
+      
+      // Calendar outside click
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        calendarBtnRef.current &&
+        !calendarBtnRef.current.contains(event.target as Node)
+      ) {
+        setShowCalendar(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -666,27 +704,173 @@ export default function Header({
 
           <div className={styles.capsuleDivider} />
 
-          {/* Forex Factory Economic Calendar Link */}
-          <a
-            href="https://www.forexfactory.com/calendar"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "4px",
-              cursor: "pointer",
-              textDecoration: "none",
-              opacity: 0.8,
-              transition: "opacity 0.2s"
-            }}
-            title="Abrir Calendário Econômico no Forex Factory"
-            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = "0.8"}
-          >
-            <span style={{ fontSize: "1.1rem" }}>📅</span>
-          </a>
+          {/* Forex Factory Economic Calendar Button */}
+          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <button
+              ref={calendarBtnRef}
+              onClick={() => {
+                setShowCalendar(!showCalendar);
+                setShowNotifications(false);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "4px",
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+                opacity: showCalendar ? 1 : 0.8,
+                transition: "opacity 0.2s",
+                fontSize: "1.1rem",
+                outline: "none"
+              }}
+              title="Calendário Econômico Forex Factory"
+              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = showCalendar ? "1" : "0.8"}
+            >
+              📅
+            </button>
+
+            {showCalendar && (
+              <div className={styles.calendarDropdown} ref={calendarRef}>
+                <div className={styles.calendarHeader}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                    <span style={{ fontWeight: 700, fontSize: "0.825rem", color: "var(--text-primary)" }}>
+                      Notícias Econômicas
+                    </span>
+                    <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
+                      Fonte: Forex Factory (Esta Semana)
+                    </span>
+                  </div>
+                  <div className={styles.calendarFilterGroup}>
+                    <button
+                      className={`${styles.calendarFilterBtn} ${calendarFilter === "HIGH" ? styles.calendarFilterBtnActive : ""}`}
+                      onClick={() => setCalendarFilter("HIGH")}
+                    >
+                      Alto Impacto 🔥
+                    </button>
+                    <button
+                      className={`${styles.calendarFilterBtn} ${calendarFilter === "ALL" ? styles.calendarFilterBtnActive : ""}`}
+                      onClick={() => setCalendarFilter("ALL")}
+                    >
+                      Todas
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.calendarList}>
+                  {calendarLoading ? (
+                    <div className={styles.calendarLoadingContainer}>
+                      <div className={styles.spinner} />
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Carregando eventos...</span>
+                    </div>
+                  ) : (() => {
+                    const filteredEvents = calendarEvents.filter((ev) => {
+                      if (calendarFilter === "HIGH") {
+                        return ev.impact?.toLowerCase() === "high";
+                      }
+                      return true;
+                    });
+
+                    if (filteredEvents.length === 0) {
+                      return (
+                        <div className={styles.emptyCalendar}>
+                          Nenhum evento relevante esta semana.
+                        </div>
+                      );
+                    }
+
+                    return filteredEvents.map((ev, idx) => {
+                      let impactColor = "var(--text-muted)";
+                      let impactBg = "rgba(255, 255, 255, 0.05)";
+                      let impactBorder = "rgba(255, 255, 255, 0.1)";
+                      const imp = ev.impact?.toLowerCase();
+                      
+                      if (imp === "high") {
+                        impactColor = "var(--neon-red)";
+                        impactBg = "rgba(255, 23, 68, 0.08)";
+                        impactBorder = "rgba(255, 23, 68, 0.2)";
+                      } else if (imp === "medium") {
+                        impactColor = "var(--neon-gold)";
+                        impactBg = "rgba(255, 184, 0, 0.08)";
+                        impactBorder = "rgba(255, 184, 0, 0.2)";
+                      } else if (imp === "low") {
+                        impactColor = "#eab308";
+                        impactBg = "rgba(234, 179, 8, 0.06)";
+                        impactBorder = "rgba(234, 179, 8, 0.15)";
+                      }
+
+                      let formattedTime = ev.time || "";
+                      let dateStr = ev.date || "";
+                      try {
+                        if (ev.date) {
+                          const d = new Date(ev.date);
+                          const day = String(d.getDate()).padStart(2, '0');
+                          const month = String(d.getMonth() + 1).padStart(2, '0');
+                          const hours = String(d.getHours()).padStart(2, '0');
+                          const minutes = String(d.getMinutes()).padStart(2, '0');
+                          dateStr = `${day}/${month}`;
+                          formattedTime = `${hours}:${minutes}`;
+                        }
+                      } catch (e) {
+                        console.error("Error parsing date:", ev.date);
+                      }
+
+                      return (
+                        <div key={idx} className={styles.calendarItem}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                                <span className={styles.calendarCountry}>{ev.country}</span>
+                                <span 
+                                  className={styles.calendarImpactBadge}
+                                  style={{
+                                    color: impactColor,
+                                    backgroundColor: impactBg,
+                                    borderColor: impactBorder
+                                  }}
+                                >
+                                  {ev.impact}
+                                </span>
+                              </div>
+                              <span className={styles.calendarEventTitle}>{ev.title}</span>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.15rem", flexShrink: 0 }}>
+                              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
+                                {formattedTime}
+                              </span>
+                              <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontWeight: 500 }}>
+                                {dateStr}
+                              </span>
+                            </div>
+                          </div>
+
+                          {(ev.forecast || ev.previous) && (
+                            <div className={styles.calendarDetailsRow}>
+                              {ev.forecast && (
+                                <span style={{ display: "flex", gap: "0.2rem" }}>
+                                  <span style={{ color: "var(--text-muted)" }}>Proj:</span>
+                                  <span style={{ color: "var(--text-secondary)", fontFamily: "monospace" }}>{ev.forecast}</span>
+                                </span>
+                              )}
+                              {ev.previous && (
+                                <span style={{ display: "flex", gap: "0.2rem" }}>
+                                  <span style={{ color: "var(--text-muted)" }}>Prév:</span>
+                                  <span style={{ color: "var(--text-secondary)", fontFamily: "monospace" }}>{ev.previous}</span>
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className={styles.capsuleDivider} />
 

@@ -26,7 +26,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
   const [expandedSymbols, setExpandedSymbols] = useState<Record<string, boolean>>({});
 
   const cleanSymbol = (sym: string) => {
-    return sym.toUpperCase().replace("C", "").replace("/", "");
+    return sym.toUpperCase().replace(/C$/i, "").replace("/", "");
   };
 
   const toggleSymbol = (sym: string) => {
@@ -224,7 +224,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                   {/* Col 4: total P&L — right */}
                   <div style={{ textAlign: "right" }}>
                     <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.75rem", color: groupColor, whiteSpace: "nowrap" }}>
-                      {group.totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(group.totalProfit)}
+                      {group.totalProfit >= 0 ? "▲ " : "▼ "}{formatProfitPrimary(group.totalProfit)}
                     </span>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                       <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.76rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Ordem</span>
                       <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.76rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Grade</span>
                       <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.76rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>Lotes</span>
-                      <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.76rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>P&L</span>
+                      <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.76rem)", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right", paddingRight: "0.4rem" }}>P&L</span>
                     </div>
 
                     {/* Data rows — same grid */}
@@ -300,7 +300,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                               color: profitColor,
                               backgroundColor: profitBg,
                               border: `1px solid ${profitBorder}`,
-                              padding: "0.08rem 0.3rem",
+                              padding: "0.08rem 0.4rem",
                               borderRadius: "4px",
                               fontSize: "clamp(0.76rem, 1.8vw, 0.86rem)",
                               fontWeight: 700,
@@ -308,7 +308,7 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
                               whiteSpace: "nowrap",
                               fontFamily: "monospace",
                             }}>
-                              {formatProfitPrimary(tProfit)}
+                              {isProfit ? "▲ " : "▼ "}{formatProfitPrimary(tProfit)}
                             </span>
                           </div>
                         </div>
