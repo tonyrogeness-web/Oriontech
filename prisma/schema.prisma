@@ -52,6 +52,7 @@ model PerformanceHistory {
   date          DateTime
   profit        Float
   balance       Float
+  equity        Float?
 
   @@unique([account, date])
 }

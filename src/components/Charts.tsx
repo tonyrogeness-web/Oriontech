@@ -8,6 +8,7 @@ interface PerformancePoint {
   date: string;
   profit: number;
   balance: number;
+  equity?: number | null;
 }
 
 interface ChartsProps {
@@ -60,14 +61,18 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   const lineData = filteredHistory.map((h) => {
     let balVal = h.balance;
     let profitVal = h.profit;
+    let eqVal = h.equity !== null && h.equity !== undefined ? h.equity : h.balance;
+
     if (currencyMode === "BRL") {
       balVal = (h.balance / 100) * brlRate;
       profitVal = (h.profit / 100) * brlRate;
+      eqVal = (eqVal / 100) * brlRate;
     }
     return {
       name: formatDate(h.date),
       balance: parseFloat(balVal.toFixed(2)),
       profit: parseFloat(profitVal.toFixed(2)),
+      equity: parseFloat(eqVal.toFixed(2)),
     };
   });
 
@@ -113,9 +118,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 display: "flex",
                 alignItems: "center",
                 gap: "0.25rem",
-                color: showDailyProfit ? "var(--neon-gold)" : "var(--text-muted)",
-                borderColor: showDailyProfit ? "rgba(255, 184, 0, 0.3)" : "var(--opacity-border)",
-                background: showDailyProfit ? "rgba(255, 184, 0, 0.05)" : "transparent",
+                color: showDailyProfit ? "var(--neon-orange)" : "var(--text-muted)",
+                borderColor: showDailyProfit ? "rgba(255, 85, 0, 0.3)" : "var(--opacity-border)",
+                background: showDailyProfit ? "rgba(255, 85, 0, 0.05)" : "transparent",
               }}
               title="Exibir série de Lucro Diário consolidado"
             >
@@ -193,7 +198,10 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                     const prefix = isBrl ? "R$ " : "";
                     const suffix = isBrl ? " BRL" : " USC";
                     
-                    const labelName = name === "balance" ? "Saldo" : "Lucro Diário";
+                    const labelName = 
+                      name === "balance" ? "Saldo" : 
+                      name === "equity" ? "Patrimônio" : 
+                      "Lucro Diário";
                     return [`${prefix}${formatted}${suffix}`, labelName];
                   }}
                 />
@@ -214,13 +222,25 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   />
                 )}
 
+                {/* Patrimônio (Equity) Filled Area */}
                 <Area
                   type="monotone"
-                  dataKey="balance"
+                  dataKey="equity"
                   stroke="var(--neon-green)"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#splitColor)"
+                  dot={false}
+                  name="equity"
+                />
+
+                {/* Saldo (Balance) Line */}
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke="var(--neon-gold)"
+                  strokeWidth={2.5}
+                  fill="transparent"
                   dot={false}
                   name="balance"
                 />
@@ -230,10 +250,10 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   <Line
                     type="monotone"
                     dataKey="profit"
-                    stroke="var(--neon-gold)"
+                    stroke="var(--neon-orange)"
                     strokeWidth={1.5}
                     strokeDasharray="4 4"
-                    dot={{ r: 2, fill: "var(--neon-gold)", strokeWidth: 1 }}
+                    dot={{ r: 2, fill: "var(--neon-orange)", strokeWidth: 1 }}
                     name="profit"
                   />
                 )}

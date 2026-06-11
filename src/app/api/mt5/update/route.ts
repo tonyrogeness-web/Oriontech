@@ -160,6 +160,10 @@ export async function POST(request: Request) {
         // Normalize date to midnight (00:00:00) to ensure single record per day
         hDate.setUTCHours(0, 0, 0, 0);
 
+        const todayDate = new Date();
+        todayDate.setUTCHours(0, 0, 0, 0);
+        const isToday = hDate.getTime() === todayDate.getTime();
+
         await prisma.performanceHistory.upsert({
           where: {
             account_date: {
@@ -170,12 +174,14 @@ export async function POST(request: Request) {
           update: {
             profit: parseFloat(h.profit),
             balance: parseFloat(h.balance),
+            equity: isToday ? parseFloat(equity) : undefined,
           },
           create: {
             account: String(account),
             date: hDate,
             profit: parseFloat(h.profit),
             balance: parseFloat(h.balance),
+            equity: isToday ? parseFloat(equity) : null,
           },
         });
       }
