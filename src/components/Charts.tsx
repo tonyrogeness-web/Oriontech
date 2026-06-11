@@ -398,7 +398,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           <div style={{ width: "100%", overflowX: "auto", paddingBottom: "0.5rem" }}>
             <div style={{ minWidth: "550px", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {/* Header */}
-              <div style={{ display: "grid", gridTemplateColumns: "60px repeat(12, 1fr) 70px", gap: "0.25rem", textAlign: "center", borderBottom: "1px solid var(--border-light)", pb: "0.25rem", fontSize: "0.7rem", fontWeight: 700, color: "var(--text-secondary)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "60px repeat(12, 1fr) 70px", gap: "0.25rem", textAlign: "center", borderBottom: "1px solid var(--border-light)", paddingBottom: "0.25rem", fontSize: "0.7rem", fontWeight: 700, color: "var(--text-secondary)" }}>
                 <div>Ano</div>
                 {["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].map(m => (
                   <div key={m}>{m}</div>
