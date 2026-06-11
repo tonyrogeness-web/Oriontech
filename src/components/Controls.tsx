@@ -364,7 +364,7 @@ export default function Controls({
         />
       )}
 
-      <div className={styles.controlsCard} style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+      <div className={styles.controlsCard} style={{ display: "flex", flexDirection: "column", height: "fit-content", justifyContent: "space-between" }}>
         <div>
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
@@ -543,17 +543,13 @@ export default function Controls({
         </div>
 
         {/* Footer */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "1rem", borderTop: "1px solid var(--opacity-divider)", paddingTop: "0.5rem" }}>
-          {lastCommand && (
+        {lastCommand && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "1rem", borderTop: "1px solid var(--opacity-divider)", paddingTop: "0.5rem" }}>
             <span style={{ fontSize: "0.68rem", color: "var(--neon-gold)", fontWeight: 700, letterSpacing: "0.02em" }}>
               {lastCommand}
             </span>
-          )}
-          <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-            <span>Sincronizado via MetaTrader 5</span>
-            <span>Zerar Global fecha tudo + pausa o robô</span>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
