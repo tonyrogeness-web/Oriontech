@@ -248,7 +248,7 @@ export default function Header({
     localStorage.setItem("orion_recent_notifications", JSON.stringify(recents));
   };
 
-  // Detect trade closures in real-time
+  // Detect trade changes (new entries, recompras, closures) in real-time
   const prevTradesRef = useRef<Trade[]>([]);
   useEffect(() => {
     if (!trades || isMock) {
@@ -260,29 +260,36 @@ export default function Header({
       return;
     }
 
+    const prevTickets = new Set(prevTradesRef.current.map((t) => t.ticket));
     const currentTickets = new Set(trades.map((t) => t.ticket));
+    
     const closedTrades = prevTradesRef.current.filter((t) => !currentTickets.has(t.ticket));
+    const newTrades = trades.filter((t) => !prevTickets.has(t.ticket));
 
-    if (closedTrades.length > 0) {
-      const updated = [...recentNotifications];
+    if (closedTrades.length > 0 || newTrades.length > 0) {
+      const nowTick = Date.now();
+      const newItems: RecentNotification[] = [];
+
+      // 1. Process closed trades
       closedTrades.forEach((t) => {
         const symbol = t.symbol.toUpperCase().replace("C", "").replace("/", "");
         const isBuy = t.type.toUpperCase() === "BUY" || t.type === "0";
         const direction = isBuy ? "BUY" : "SELL";
         
-        // Compute level (count of trades for this symbol in previous state)
-        const level = prevTradesRef.current.filter(
-          (pt) => pt.symbol.toUpperCase().replace("C", "").replace("/", "") === symbol
-        ).length;
+        // Compute level (count of trades for this symbol/direction in previous state)
+        const level = prevTradesRef.current.filter((pt) => {
+          const ptSymbol = pt.symbol.toUpperCase().replace("C", "").replace("/", "");
+          const ptIsBuy = pt.type.toUpperCase() === "BUY" || pt.type === "0";
+          return ptSymbol === symbol && ptIsBuy === isBuy;
+        }).length;
 
         const profitVal = t.currentProfit;
         const profit = profitVal >= 0 ? `+${profitVal.toFixed(2)}` : `${profitVal.toFixed(2)}`;
         
         // Expiration: N1 = 1m, N2 = 3m, N3+ = 5m
         const expiryMins = level === 1 ? 1 : level === 2 ? 3 : 5;
-        const nowTick = Date.now();
 
-        updated.unshift({
+        newItems.push({
           id: `trade_close_${t.ticket}_${nowTick}`,
           title: `✅ ${symbol} ${direction} fechou — ${profit} USC`,
           desc: `TP atingido N${level}`,
@@ -291,11 +298,61 @@ export default function Header({
           read: false,
         });
       });
-      saveRecentNotifications(updated);
+
+      // 2. Process new trades (Nova entrada / Recompra)
+      newTrades.forEach((t) => {
+        const symbol = t.symbol.toUpperCase().replace("C", "").replace("/", "");
+        const isBuy = t.type.toUpperCase() === "BUY" || t.type === "0";
+        const direction = isBuy ? "BUY" : "SELL";
+
+        // Compute level in the *current* trades state
+        const sameGroupTrades = trades
+          .filter((ct) => {
+            const ctSymbol = ct.symbol.toUpperCase().replace("C", "").replace("/", "");
+            const ctIsBuy = ct.type.toUpperCase() === "BUY" || ct.type === "0";
+            return ctSymbol === symbol && ctIsBuy === isBuy;
+          })
+          .sort((a, b) => parseInt(a.ticket) - parseInt(b.ticket));
+
+        const index = sameGroupTrades.findIndex((ct) => ct.ticket === t.ticket);
+        const level = index !== -1 ? index + 1 : 1;
+
+        // Expiration: N1 = 1m, N2 = 3m, N3+ = 5m
+        const expiryMins = level === 1 ? 1 : level === 2 ? 3 : 5;
+
+        if (level === 1) {
+          newItems.push({
+            id: `trade_open_${t.ticket}_${nowTick}`,
+            title: `🔵 ${symbol} ${direction} iniciada — Lote ${t.volume.toFixed(2)}`,
+            desc: `Nova entrada no mercado (N1)`,
+            createdAt: nowTick,
+            expiresAt: nowTick + expiryMins * 60 * 1000,
+            read: false,
+          });
+        } else {
+          newItems.push({
+            id: `trade_recompra_${t.ticket}_${nowTick}`,
+            title: `🟡 ${symbol} ${direction} recompra — Lote ${t.volume.toFixed(2)}`,
+            desc: `Recompra efetuada N${level}`,
+            createdAt: nowTick,
+            expiresAt: nowTick + expiryMins * 60 * 1000,
+            read: false,
+          });
+        }
+      });
+
+      if (newItems.length > 0) {
+        setRecentNotifications((prev) => {
+          const updated = [...newItems, ...prev];
+          localStorage.setItem("orion_recent_notifications", JSON.stringify(updated));
+          return updated;
+        });
+      }
     }
 
     prevTradesRef.current = trades;
-  }, [trades, recentNotifications]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trades]);
 
   // Clean expired recent notifications every tick
   useEffect(() => {
