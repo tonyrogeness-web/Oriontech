@@ -666,6 +666,30 @@ export default function Header({
 
           <div className={styles.capsuleDivider} />
 
+          {/* Forex Factory Economic Calendar Link */}
+          <a
+            href="https://www.forexfactory.com/calendar"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "4px",
+              cursor: "pointer",
+              textDecoration: "none",
+              opacity: 0.8,
+              transition: "opacity 0.2s"
+            }}
+            title="Abrir Calendário Econômico no Forex Factory"
+            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = "0.8"}
+          >
+            <span style={{ fontSize: "1.1rem" }}>📅</span>
+          </a>
+
+          <div className={styles.capsuleDivider} />
+
           {/* Notification Bell with pulsing animation */}
           <div 
             ref={bellRef}

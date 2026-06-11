@@ -284,12 +284,33 @@ export default function DashboardPage() {
         <div className={styles.alertBannersContainer}>
           {activeAccount.newsActive && (
             <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
-              <div className={styles.newsAlertContent}>
-                <span className={styles.newsAlertIcon}>⚠️</span>
-                <span className={styles.newsAlertText}>
-                  <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
-                  {activeAccount.newsFrozen ? " (Novas recompras bloqueadas e grade congelada)" : " (Novas entradas bloqueadas)"}
-                </span>
+              <div className={styles.newsAlertContent} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span className={styles.newsAlertIcon}>⚠️</span>
+                  <span className={styles.newsAlertText}>
+                    <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
+                    {activeAccount.newsFrozen ? " (Novas recompras bloqueadas e grade congelada)" : " (Novas entradas bloqueadas)"}
+                  </span>
+                </div>
+                <a
+                  href="https://www.forexfactory.com/calendar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    marginLeft: "1rem",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    color: "var(--neon-gold)",
+                    textDecoration: "underline",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  Ver no Forex Factory ↗
+                </a>
               </div>
             </div>
           )}

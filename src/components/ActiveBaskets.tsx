@@ -220,19 +220,20 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
   const totalDist = isBuy ? (tpPrice - pm) : (pm - tpPrice);
   const doneDist  = isBuy ? (currentPrice - pm) : (pm - currentPrice);
   const progress  = totalDist > 0 ? Math.round((doneDist / totalDist) * 100) : 0;
-  const clamped   = Math.max(-100, Math.min(100, progress));
-  const color     = clamped >= 0 ? "var(--neon-green)" : "var(--neon-red)";
+  const isDrawdown = progress < 0;
+  const clamped   = Math.max(0, Math.min(100, progress));
+  const color     = isDrawdown ? "var(--neon-red)" : "var(--neon-green)";
   const tpPts     = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
 
-  // Carrega a barra apenas conforme a porcentagem real positiva (0% se negativo/drawdown)
-  const fillWidth = clamped >= 0 ? clamped : 0;
+  // Carrega a barra apenas conforme a porcentagem real positiva
+  const fillWidth = clamped;
 
   return (
     <div className={styles.tpProgressWrapper}>
       <div className={styles.tpProgressHeader}>
         <span className={styles.basketRowLabel}>Progresso ao TP</span>
         <span style={{ fontSize: "0.7rem", fontWeight: 700, color }}>
-          {clamped >= 0 ? "+" : ""}{clamped}%
+          {isDrawdown ? "Abaixo do PM (Drawdown)" : `+${clamped}%`}
         </span>
       </div>
       <div className={styles.progressBarOuter}>
@@ -240,17 +241,17 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
           className={styles.progressBarInner}
           style={{
             width: `${fillWidth}%`,
-            background: clamped >= 0
-              ? "linear-gradient(90deg, #00c853, #00ff88)"
-              : "linear-gradient(90deg, #c62828, #ff1744)",
-            boxShadow: clamped >= 0 ? `0 0 5px ${color}88` : undefined,
+            background: isDrawdown
+              ? "linear-gradient(90deg, #c62828, #ff1744)"
+              : "linear-gradient(90deg, #00c853, #00ff88)",
+            boxShadow: `0 0 5px ${color}88`,
             transition: "width 0.5s ease",
           }}
         />
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
-        <span>PM: {pm.toFixed(digits)}</span>
-        <span style={{ color: "var(--neon-gold)" }}>TP: {tpPrice.toFixed(digits)} ({tpPts} pts)</span>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+        <span>Alvo a favor do PM</span>
+        <span style={{ color: "var(--neon-gold)", fontWeight: 700 }}>Meta: {tpPts} pts</span>
       </div>
     </div>
   );
