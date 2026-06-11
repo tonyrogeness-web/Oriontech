@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from "recharts";
+import { ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from "recharts";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
@@ -188,7 +188,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
           <div className={styles.chartContainer} style={{ height: "210px" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={lineData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
+              <ComposedChart data={lineData} margin={{ top: 15, right: showDailyProfit ? -15 : 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
                     <stop offset={off} stopColor="var(--neon-green)" stopOpacity={0.25} />
@@ -198,12 +198,24 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} />
                 <YAxis
+                  yAxisId="left"
                   stroke="var(--text-secondary)"
                   fontSize={9}
                   tickLine={false}
                   domain={["auto", "auto"]}
                   tickFormatter={formatCurrency}
                 />
+                {showDailyProfit && (
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="var(--neon-orange)"
+                    fontSize={9}
+                    tickLine={false}
+                    domain={["auto", "auto"]}
+                    tickFormatter={formatCurrency}
+                  />
+                )}
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--bg-panel-solid)",
@@ -229,6 +241,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 {/* Horizontal reference line for the initial period value */}
                 {lineData.length > 0 && (
                   <ReferenceLine
+                    yAxisId="left"
                     y={lineData[0].balance}
                     stroke="var(--opacity-border)"
                     strokeDasharray="3 3"
@@ -244,6 +257,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
                 {/* Patrimônio (Equity) Filled Area */}
                 <Area
+                  yAxisId="left"
                   type="monotone"
                   dataKey="equity"
                   stroke="var(--neon-green)"
@@ -256,6 +270,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
                 {/* Saldo (Balance) Line */}
                 <Area
+                  yAxisId="left"
                   type="monotone"
                   dataKey="balance"
                   stroke="var(--neon-gold)"
@@ -268,6 +283,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 {/* Overlaid Daily Profit line */}
                 {showDailyProfit && (
                   <Line
+                    yAxisId="right"
                     type="monotone"
                     dataKey="profit"
                     stroke="var(--neon-orange)"
@@ -277,7 +293,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                     name="profit"
                   />
                 )}
-              </AreaChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
