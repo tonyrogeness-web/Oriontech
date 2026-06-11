@@ -99,36 +99,13 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
   return (
     <div className={styles.chartsCard}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
-        <div>
-          <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", marginBottom: "0.15rem" }}>
-            Curva de Patrimônio
-          </h3>
-          <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginTop: "0.25rem", flexWrap: "nowrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
-              <span style={{ color: "var(--neon-gold)", fontSize: "0.75rem" }}>●</span> Saldo
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
-              <span style={{ color: "var(--neon-green)", fontSize: "0.75rem" }}>●</span> Patrimônio
-            </span>
-            <span style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.25rem",
-              fontSize: "0.68rem",
-              color: "var(--text-secondary)",
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-              opacity: showDailyProfit ? 1 : 0.4,
-              transition: "opacity 0.2s ease"
-            }}>
-              <span style={{ color: "var(--neon-orange)", fontSize: "0.75rem" }}>●</span> Lucro Diário
-            </span>
-          </div>
-        </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
+        <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
+          Curva de Patrimônio
+        </h3>
 
         {/* Timeframe Filters & Daily Profit Toggle */}
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
           {/* Toggle Button for Daily Profit Line */}
           {lineData.length > 0 && (
             <button
@@ -159,6 +136,29 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Legends */}
+        <div style={{ display: "flex", gap: "0.8rem", alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+            <span style={{ color: "var(--neon-gold)", fontSize: "0.75rem" }}>●</span> Saldo
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+            <span style={{ color: "var(--neon-green)", fontSize: "0.75rem" }}>●</span> Patrimônio
+          </span>
+          <span style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.25rem",
+            fontSize: "0.68rem",
+            color: "var(--text-secondary)",
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            opacity: showDailyProfit ? 1 : 0.4,
+            transition: "opacity 0.2s ease"
+          }}>
+            <span style={{ color: "var(--neon-orange)", fontSize: "0.75rem" }}>●</span> Lucro Diário
+          </span>
         </div>
       </div>
 

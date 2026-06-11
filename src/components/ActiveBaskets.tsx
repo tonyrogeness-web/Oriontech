@@ -130,6 +130,53 @@ function GradeBlocks({ level, max = 6, isBuy }: { level: number; max?: number; i
   );
 }
 
+/* ── Cálculo do TP Virtual estimado ───────────────────────────────── */
+function getVirtualTp(b: Basket, balance: number): number {
+  const isBuy = b.direction === "COMPRA";
+  if (b.totalVolume <= 0 || b.pm <= 0) return 0;
+
+  const InpLotInitial = 0.015;
+  const InpTakeProfitDinheiro = 1.50;
+  const InpBancaRef = 1000.0;
+  const InpLotDeceleration = 0.90;
+
+  let ratio = balance / InpBancaRef;
+  if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
+    ratio = Math.pow(ratio, InpLotDeceleration);
+  }
+  const raw = InpLotInitial * ratio;
+  const step = 0.01;
+  const minV = 0.01;
+  const maxV = 500.0;
+  
+  let loteBase = Math.max(minV, Math.floor(raw / step) * step);
+  if (loteBase > maxV) {
+    loteBase = maxV;
+  }
+  
+  const fat = loteBase / 0.01;
+  const tpLimit = InpTakeProfitDinheiro * fat; // Alvo em USC
+
+  // Estimar valor de 1 ponto em USC por lote
+  const isJpy = b.symbol.toUpperCase().includes("JPY");
+  const pipValue = isJpy ? 0.001 : 0.00001; // pipValue aqui refere-se a 1 ponto
+
+  let pointValueForOneLot = 100; // default para USD quote (1 ponto de 1 lote = 1 USD = 100 USC)
+  if (isJpy) {
+    pointValueForOneLot = 65; // JPY quote (aprox)
+  } else if (b.symbol.toUpperCase().includes("CAD")) {
+    pointValueForOneLot = 75; // CAD quote
+  } else if (b.symbol.toUpperCase().includes("CHF")) {
+    pointValueForOneLot = 110; // CHF quote
+  }
+
+  const basketPointValue = b.totalVolume * pointValueForOneLot;
+  const targetDistInPoints = basketPointValue > 0 ? (tpLimit / basketPointValue) : 0;
+  const targetDistInPrice = targetDistInPoints * pipValue;
+  
+  return isBuy ? (b.pm + targetDistInPrice) : (b.pm - targetDistInPrice);
+}
+
 /* ── Barra de distância do PM ──────────────────────────────────── */
 // Mostra quanto o preço se afastou do PM. Estável e baseado em dados reais.
 function DistBar({ distPips, isBuy }: { distPips: number; isBuy: boolean }) {
@@ -224,6 +271,9 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
   const level    = b.trades.length;
   const isAlert  = level >= 4;
   const sortedTrades = [...b.trades].sort((x, y) => parseFloat(x.ticket) - parseFloat(y.ticket));
+
+  // Preço Alvo (TP) Virtual ou real
+  const virtualTp = b.tpPrice && b.tpPrice > 0 ? b.tpPrice : getVirtualTp(b, balance);
 
   const formatBasketProfit = (val: number) => {
     const absVal = Math.abs(val);
@@ -362,7 +412,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
         })()}
 
         {/* Alvo do Cesto (igual ao painel do MT5) */}
-        {b.tpPrice && b.tpPrice > 0 ? (() => {
+        {virtualTp && virtualTp > 0 ? (() => {
           const calculateTakeProfitLimit = (bal: number) => {
             const InpLotInitial = 0.015;
             const InpTakeProfitDinheiro = 1.50;
@@ -388,7 +438,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
           };
 
           const tpLimit = calculateTakeProfitLimit(balance);
-          const remainingDist = isBuy ? (b.tpPrice - b.currentPrice) : (b.currentPrice - b.tpPrice);
+          const remainingDist = isBuy ? (virtualTp - b.currentPrice) : (b.currentPrice - virtualTp);
           const remainingPts = Math.round(remainingDist / (b.digits <= 3 ? 0.001 : 0.00001));
           const remainingPtsStr = remainingPts <= 0 ? "PRONTO!" : `▲ ${remainingPts} pts`;
 
@@ -405,7 +455,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
             <div className={styles.basketRow}>
               <span className={styles.basketRowLabel}>Alvo (TP)</span>
               <span className={styles.basketRowValue} style={{ fontFamily: "monospace", color: "var(--neon-gold)", fontWeight: 700 }}>
-                {b.tpPrice.toFixed(b.digits)} <span style={{ color: "var(--text-secondary)", fontWeight: "normal", fontSize: "0.65rem" }}>({remainingPtsStr})</span> <span style={{ color: "var(--neon-green)", marginLeft: "0.3rem" }}>{formatTargetProfit(tpLimit)}</span>
+                {virtualTp.toFixed(b.digits)} <span style={{ color: "var(--text-secondary)", fontWeight: "normal", fontSize: "0.65rem" }}>({remainingPtsStr})</span> <span style={{ color: "var(--neon-green)", marginLeft: "0.3rem" }}>{formatTargetProfit(tpLimit)}</span>
               </span>
             </div>
           );
@@ -417,12 +467,12 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
           <GradeBlocks level={level} max={6} isBuy={isBuy} />
         </div>
 
-        {/* Progresso ao TP (se TP real disponível) ou Dist. PM */}
-        {b.tpPrice && b.tpPrice > 0 ? (
+        {/* Progresso ao TP (se TP real ou virtual disponível) */}
+        {virtualTp && virtualTp > 0 ? (
           <TpBar
             pm={b.pm}
             currentPrice={b.currentPrice}
-            tpPrice={b.tpPrice}
+            tpPrice={virtualTp}
             isBuy={isBuy}
             digits={b.digits}
           />
