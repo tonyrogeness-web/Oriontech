@@ -32,10 +32,12 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
   const formatCurrency = (val: number) => {
     if (currencyMode === "CENT") {
-      if (val >= 1000) return `${(val / 1000).toFixed(0)}k USC`;
+      if (val >= 10000) return `${(val / 1000).toFixed(0)}k USC`;
+      if (val >= 1000) return `${(val / 1000).toFixed(1)}k USC`;
       return `${val} USC`;
     } else { // BRL
-      if (val >= 1000) return `R$ ${(val / 1000).toFixed(0)}k`;
+      if (val >= 10000) return `R$ ${(val / 1000).toFixed(1)}k`;
+      if (val >= 1000) return `R$ ${(val / 1000).toFixed(2)}k`;
       return `R$ ${val}`;
     }
   };
