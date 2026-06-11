@@ -61,6 +61,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   };
 
   const filteredHistory = getFilteredHistory();
+  let cumProfit = 0;
   const lineData = filteredHistory.map((h) => {
     let balVal = h.balance;
     let profitVal = h.profit;
@@ -72,7 +73,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
       eqVal = (eqVal / 100) * brlRate;
     }
     
+    cumProfit += profitVal;
     const floatingPl = eqVal - balVal;
+    const netProfit = cumProfit + floatingPl;
     
     return {
       name: formatDate(h.date),
@@ -81,6 +84,8 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
       gain: profitVal > 0 ? parseFloat(profitVal.toFixed(2)) : 0,
       loss: profitVal < 0 ? parseFloat(profitVal.toFixed(2)) : 0,
       floating: parseFloat(floatingPl.toFixed(2)),
+      cumProfit: parseFloat(cumProfit.toFixed(2)),
+      netProfit: parseFloat(netProfit.toFixed(2)),
     };
   });
 
@@ -99,7 +104,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     <div className={styles.chartsCard}>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
         <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
-          Desempenho Diário e Risco Flutuante
+          Desempenho Diário e Curva de Lucros
         </h3>
 
         {/* Timeframe Filters */}
@@ -112,7 +117,13 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
               <span style={{ color: "var(--neon-red)", fontSize: "0.75rem" }}>●</span> Perdas
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
-              <span style={{ color: "var(--neon-amber)", fontSize: "0.75rem" }}>●</span> Flutuante (Drawdown)
+              <span style={{ color: "var(--neon-amber)", fontSize: "0.75rem" }}>●</span> Flutuante
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              <span style={{ color: "var(--neon-gold)", fontSize: "0.75rem" }}>●</span> L. Global
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              <span style={{ color: "#00e5ff", fontSize: "0.75rem" }}>●</span> L. Líquido
             </span>
           </div>
 
@@ -166,21 +177,12 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
           <div className={styles.chartContainer} style={{ height: "210px" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={lineData} margin={{ top: 15, right: -5, left: -25, bottom: 0 }}>
+              <ComposedChart data={lineData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} />
                 <YAxis
                   yAxisId="left"
                   stroke="var(--text-secondary)"
-                  fontSize={9}
-                  tickLine={false}
-                  domain={["auto", "auto"]}
-                  tickFormatter={formatCurrency}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke="var(--neon-amber)"
                   fontSize={9}
                   tickLine={false}
                   domain={["auto", "auto"]}
@@ -204,6 +206,8 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                     if (name === "gain") labelName = "Ganho Diário";
                     if (name === "loss") labelName = "Perda Diária";
                     if (name === "floating") labelName = "Perda Flutuante";
+                    if (name === "cumProfit") labelName = "L. Global Acumulado";
+                    if (name === "netProfit") labelName = "L. Líquido Acumulado";
                     
                     return [`${prefix}${formatted}${suffix}`, labelName];
                   }}
@@ -217,7 +221,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   dataKey="gain"
                   fill="var(--neon-green)"
                   radius={[4, 4, 0, 0]}
-                  maxBarSize={30}
+                  maxBarSize={25}
                   name="gain"
                 />
                 
@@ -227,19 +231,41 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   dataKey="loss"
                   fill="var(--neon-red)"
                   radius={[0, 0, 4, 4]}
-                  maxBarSize={30}
+                  maxBarSize={25}
                   name="loss"
                 />
                 
-                {/* Floating Loss Line (Amber/Red) */}
+                {/* Floating Loss Line (Amber) */}
                 <Line
-                  yAxisId="right"
+                  yAxisId="left"
                   type="monotone"
                   dataKey="floating"
                   stroke="var(--neon-amber)"
                   strokeWidth={2}
                   dot={{ r: 2, fill: "var(--neon-amber)", strokeWidth: 1 }}
                   name="floating"
+                />
+
+                {/* Cumulative Global Closed Profit Line (Gold) */}
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="cumProfit"
+                  stroke="var(--neon-gold)"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "var(--neon-gold)", strokeWidth: 1 }}
+                  name="cumProfit"
+                />
+
+                {/* Cumulative Net Profit Line (Cyan) */}
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="netProfit"
+                  stroke="#00e5ff"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "#00e5ff", strokeWidth: 1 }}
+                  name="netProfit"
                 />
               </ComposedChart>
             </ResponsiveContainer>

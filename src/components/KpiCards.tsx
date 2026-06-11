@@ -314,13 +314,10 @@ export default function KpiCards({
             <span className={`${styles.patrimonioColSubValue} tabular-nums`}>
               {formatValSecondary(netProfitCalc)}
             </span>
-            <div className={styles.patrimonioColBadgeContainer} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: 0 }}>
+            <div className={styles.patrimonioColBadgeContainer}>
               <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
                 {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
               </span>
-              <div style={{ marginRight: "0.25rem", marginTop: "-0.2rem" }}>
-                <Sparkline data={globalProfitHistory} color={netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)"} width={60} height={16} />
-              </div>
             </div>
           </div>
         </div>
