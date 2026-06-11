@@ -281,7 +281,7 @@ export default function KpiCards({
             {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
           </span>
           <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.80rem" }}>
-            Líq: {formatValPrimary(netProfitCalc)} ({netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%)
+            Líq: {formatValPrimary(netProfitCalc)}
           </span>
           <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
             {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
