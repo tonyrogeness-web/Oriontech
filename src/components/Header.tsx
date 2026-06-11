@@ -76,7 +76,33 @@ export default function Header({
     createdAt: number;
     expiresAt: number;
     read: boolean;
+    type?: "close" | "open" | "recompra";
+    profitVal?: number;
+    symbol?: string;
+    direction?: string;
+    level?: number;
+    volume?: number;
   }
+
+  const formatValue = (val: number, includeSign = false) => {
+    const absVal = Math.abs(val);
+    const isNeg = val < 0;
+    const sign = isNeg ? "-" : (includeSign && val > 0 ? "+" : "");
+
+    if (currencyMode === "CENT") {
+      const formattedNum = absVal.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return `${sign}${formattedNum} USC`;
+    } else { // BRL
+      const convertedBrl = (absVal / 100) * brlRate;
+      return `${sign}R$ ${convertedBrl.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    }
+  };
 
   interface CriticalNotification {
     id: string;
@@ -199,7 +225,7 @@ export default function Header({
         id: "crit_softstop_80",
         severity: "critical",
         title: `🔴 SOFTSTOP CRÍTICO`,
-        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${absLoss.toFixed(2)} USC)`,
+        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
@@ -208,7 +234,7 @@ export default function Header({
         id: "crit_softstop_50",
         severity: "warning",
         title: `🟡 SOFTSTOP ALERTA`,
-        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${absLoss.toFixed(2)} USC)`,
+        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
@@ -320,18 +346,22 @@ export default function Header({
         }).length;
 
         const profitVal = t.currentProfit;
-        const profit = profitVal >= 0 ? `+${profitVal.toFixed(2)}` : `${profitVal.toFixed(2)}`;
         
         // Expiration: N1 = 1m, N2 = 3m, N3+ = 5m
         const expiryMins = level === 1 ? 1 : level === 2 ? 3 : 5;
 
         newItems.push({
           id: `trade_close_${t.ticket}_${nowTick}`,
-          title: `✅ ${symbol} ${direction} fechou — ${profit} USC`,
+          title: `✅ ${symbol} ${direction} fechou — ${formatValue(profitVal, true)}`,
           desc: `TP atingido N${level}`,
           createdAt: nowTick,
           expiresAt: nowTick + expiryMins * 60 * 1000,
           read: false,
+          type: "close",
+          profitVal: profitVal,
+          symbol: symbol,
+          direction: direction,
+          level: level,
         });
       });
 
@@ -364,6 +394,11 @@ export default function Header({
             createdAt: nowTick,
             expiresAt: nowTick + expiryMins * 60 * 1000,
             read: false,
+            type: "open",
+            volume: t.volume,
+            symbol: symbol,
+            direction: direction,
+            level: 1,
           });
         } else {
           newItems.push({
@@ -373,6 +408,11 @@ export default function Header({
             createdAt: nowTick,
             expiresAt: nowTick + expiryMins * 60 * 1000,
             read: false,
+            type: "recompra",
+            volume: t.volume,
+            symbol: symbol,
+            direction: direction,
+            level: level,
           });
         }
       });
@@ -390,7 +430,12 @@ export default function Header({
           } else if (item.id.startsWith("trade_recompra_")) {
             toastType = "warning";
           }
-          addToast(item.title, item.desc, toastType);
+          
+          let displayTitle = item.title;
+          if (item.type === "close" && item.profitVal !== undefined && item.symbol) {
+            displayTitle = `✅ ${item.symbol} ${item.direction} fechou — ${formatValue(item.profitVal, true)}`;
+          }
+          addToast(displayTitle, item.desc, toastType);
         });
       }
     }
@@ -524,11 +569,11 @@ export default function Header({
     const prev = prevSoftStopReachRef.current;
     if (floatingPl < 0) {
       if (prev < 50 && reachPct >= 50 && reachPct < 80) {
-        addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${absLoss.toFixed(2)} USC)`, "warning");
+        addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
       } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
-        addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${absLoss.toFixed(2)} USC)`, "error");
+        addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
       } else if (prev < 100 && reachPct >= 100) {
-        addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${absLoss.toFixed(2)} / ${softStopLimit.toFixed(2)} USC). Novas ordens bloqueadas!`, "error");
+        addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");
       }
     }
     prevSoftStopReachRef.current = reachPct;
@@ -547,7 +592,7 @@ export default function Header({
     const prevActive = prevTrailingActiveRef.current;
     
     if (!prevActive && trailingActive) {
-      addToast("🎯 Ciclo Equity Iniciado", `Novo ciclo de Trailing de Patrimônio foi ativado (Base: ${currencyMode === "CENT" ? (balance ? balance.toFixed(2) : "0.00") + " USC" : "R$ " + ((balance || 0) / 100 * brlRate).toFixed(2)}).`, "success");
+      addToast("🎯 Ciclo Equity Iniciado", `Novo ciclo de Trailing de Patrimônio foi ativado (Base: ${formatValue(balance || 0)}).`, "success");
     } else if (prevActive && !trailingActive) {
       addToast("🏁 Ciclo Equity Concluído", "O ciclo de trailing atual foi encerrado (alvo alcançado ou resetado).", "info");
     }
@@ -956,29 +1001,35 @@ export default function Header({
                       Nenhum alerta recente
                     </div>
                   ) : (
-                    recentNotifications.map((r) => (
-                      <div key={r.id} className={`${styles.notificationItem} ${styles.recent}`}>
-                        <div className={styles.notificationItemHeader}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                            <CheckCircle2 size={12} style={{ color: "var(--neon-green)" }} />
-                            <span className={styles.notificationTitle} style={{ color: "var(--neon-green)" }}>
-                              {r.title}
+                    recentNotifications.map((r) => {
+                      let displayTitle = r.title;
+                      if (r.type === "close" && r.profitVal !== undefined && r.symbol) {
+                        displayTitle = `✅ ${r.symbol} ${r.direction} fechou — ${formatValue(r.profitVal, true)}`;
+                      }
+                      return (
+                        <div key={r.id} className={`${styles.notificationItem} ${styles.recent}`}>
+                          <div className={styles.notificationItemHeader}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                              <CheckCircle2 size={12} style={{ color: "var(--neon-green)" }} />
+                              <span className={styles.notificationTitle} style={{ color: "var(--neon-green)" }}>
+                                {displayTitle}
+                              </span>
+                            </div>
+                          </div>
+                          <p className={styles.notificationDesc}>
+                            {r.desc} &rarr; {formatTimeLeft(r.expiresAt)}
+                          </p>
+                          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.2rem" }}>
+                            <span 
+                              className={styles.notificationDismiss} 
+                              onClick={(e) => { e.stopPropagation(); dismissRecent(r.id); }}
+                            >
+                              [dispensar]
                             </span>
                           </div>
                         </div>
-                        <p className={styles.notificationDesc}>
-                          {r.desc} &rarr; {formatTimeLeft(r.expiresAt)}
-                        </p>
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.2rem" }}>
-                          <span 
-                            className={styles.notificationDismiss} 
-                            onClick={(e) => { e.stopPropagation(); dismissRecent(r.id); }}
-                          >
-                            [dispensar]
-                          </span>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
 
