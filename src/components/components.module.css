@@ -2559,6 +2559,14 @@
   font-size: clamp(0.7rem, 1.6vw, 0.78rem);
 }
 
+.eqCycleValueColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+  z-index: 10;
+}
+
 @media (max-width: 768px) {
   .equityCycleCardFull {
     flex-direction: column;
@@ -2568,6 +2576,9 @@
   }
   .eqCycleCenter {
     justify-content: flex-start;
+  }
+  .eqCycleValueColumn {
+    align-items: flex-start;
   }
   .eqCycleValueRow {
     flex-wrap: wrap;

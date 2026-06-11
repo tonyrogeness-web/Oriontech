@@ -339,33 +339,32 @@ export default function KpiCards({
           </div>
         </div>
 
-        {/* Center: Meta Base / Target & Profit / Progress in single line */}
+        {/* Center: Meta Base / Target on Line 1, Profit / Progress on Line 2 */}
         <div className={styles.eqCycleCenter}>
           {trailingActive ? (
-            <div className={styles.eqCycleValueRow}>
-              <span className={styles.eqCycleValueLabel}>BASE:</span>
-              <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
-              
-              <span className={styles.eqCycleArrow}>➔</span>
-              
-              <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%):</span>
-              <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
-              
-              <span className={styles.eqCycleSeparator}>·</span>
-              
-              <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO:</span>
-              <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
-                {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
-              </span>
-              
-              <span className={styles.eqCycleSeparator}>·</span>
-              
-              <span className={`${styles.eqCycleProgressText} tabular-nums`}>
-                {barStr} {progressPercentText}%
-              </span>
+            <div className={styles.eqCycleValueColumn}>
+              <div className={styles.eqCycleValueRow}>
+                <span className={styles.eqCycleValueLabel}>BASE:</span>
+                <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
+                <span className={styles.eqCycleArrow}>➔</span>
+                <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%):</span>
+                <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+              </div>
+              <div className={styles.eqCycleValueRow}>
+                <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO:</span>
+                <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
+                  {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
+                </span>
+                <span className={`${styles.eqCycleProgressText} tabular-nums`} style={{ color: cycleColorVal, marginLeft: "0.75rem" }}>
+                  {barStr} {progressPercentText}%
+                </span>
+              </div>
             </div>
           ) : (
-            <span className={styles.eqCycleInactiveText}>Sistema de Trailing de Patrimônio Líquido · Aguardando início do próximo ciclo</span>
+            <div className={styles.eqCycleValueColumn}>
+              <span className={styles.eqCycleInactiveText}>Sistema de Trailing de Patrimônio Líquido</span>
+              <span className={styles.eqCycleInactiveSub}>Aguardando início do próximo ciclo</span>
+            </div>
           )}
         </div>
       </div>
