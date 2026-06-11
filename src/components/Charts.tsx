@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from "recharts";
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine } from "recharts";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
@@ -19,7 +19,6 @@ interface ChartsProps {
 
 export default function Charts({ history = [], currencyMode = "CENT", brlRate = 5.45 }: ChartsProps) {
   const [timeframe, setTimeframe] = useState("7D");
-  const [showDailyProfit, setShowDailyProfit] = useState(false);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -32,21 +31,23 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
 
   const formatCurrency = (val: number) => {
     if (currencyMode === "CENT") {
-      if (val >= 10000) return `${(val / 1000).toFixed(0)}k USC`;
-      if (val >= 1000) return `${(val / 1000).toFixed(1)}k USC`;
+      if (Math.abs(val) >= 10000) return `${(val / 1000).toFixed(0)}k USC`;
+      if (Math.abs(val) >= 1000) return `${(val / 1000).toFixed(1)}k USC`;
       return `${val} USC`;
     } else { // BRL
-      if (val >= 10000) return `R$ ${(val / 1000).toFixed(1)}k`;
-      if (val >= 1000) return `R$ ${(val / 1000).toFixed(2)}k`;
+      if (Math.abs(val) >= 10000) return `R$ ${(val / 1000).toFixed(1)}k`;
+      if (Math.abs(val) >= 1000) return `R$ ${(val / 1000).toFixed(2)}k`;
       return `R$ ${val}`;
     }
   };
 
   const formatValPrimary = (val: number) => {
+    const absVal = Math.abs(val);
+    const sign = val < 0 ? "-" : "";
     if (currencyMode === "CENT") {
-      return `${val.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC`;
+      return `${sign}${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC`;
     } else {
-      return `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return `${sign}R$ ${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   };
 
@@ -70,60 +71,50 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
       profitVal = (h.profit / 100) * brlRate;
       eqVal = (eqVal / 100) * brlRate;
     }
+    
+    const floatingPl = eqVal - balVal;
+    
     return {
       name: formatDate(h.date),
       balance: parseFloat(balVal.toFixed(2)),
       profit: parseFloat(profitVal.toFixed(2)),
-      equity: parseFloat(eqVal.toFixed(2)),
+      gain: profitVal > 0 ? parseFloat(profitVal.toFixed(2)) : 0,
+      loss: profitVal < 0 ? parseFloat(profitVal.toFixed(2)) : 0,
+      floating: parseFloat(floatingPl.toFixed(2)),
     };
   });
 
   // Calculate statistics for the filtered period
-  const balances = lineData.map((d) => d.balance);
-  const minBalance = balances.length > 0 ? Math.min(...balances) : 0;
-  const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
+  const tradingDays = lineData.filter((d) => d.profit !== 0);
+  const positiveDays = lineData.filter((d) => d.profit > 0);
+  const winRate = tradingDays.length > 0 ? (positiveDays.length / tradingDays.length) * 100 : 100;
   
-  const startBalance = lineData.length > 0 ? lineData[0].balance : 0;
-  const off = (maxBalance - minBalance) === 0
-    ? 0.5
-    : Math.max(0, Math.min(1, (maxBalance - startBalance) / (maxBalance - minBalance)));
-
-  let growthPct = 0;
-  if (lineData.length > 1) {
-    const startVal = lineData[0].balance;
-    const endVal = lineData[lineData.length - 1].balance;
-    if (startVal > 0) {
-      growthPct = ((endVal - startVal) / startVal) * 100;
-    }
-  }
+  const totalPeriodProfit = lineData.reduce((sum, d) => sum + d.profit, 0);
+  const avgDailyProfit = lineData.length > 0 ? totalPeriodProfit / lineData.length : 0;
+  
+  const floatings = lineData.map((d) => d.floating);
+  const maxDrawdownVal = floatings.length > 0 ? Math.min(...floatings) : 0;
 
   return (
     <div className={styles.chartsCard}>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
         <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
-          Curva de Patrimônio
+          Desempenho Diário e Risco Flutuante
         </h3>
 
-        {/* Timeframe Filters & Daily Profit Toggle */}
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
-          {/* Toggle Button for Daily Profit Line */}
-          {lineData.length > 0 && (
-            <button
-              className={`${styles.chartFilterBtn} ${showDailyProfit ? styles.chartFilterBtnActive : ""}`}
-              onClick={() => setShowDailyProfit(!showDailyProfit)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.25rem",
-                color: showDailyProfit ? "var(--neon-orange)" : "var(--text-muted)",
-                borderColor: showDailyProfit ? "rgba(255, 85, 0, 0.3)" : "var(--opacity-border)",
-                background: showDailyProfit ? "rgba(255, 85, 0, 0.05)" : "transparent",
-              }}
-              title="Exibir série de Lucro Diário consolidado"
-            >
-              <span style={{ fontSize: "0.68rem" }}>● Diário</span>
-            </button>
-          )}
+        {/* Timeframe Filters */}
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: "0.8rem", alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              <span style={{ color: "var(--neon-green)", fontSize: "0.75rem" }}>●</span> Ganhos
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              <span style={{ color: "var(--neon-red)", fontSize: "0.75rem" }}>●</span> Perdas
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              <span style={{ color: "var(--neon-amber)", fontSize: "0.75rem" }}>●</span> Flutuante (Drawdown)
+            </span>
+          </div>
 
           <div className={styles.chartFilters}>
             {["7D", "30D", "MÊS", "TUDO"].map((tf) => (
@@ -137,29 +128,6 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
             ))}
           </div>
         </div>
-
-        {/* Legends */}
-        <div style={{ display: "flex", gap: "0.8rem", alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
-            <span style={{ color: "var(--neon-gold)", fontSize: "0.75rem" }}>●</span> Saldo
-          </span>
-          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
-            <span style={{ color: "var(--neon-green)", fontSize: "0.75rem" }}>●</span> Patrimônio
-          </span>
-          <span style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem",
-            fontSize: "0.68rem",
-            color: "var(--text-secondary)",
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-            opacity: showDailyProfit ? 1 : 0.4,
-            transition: "opacity 0.2s ease"
-          }}>
-            <span style={{ color: "var(--neon-orange)", fontSize: "0.75rem" }}>●</span> Lucro Diário
-          </span>
-        </div>
       </div>
 
       {lineData.length === 0 ? (
@@ -171,30 +139,34 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           {/* Period Summary stats bar */}
           <div className={styles.chartSummaryBar}>
             <div className={styles.summaryItem}>
-              <span className={styles.summaryLabel}>Mínimo</span>
-              <span className={styles.summaryValue}>{formatValPrimary(minBalance)}</span>
+              <span className={styles.summaryLabel}>Win Rate</span>
+              <span className={styles.summaryValue} style={{ color: "var(--neon-green)" }}>
+                {winRate.toFixed(1)}%
+              </span>
             </div>
             <div className={styles.summaryItem}>
-              <span className={styles.summaryLabel}>Máximo</span>
-              <span className={styles.summaryValue}>{formatValPrimary(maxBalance)}</span>
+              <span className={styles.summaryLabel}>Média Diária</span>
+              <span className={styles.summaryValue} style={{ color: avgDailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+                {formatValPrimary(avgDailyProfit)}
+              </span>
             </div>
             <div className={styles.summaryItem}>
-              <span className={styles.summaryLabel}>Variação Período</span>
-              <span className={styles.summaryValue} style={{ color: growthPct >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-                {growthPct >= 0 ? "+" : ""}{growthPct.toFixed(2)}%
+              <span className={styles.summaryLabel}>Máx. Flutuante</span>
+              <span className={styles.summaryValue} style={{ color: maxDrawdownVal < 0 ? "var(--neon-red)" : "var(--neon-green)" }}>
+                {formatValPrimary(maxDrawdownVal)}
+              </span>
+            </div>
+            <div className={styles.summaryItem}>
+              <span className={styles.summaryLabel}>Total Período</span>
+              <span className={styles.summaryValue} style={{ color: totalPeriodProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+                {formatValPrimary(totalPeriodProfit)}
               </span>
             </div>
           </div>
 
           <div className={styles.chartContainer} style={{ height: "210px" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={lineData} margin={{ top: 15, right: showDailyProfit ? -15 : 10, left: -25, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset={off} stopColor="var(--neon-green)" stopOpacity={0.25} />
-                    <stop offset={off} stopColor="var(--neon-red)" stopOpacity={0.25} />
-                  </linearGradient>
-                </defs>
+              <ComposedChart data={lineData} margin={{ top: 15, right: -5, left: -25, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} />
                 <YAxis
@@ -205,17 +177,15 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   domain={["auto", "auto"]}
                   tickFormatter={formatCurrency}
                 />
-                {showDailyProfit && (
-                  <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    stroke="var(--neon-orange)"
-                    fontSize={9}
-                    tickLine={false}
-                    domain={["auto", "auto"]}
-                    tickFormatter={formatCurrency}
-                  />
-                )}
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="var(--neon-amber)"
+                  fontSize={9}
+                  tickLine={false}
+                  domain={["auto", "auto"]}
+                  tickFormatter={formatCurrency}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--bg-panel-solid)",
@@ -230,69 +200,47 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                     const prefix = isBrl ? "R$ " : "";
                     const suffix = isBrl ? " BRL" : " USC";
                     
-                    const labelName = 
-                      name === "balance" ? "Saldo" : 
-                      name === "equity" ? "Patrimônio" : 
-                      "Lucro Diário";
+                    let labelName = name;
+                    if (name === "gain") labelName = "Ganho Diário";
+                    if (name === "loss") labelName = "Perda Diária";
+                    if (name === "floating") labelName = "Perda Flutuante";
+                    
                     return [`${prefix}${formatted}${suffix}`, labelName];
                   }}
                 />
                 
-                {/* Horizontal reference line for the initial period value */}
-                {lineData.length > 0 && (
-                  <ReferenceLine
-                    yAxisId="left"
-                    y={lineData[0].balance}
-                    stroke="var(--opacity-border)"
-                    strokeDasharray="3 3"
-                    label={{
-                      value: "Ponto Inicial",
-                      position: "left",
-                      fill: "var(--text-muted)",
-                      fontSize: 8,
-                      offset: 5,
-                    }}
-                  />
-                )}
-
-                {/* Patrimônio (Equity) Filled Area */}
-                <Area
+                <ReferenceLine yAxisId="left" y={0} stroke="var(--opacity-border)" strokeWidth={1} />
+                
+                {/* Daily Gain Bar (Green) */}
+                <Bar
                   yAxisId="left"
+                  dataKey="gain"
+                  fill="var(--neon-green)"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={30}
+                  name="gain"
+                />
+                
+                {/* Daily Loss Bar (Red) */}
+                <Bar
+                  yAxisId="left"
+                  dataKey="loss"
+                  fill="var(--neon-red)"
+                  radius={[0, 0, 4, 4]}
+                  maxBarSize={30}
+                  name="loss"
+                />
+                
+                {/* Floating Loss Line (Amber/Red) */}
+                <Line
+                  yAxisId="right"
                   type="monotone"
-                  dataKey="equity"
-                  stroke="var(--neon-green)"
+                  dataKey="floating"
+                  stroke="var(--neon-amber)"
                   strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#splitColor)"
-                  dot={false}
-                  name="equity"
+                  dot={{ r: 2, fill: "var(--neon-amber)", strokeWidth: 1 }}
+                  name="floating"
                 />
-
-                {/* Saldo (Balance) Line */}
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="balance"
-                  stroke="var(--neon-gold)"
-                  strokeWidth={2.5}
-                  fill="transparent"
-                  dot={false}
-                  name="balance"
-                />
-
-                {/* Overlaid Daily Profit line */}
-                {showDailyProfit && (
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="profit"
-                    stroke="var(--neon-orange)"
-                    strokeWidth={1.5}
-                    strokeDasharray="4 4"
-                    dot={{ r: 2, fill: "var(--neon-orange)", strokeWidth: 1 }}
-                    name="profit"
-                  />
-                )}
               </ComposedChart>
             </ResponsiveContainer>
           </div>

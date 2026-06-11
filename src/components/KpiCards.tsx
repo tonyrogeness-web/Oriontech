@@ -213,7 +213,7 @@ export default function KpiCards({
     <>
       <div className={styles.kpiRowGrid}>
         {/* 1. Saldo da Conta */}
-        <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold} ${styles.kpiCardSmall}`}>
+        <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold} ${styles.kpiCardFull}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
             <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
@@ -228,48 +228,8 @@ export default function KpiCards({
           <Sparkline data={balanceHistory} color="var(--neon-gold)" />
         </div>
 
-        {/* 2. Saldo Líquido */}
-        <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardSmall}`}>
-          <div className={styles.kpiHeaderRow}>
-            <span className={styles.kpiLabelMockup}>Saldo Líquido</span>
-            <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
-              <Coins size={14} />
-            </div>
-          </div>
-          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-            {formatValPrimary(equityCalc)}
-          </span>
-          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-            {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
-          </span>
-          <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
-          </span>
-          <Sparkline data={equityHistory} color={floatingPl >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
-        </div>
-
-        {/* 3. L. Líquido */}
-        <div className={`${styles.kpiCardMockup} ${netProfitCalc >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardSmall}`}>
-          <div className={styles.kpiHeaderRow}>
-            <span className={styles.kpiLabelMockup}>L. Líquido</span>
-            <div className={`${styles.kpiIconContainer} ${netProfitCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
-              <DollarSign size={14} />
-            </div>
-          </div>
-          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-            {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
-          </span>
-          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-            {netProfitCalc >= 0 ? "+" : ""}{formatValSecondary(netProfitCalc)}
-          </span>
-          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
-          </span>
-          <Sparkline data={globalProfitHistory} color={netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
-        </div>
-
-        {/* 4. Lucro Hoje */}
-        <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
+        {/* 2. Lucro Hoje */}
+        <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
             <div className={`${styles.kpiIconContainer} ${dailyProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
@@ -288,8 +248,8 @@ export default function KpiCards({
           <Sparkline data={dailyProfitHistory} color={dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
 
-        {/* 5. L. Global */}
-        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
+        {/* 3. L. Global */}
+        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>L. Global</span>
             <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
@@ -308,8 +268,48 @@ export default function KpiCards({
           <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
 
+        {/* 4. Saldo Líquido */}
+        <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardLarge}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>Saldo Líquido</span>
+            <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
+              <Coins size={14} />
+            </div>
+          </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+            {formatValPrimary(equityCalc)}
+          </span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
+            {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
+          </span>
+          <Sparkline data={equityHistory} color={floatingPl >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
+        </div>
+
+        {/* 5. L. Líquido */}
+        <div className={`${styles.kpiCardMockup} ${netProfitCalc >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardLarge}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>L. Líquido</span>
+            <div className={`${styles.kpiIconContainer} ${netProfitCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
+              <DollarSign size={14} />
+            </div>
+          </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+            {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
+          </span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
+            {netProfitCalc >= 0 ? "+" : ""}{formatValSecondary(netProfitCalc)}
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
+          </span>
+          <Sparkline data={globalProfitHistory} color={netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
+        </div>
+
         {/* 6. Drawdown Atual */}
-        <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardSmall}`}>
+        <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardFull}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>Drawdown Atual</span>
             <div className={`${styles.kpiIconContainer} ${ddGlowClass}`}>

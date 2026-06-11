@@ -837,6 +837,26 @@
   margin-bottom: 1.25rem;
 }
 
+.kpiCardFull {
+  grid-column: span 6;
+}
+
+.kpiCardFull .kpiValueMockup {
+  font-size: clamp(1.4rem, 4vw, 1.95rem) !important;
+}
+
+.kpiCardFull .kpiSubValueMockup {
+  font-size: clamp(1.15rem, 3.2vw, 1.4rem) !important;
+  margin-top: 0.25rem !important;
+  color: var(--text-secondary) !important;
+}
+
+.kpiCardFull .kpiBadgeMockup {
+  font-size: 0.78rem !important;
+  padding: 0.18rem 0.55rem !important;
+  margin-top: 0.55rem !important;
+}
+
 .kpiCardLarge {
   grid-column: span 3;
 }
@@ -881,6 +901,9 @@
   .kpiRowGrid {
     grid-template-columns: repeat(6, 1fr);
   }
+  .kpiCardFull {
+    grid-column: span 6;
+  }
   .kpiCardLarge {
     grid-column: span 3;
   }
@@ -894,18 +917,15 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
-  .kpiCardLarge {
+  .kpiCardFull {
     grid-column: span 2;
+  }
+  .kpiCardLarge {
+    grid-column: span 1;
   }
   .kpiCardSmall {
     grid-column: span 1;
   }
-  .kpiRowGrid > div:nth-child(1) { grid-row: 3; grid-column: 1; } /* Saldo da Conta */
-  .kpiRowGrid > div:nth-child(2) { grid-row: 3; grid-column: 2; } /* Saldo Líquido */
-  .kpiRowGrid > div:nth-child(3) { grid-row: 2; grid-column: 1; } /* L. Líquido */
-  .kpiRowGrid > div:nth-child(4) { grid-row: 1; grid-column: 1; } /* Lucro Hoje */
-  .kpiRowGrid > div:nth-child(5) { grid-row: 1; grid-column: 2; } /* L. Global */
-  .kpiRowGrid > div:nth-child(6) { grid-row: 2; grid-column: 2; } /* Drawdown Atual */
 }
 
 @media (max-width: 480px) {
