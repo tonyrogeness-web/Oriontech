@@ -339,37 +339,33 @@ export default function KpiCards({
           </div>
         </div>
 
-        {/* Center: Meta Base / Target */}
+        {/* Center: Meta Base / Target & Profit / Progress in single line */}
         <div className={styles.eqCycleCenter}>
           {trailingActive ? (
             <div className={styles.eqCycleValueRow}>
               <span className={styles.eqCycleValueLabel}>BASE:</span>
               <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
+              
               <span className={styles.eqCycleArrow}>➔</span>
-              <span className={styles.eqCycleValueLabel}>ALVO:</span>
+              
+              <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%):</span>
               <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
-              <span style={{ color: "var(--neon-green)", fontWeight: 700, fontSize: "0.75rem", marginLeft: "0.25rem" }}>(+{targetPct.toFixed(0)}%)</span>
-            </div>
-          ) : (
-            <span className={styles.eqCycleInactiveText}>Sistema de Trailing de Patrimônio Líquido</span>
-          )}
-        </div>
-
-        {/* Right Side: Progress Bar & Profit Inline */}
-        <div className={styles.eqCycleRight}>
-          {trailingActive ? (
-            <div className={styles.eqCycleProgressRow}>
-              <span className={`${styles.eqCycleProgressText} tabular-nums`}>
-                {barStr} {progressPercentText}%
-              </span>
+              
               <span className={styles.eqCycleSeparator}>·</span>
+              
               <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO:</span>
               <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
                 {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
               </span>
+              
+              <span className={styles.eqCycleSeparator}>·</span>
+              
+              <span className={`${styles.eqCycleProgressText} tabular-nums`}>
+                {barStr} {progressPercentText}%
+              </span>
             </div>
           ) : (
-            <span className={styles.eqCycleInactiveSub}>Aguardando início do próximo ciclo</span>
+            <span className={styles.eqCycleInactiveText}>Sistema de Trailing de Patrimônio Líquido · Aguardando início do próximo ciclo</span>
           )}
         </div>
       </div>
