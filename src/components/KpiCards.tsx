@@ -323,8 +323,6 @@ export default function KpiCards({
 
       {/* Dedicated Full-Width Equity Cycle Card */}
       <div className={`${styles.equityCycleCardFull} ${cycleBorderClass}`}>
-        {/* Background Sparkline */}
-        <Sparkline data={equityHistory} color={cycleColorVal} width={260} height={35} />
         
         {/* Left Side: Status Block */}
         <div className={styles.eqCycleLeft}>
