@@ -819,13 +819,13 @@
 
 .kpiRowGrid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.65rem;
   margin-bottom: 1.25rem;
 }
 
 .kpiCardLarge {
-  grid-column: span 6;
+  grid-column: span 3;
 }
 
 .kpiCardLarge .kpiValueMockup {
@@ -845,7 +845,7 @@
 }
 
 .kpiCardSmall {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 .kpiCardSmall .kpiValueMockup {
@@ -866,13 +866,13 @@
 
 @media (max-width: 900px) {
   .kpiRowGrid {
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
   .kpiCardLarge {
-    grid-column: span 6;
+    grid-column: span 3;
   }
   .kpiCardSmall {
-    grid-column: span 3;
+    grid-column: span 2;
   }
 }
 
@@ -886,6 +886,9 @@
   }
   .kpiCardSmall {
     grid-column: span 1;
+  }
+  .kpiRowGrid > div:nth-child(5) {
+    grid-column: span 2;
   }
 }
 
@@ -2424,4 +2427,154 @@
 :global([data-theme="light"]) .kpiCardMockup:hover {
   box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
   border-color: var(--border-active) !important;
+}
+
+/* ===================================================================
+   Dedicated Full-Width Equity Cycle Card
+   =================================================================== */
+.equityCycleCardFull {
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: var(--transition-smooth);
+  margin-bottom: 1.25rem;
+  gap: 1.5rem;
+  min-height: 58px;
+  overflow: hidden;
+}
+
+.equityCycleCardFull:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-gradient-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global([data-theme="light"]) .equityCycleCardFull {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02) !important;
+}
+:global([data-theme="light"]) .equityCycleCardFull:hover {
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+  border-color: var(--border-active) !important;
+}
+
+.eqCycleLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.eqCycleTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.eqCycleLabel {
+  font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.eqCycleCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  z-index: 10;
+}
+
+.eqCycleValueRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+}
+
+.eqCycleValueLabel {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: clamp(0.68rem, 1.6vw, 0.75rem);
+}
+
+.eqCycleValue {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.eqCycleArrow {
+  color: var(--text-muted);
+  margin: 0 0.25rem;
+}
+
+.eqCycleInactiveText {
+  color: var(--text-muted);
+  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.eqCycleRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  text-align: right;
+  z-index: 10;
+}
+
+.eqCycleProfitRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eqCycleProfitValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
+.eqCycleProgressBarContainer {
+  font-family: monospace;
+  font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+  letter-spacing: 0.05em;
+}
+
+.eqCycleProgressText {
+  color: var(--text-secondary);
+}
+
+.eqCycleInactiveSub {
+  color: var(--text-muted);
+  font-size: clamp(0.7rem, 1.6vw, 0.78rem);
+}
+
+@media (max-width: 768px) {
+  .equityCycleCardFull {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .eqCycleCenter {
+    justify-content: flex-start;
+  }
+  .eqCycleValueRow {
+    flex-wrap: wrap;
+  }
+  .eqCycleRight {
+    align-items: flex-start;
+    text-align: left;
+  }
 }

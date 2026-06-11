@@ -29,7 +29,7 @@ interface KpiCardsProps {
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function Sparkline({ data, color, width = 85, height = 24 }: { data: number[]; color: string; width?: number; height?: number }) {
   let plotData = [...data];
   
   // Render placeholder sine-like wave if history is empty
@@ -41,8 +41,6 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...plotData);
   const range = max - min === 0 ? 1 : max - min;
 
-  const width = 85;
-  const height = 24;
   const padding = 1.5;
 
   const points = plotData
@@ -200,159 +198,181 @@ export default function KpiCards({
     cycleColorVal = "var(--neon-amber)";
   }
 
-  const primaryValText = trailingActive ? `${profitNet >= 0 ? "+" : ""}${formatValPrimary(profitNet)}` : formatValPrimary(0);
-  const secondaryValText = trailingActive ? `Alvo: ${formatValSecondary(targetValue)}` : "Sem ciclo ativo";
+  const progressPercentText = clampedProgress.toFixed(0);
+  const solidCount = Math.max(0, Math.min(10, Math.round(clampedProgress / 10)));
+  const emptyCount = 10 - solidCount;
+  const barStr = "[" + "█".repeat(solidCount) + "░".repeat(emptyCount) + "]";
 
   return (
-    <div className={styles.kpiRowGrid}>
-      {/* 1. Saldo da Conta */}
-      <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold} ${styles.kpiCardLarge}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
-          <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
-            <Wallet size={14} />
+    <>
+      <div className={styles.kpiRowGrid}>
+        {/* 1. Saldo da Conta */}
+        <div className={`${styles.kpiCardMockup} ${styles.kpiCardBorderGold} ${styles.kpiCardLarge}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>Saldo da Conta</span>
+            <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
+              <Wallet size={14} />
+            </div>
           </div>
-        </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`}>{formatValPrimary(balance)}</span>
-        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>{formatValSecondary(balance)}</span>
-        <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>
-          {currencyMode === "CENT" ? "CENT" : "BRL"}
-        </span>
-        <Sparkline data={balanceHistory} color="var(--neon-gold)" />
-      </div>
-
-      {/* 2. Patrimônio Líquido */}
-      <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardLarge}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>P. Líquido</span>
-          <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
-            <Coins size={14} />
-          </div>
-        </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-          {formatValPrimary(equityCalc)}
-        </span>
-        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-          {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
-        </span>
-        <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
-        </span>
-        <Sparkline data={equityHistory} color={floatingPl >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
-      </div>
-
-      {/* 3. Lucro Hoje */}
-      <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
-          <div className={`${styles.kpiIconContainer} ${dailyProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
-            <TrendingUp size={14} />
-          </div>
-        </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {dailyProfit >= 0 ? "+" : ""}{formatValPrimary(dailyProfit)}
-        </span>
-        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-          {dailyProfit >= 0 ? "+" : ""}{formatValSecondary(dailyProfit)}
-        </span>
-        <span className={`${styles.kpiBadgeMockup} ${dailyProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          {dailyProfit >= 0 ? "+" : ""}{dailyPct.toFixed(2)}%
-        </span>
-        <Sparkline data={dailyProfitHistory} color={dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
-      </div>
-
-      {/* 4. L. Global */}
-      <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>L. Global</span>
-          <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
-            <Globe size={14} />
-          </div>
-        </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
-          {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
-        </span>
-        <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
-          {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)}
-        </span>
-        <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-          {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
-        </span>
-        <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
-      </div>
-
-      {/* 5. Drawdown Atual */}
-      <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardSmall}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>Drawdown Atual</span>
-          <div className={`${styles.kpiIconContainer} ${ddGlowClass}`}>
-            <ShieldAlert size={14} />
-          </div>
-        </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)" }}>
-          {maxDrawdown.toFixed(1)}%
-        </span>
-        <span className={styles.kpiSubValueMockup}>
-          {ddZone} · Limite 40%
-        </span>
-        <span className={`${styles.kpiBadgeMockup} ${ddColorClass}`} style={{ marginBottom: "0.2rem" }}>
-          {ddBadge}
-        </span>
-        
-        <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "var(--opacity-divider)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${Math.min(100, (maxDrawdown / 40) * 100)}%`,
-              background: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)",
-              opacity: 0.8,
-              transition: "width 0.5s ease"
-            }}
-          />
-          <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
-          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+          <span className={`${styles.kpiValueMockup} tabular-nums`}>{formatValPrimary(balance)}</span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>{formatValSecondary(balance)}</span>
+          <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeGreen}`}>
+            {currencyMode === "CENT" ? "CENT" : "BRL"}
+          </span>
+          <Sparkline data={balanceHistory} color="var(--neon-gold)" />
         </div>
 
-        <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />
-      </div>
-
-      {/* 6. Ciclo Equity */}
-      <div className={`${styles.kpiCardMockup} ${cycleBorderClass} ${styles.kpiCardSmall}`}>
-        <div className={styles.kpiHeaderRow}>
-          <span className={styles.kpiLabelMockup}>Ciclo Equity</span>
-          <div className={`${styles.kpiIconContainer} ${cycleGlowClass}`}>
-            <Target size={14} />
+        {/* 2. Patrimônio Líquido */}
+        <div className={`${styles.kpiCardMockup} ${floatingPl >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderRed} ${styles.kpiCardLarge}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>P. Líquido</span>
+            <div className={`${styles.kpiIconContainer} ${equityDiffCalc >= 0 ? styles.greenGlow : styles.redGlow}`}>
+              <Coins size={14} />
+            </div>
           </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: equityDiffCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+            {formatValPrimary(equityCalc)}
+          </span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
+            {formatValSecondary(equityCalc)} · {equityDiffPctCalc >= 0 ? "+" : ""}{equityDiffPctCalc.toFixed(2)}%
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${floatingPl >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
+          </span>
+          <Sparkline data={equityHistory} color={floatingPl >= 0 ? "var(--neon-green)" : "var(--neon-red)"} />
         </div>
-        <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: cycleColorVal }}>
-          {primaryValText}
-        </span>
-        <span className={styles.kpiSubValueMockup}>
-          {secondaryValText}
-        </span>
-        <span className={`${styles.kpiBadgeMockup} ${cycleBadgeColorClass}`} style={{ marginBottom: "0.2rem" }}>
-          {cycleBadge}
-        </span>
-        
-        {trailingActive && (
+
+        {/* 3. Lucro Hoje */}
+        <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>Lucro Hoje</span>
+            <div className={`${styles.kpiIconContainer} ${dailyProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
+              <TrendingUp size={14} />
+            </div>
+          </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
+            {dailyProfit >= 0 ? "+" : ""}{formatValPrimary(dailyProfit)}
+          </span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
+            {dailyProfit >= 0 ? "+" : ""}{formatValSecondary(dailyProfit)}
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${dailyProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {dailyProfit >= 0 ? "+" : ""}{dailyPct.toFixed(2)}%
+          </span>
+          <Sparkline data={dailyProfitHistory} color={dailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
+        </div>
+
+        {/* 4. L. Global */}
+        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardSmall}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>L. Global</span>
+            <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
+              <Globe size={14} />
+            </div>
+          </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
+            {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
+          </span>
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`}>
+            {totalProfit >= 0 ? "+" : ""}{formatValSecondary(totalProfit)}
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {totalProfit >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
+          </span>
+          <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
+        </div>
+
+        {/* 5. Drawdown Atual */}
+        <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardSmall}`}>
+          <div className={styles.kpiHeaderRow}>
+            <span className={styles.kpiLabelMockup}>Drawdown Atual</span>
+            <div className={`${styles.kpiIconContainer} ${ddGlowClass}`}>
+              <ShieldAlert size={14} />
+            </div>
+          </div>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)" }}>
+            {maxDrawdown.toFixed(1)}%
+          </span>
+          <span className={styles.kpiSubValueMockup}>
+            {ddZone} · Limite 40%
+          </span>
+          <span className={`${styles.kpiBadgeMockup} ${ddColorClass}`} style={{ marginBottom: "0.2rem" }}>
+            {ddBadge}
+          </span>
+          
           <div style={{ marginTop: "0.4rem", width: "100%", height: "3px", background: "var(--opacity-divider)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
             <div
               style={{
                 height: "100%",
-                width: `${clampedProgress}%`,
-                background: cycleColorVal,
+                width: `${Math.min(100, (maxDrawdown / 40) * 100)}%`,
+                background: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)",
                 opacity: 0.8,
                 transition: "width 0.5s ease"
               }}
             />
             <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
             <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
-            <div style={{ position: "absolute", left: "75%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
           </div>
-        )}
 
-        <Sparkline data={equityHistory} color={cycleColorVal} />
+          <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />
+        </div>
       </div>
-    </div>
+
+      {/* Dedicated Full-Width Equity Cycle Card */}
+      <div className={`${styles.equityCycleCardFull} ${cycleBorderClass}`}>
+        {/* Background Sparkline */}
+        <Sparkline data={equityHistory} color={cycleColorVal} width={260} height={35} />
+        
+        {/* Left Side: Status Block */}
+        <div className={styles.eqCycleLeft}>
+          <div className={`${styles.kpiIconContainer} ${cycleGlowClass}`}>
+            <Target size={15} />
+          </div>
+          <div className={styles.eqCycleTitleBlock}>
+            <span className={styles.eqCycleLabel}>Ciclo Equity</span>
+            <span className={`${styles.kpiBadgeMockup} ${cycleBadgeColorClass}`}>
+              {cycleBadge}
+            </span>
+          </div>
+        </div>
+
+        {/* Center: Meta Base / Target */}
+        <div className={styles.eqCycleCenter}>
+          {trailingActive ? (
+            <div className={styles.eqCycleValueRow}>
+              <span className={styles.eqCycleValueLabel}>BASE:</span>
+              <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
+              <span className={styles.eqCycleArrow}>➔</span>
+              <span className={styles.eqCycleValueLabel}>ALVO:</span>
+              <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+              <span style={{ color: "var(--neon-green)", fontWeight: 700, fontSize: "0.75rem", marginLeft: "0.25rem" }}>(+{targetPct.toFixed(0)}%)</span>
+            </div>
+          ) : (
+            <span className={styles.eqCycleInactiveText}>Sistema de Trailing de Patrimônio Líquido</span>
+          )}
+        </div>
+
+        {/* Right Side: Profit / Progress bar */}
+        <div className={styles.eqCycleRight}>
+          {trailingActive ? (
+            <>
+              <div className={styles.eqCycleProfitRow}>
+                <span className={styles.eqCycleValueLabel}>LUCRO:</span>
+                <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: cycleColorVal }}>
+                  {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
+                </span>
+              </div>
+              <div className={styles.eqCycleProgressBarContainer}>
+                <span className={`${styles.eqCycleProgressText} tabular-nums`}>
+                  {barStr} {progressPercentText}%
+                </span>
+              </div>
+            </>
+          ) : (
+            <span className={styles.eqCycleInactiveSub}>Aguardando início do próximo ciclo</span>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
