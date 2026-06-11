@@ -104,7 +104,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", marginBottom: "0.15rem" }}>
             Curva de Patrimônio
           </h3>
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginTop: "0.25rem", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginTop: "0.25rem", flexWrap: "nowrap" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.68rem", color: "var(--text-secondary)", fontWeight: 600, whiteSpace: "nowrap" }}>
               <span style={{ color: "var(--neon-gold)", fontSize: "0.75rem" }}>●</span> Saldo
             </span>
