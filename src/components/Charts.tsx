@@ -93,6 +93,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   // Filter history based on timeframe from the processed data
   const getFilteredHistory = () => {
     if (!fullProcessedHistory || fullProcessedHistory.length === 0) return [];
+    if (timeframe === "DIÁRIO") return fullProcessedHistory.slice(-2); // Show last 2 days (yesterday and today)
     if (timeframe === "7D") return fullProcessedHistory.slice(-7);
     if (timeframe === "30D") return fullProcessedHistory.slice(-30);
     if (timeframe === "MÊS") return fullProcessedHistory.slice(-30);
@@ -100,6 +101,26 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   };
 
   const lineData = getFilteredHistory();
+
+  // Calculate symmetric domains centered around 0 to align 0 baseline of left/right Y-axes
+  let maxAbsLeft = 10;
+  lineData.forEach((d) => {
+    const val1 = Math.abs(d.floating);
+    const val2 = Math.abs(d.cumProfit);
+    const val3 = Math.abs(d.netProfit);
+    const m = Math.max(val1, val2, val3);
+    if (m > maxAbsLeft) maxAbsLeft = m;
+  });
+  const leftDomain = [-maxAbsLeft * 1.15, maxAbsLeft * 1.15];
+
+  let maxAbsRight = 5;
+  lineData.forEach((d) => {
+    const val1 = Math.abs(d.gain);
+    const val2 = Math.abs(d.loss);
+    const m = Math.max(val1, val2);
+    if (m > maxAbsRight) maxAbsRight = m;
+  });
+  const rightDomain = [-maxAbsRight * 1.15, maxAbsRight * 1.15];
 
   // Calculate statistics for the filtered period
   const tradingDays = lineData.filter((d) => d.profit !== 0);
@@ -140,7 +161,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           </div>
 
           <div className={styles.chartFilters}>
-            {["7D", "30D", "MÊS", "TUDO"].map((tf) => (
+            {["DIÁRIO", "7D", "30D", "MÊS", "TUDO"].map((tf) => (
               <button
                 key={tf}
                 className={`${styles.chartFilterBtn} ${timeframe === tf ? styles.chartFilterBtnActive : ""}`}
@@ -197,7 +218,16 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                   stroke="var(--text-secondary)"
                   fontSize={9}
                   tickLine={false}
-                  domain={["auto", "auto"]}
+                  domain={leftDomain}
+                  tickFormatter={formatCurrency}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="var(--text-secondary)"
+                  fontSize={9}
+                  tickLine={false}
+                  domain={rightDomain}
                   tickFormatter={formatCurrency}
                 />
                 <Tooltip
@@ -229,7 +259,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 
                 {/* Daily Gain Bar (Green) */}
                 <Bar
-                  yAxisId="left"
+                  yAxisId="right"
                   dataKey="gain"
                   fill="var(--neon-green)"
                   radius={[4, 4, 0, 0]}
@@ -239,7 +269,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 
                 {/* Daily Loss Bar (Red) */}
                 <Bar
-                  yAxisId="left"
+                  yAxisId="right"
                   dataKey="loss"
                   fill="var(--neon-red)"
                   radius={[0, 0, 4, 4]}

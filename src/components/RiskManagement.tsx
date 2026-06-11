@@ -227,15 +227,14 @@ export default function RiskManagement({
             <ZonedBar fillPct={plBalancePct} fillColor={plBarColor} zone1={10} zone2={20} />
           </div>
 
-          {/* Sub info */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
-            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)", fontWeight: 500 }}>
-              {plIsPositive
-                ? "✓ Sem perda flutuante no momento"
-                : `Perda de ${fmt(plLoss)} sobre posições abertas`}
+            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: plColor, fontWeight: 700 }}>
+              {plBalancePct.toFixed(2)}% da banca
             </span>
             <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              {plBalancePct.toFixed(2)}% da banca
+              {plIsPositive
+                ? "✓ Sem perda flutuante"
+                : `↳ Perda de ${fmt(plLoss)} sobre posições abertas`}
             </span>
           </div>
 
