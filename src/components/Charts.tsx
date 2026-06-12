@@ -32,9 +32,19 @@ interface ChartsProps {
 export default function Charts({ history = [], currencyMode = "CENT", brlRate = 5.45 }: ChartsProps) {
   const [timeframe, setTimeframe] = useState<"DIÁRIO" | "7D" | "30D" | "MÊS_ATUAL">("7D");
 
+  const parseSafeDate = (dateStr: string) => {
+    try {
+      const cleanDate = dateStr.split("T")[0];
+      const [year, month, day] = cleanDate.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    } catch {
+      return new Date(dateStr);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     try {
-      const date = new Date(dateStr);
+      const date = parseSafeDate(dateStr);
       return date.toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
     } catch {
       return dateStr;
@@ -61,6 +71,10 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     } else {
       return `${sign}R$ ${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
+  };
+
+  const formatAxisCurrency = (val: number) => {
+    return formatCurrency(Math.round(val));
   };
 
   // Process history: calculate currency conversions and percentages per day
@@ -101,7 +115,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     const currentMonth = now.getMonth();
     return processedHistory.filter((h) => {
       if (!h.dateRaw) return false;
-      const d = new Date(h.dateRaw);
+      const d = parseSafeDate(h.dateRaw);
       return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
     });
   };
@@ -217,7 +231,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 15, right: 10, left: 15, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
               <XAxis
                 dataKey="name"
@@ -229,8 +243,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 stroke="var(--text-secondary)"
                 fontSize={9}
                 tickLine={false}
+                width={65}
                 domain={yDomain}
-                tickFormatter={formatCurrency}
+                tickFormatter={formatAxisCurrency}
               />
               <Tooltip
                 contentStyle={{
