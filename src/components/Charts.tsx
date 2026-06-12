@@ -23,6 +23,30 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   const chartWrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 500, height: 210 });
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentTheme = document.documentElement.getAttribute("data-theme") as "dark" | "light" | null;
+      if (currentTheme) {
+        setTheme(currentTheme);
+      }
+
+      const observer = new MutationObserver(() => {
+        const t = document.documentElement.getAttribute("data-theme") as "dark" | "light" | null;
+        if (t) {
+          setTheme(t);
+        }
+      });
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"]
+      });
+
+      return () => observer.disconnect();
+    }
+  }, []);
 
   // 1. Safe Date Parser & Formatter
   const parseSafeDate = (dateStr: string) => {
@@ -181,8 +205,18 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     const width = canvasSize.width;
     const height = canvasSize.height;
 
+    // Colors mapping based on theme - matches globals.css tokens
+    const colorBg = theme === "light" ? "#f8fafc" : "#030305";
+    const colorGrid = theme === "light" ? "rgba(15, 23, 42, 0.08)" : "rgba(255, 255, 255, 0.07)";
+    const colorText = theme === "light" ? "#334155" : "#8a9ab8";
+    const colorZero = theme === "light" ? "rgba(15, 23, 42, 0.15)" : "rgba(255, 255, 255, 0.15)";
+    const colorHover = theme === "light" ? "rgba(15, 23, 42, 0.1)" : "rgba(255, 255, 255, 0.1)";
+    const colorCum = theme === "light" ? "#0066cc" : "#58a6ff";
+    const colorCumStroke = theme === "light" ? "#f8fafc" : "#030305";
+    const areaColor = theme === "light" ? "0, 102, 204" : "88, 166, 255";
+
     // Clear background
-    ctx.fillStyle = "#0d1117";
+    ctx.fillStyle = colorBg;
     ctx.fillRect(0, 0, width, height);
 
     // Margins
@@ -229,10 +263,10 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     };
 
     // 1. Horizontal grid lines (5 lines)
-    ctx.strokeStyle = "#1e2530";
+    ctx.strokeStyle = colorGrid;
     ctx.lineWidth = 1;
     ctx.font = "10px Segoe UI, system-ui";
-    ctx.fillStyle = "#7d8590";
+    ctx.fillStyle = colorText;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
@@ -249,13 +283,13 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
       // Label
       const val = yMax - ratio * (yMax - yMin);
-      ctx.fillText(formatVal(val).replace("R$", ""), padLeft - 10, y);
+      ctx.fillText(formatVal(val).replace("R$", "").replace("USC", ""), padLeft - 10, y);
     }
 
     // 2. Zero Horizontal Line
     const yZero = getY(0);
     if (yZero >= padTop && yZero <= padTop + graphHeight) {
-      ctx.strokeStyle = "#21262d";
+      ctx.strokeStyle = colorZero;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(padLeft, yZero);
@@ -266,7 +300,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     // 3. Hover Guide Line
     if (hoveredIndex !== null && hoveredIndex >= 0 && hoveredIndex < filteredData.length) {
       const hX = getX(hoveredIndex);
-      ctx.strokeStyle = "#21262d";
+      ctx.strokeStyle = colorHover;
       ctx.lineWidth = 1.2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -293,11 +327,17 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
       const grad = ctx.createLinearGradient(0, yTop, 0, yBottom);
       if (isPositive) {
-        grad.addColorStop(0, "#238636");
-        grad.addColorStop(1, "rgba(35, 134, 54, 0.05)");
+        // Green: theme-optimized
+        const greenSolid = theme === "light" ? "#0d8a4e" : "#00c853";
+        const greenGlow = theme === "light" ? "rgba(13, 138, 78, 0.05)" : "rgba(0, 200, 83, 0.05)";
+        grad.addColorStop(0, greenSolid);
+        grad.addColorStop(1, greenGlow);
       } else {
-        grad.addColorStop(0, "rgba(218, 54, 51, 0.05)");
-        grad.addColorStop(1, "#da3633");
+        // Red: theme-optimized
+        const redSolid = theme === "light" ? "#b91c1c" : "#d24444";
+        const redGlow = theme === "light" ? "rgba(185, 28, 28, 0.05)" : "rgba(210, 68, 68, 0.05)";
+        grad.addColorStop(0, redGlow);
+        grad.addColorStop(1, redSolid);
       }
 
       ctx.fillStyle = grad;
@@ -322,13 +362,13 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     ctx.closePath();
 
     const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + graphHeight);
-    areaGrad.addColorStop(0, "rgba(88, 166, 255, 0.14)");
-    areaGrad.addColorStop(1, "rgba(88, 166, 255, 0.0)");
+    areaGrad.addColorStop(0, `rgba(${areaColor}, 0.14)`);
+    areaGrad.addColorStop(1, `rgba(${areaColor}, 0.0)`);
     ctx.fillStyle = areaGrad;
     ctx.fill();
 
     // 6. Draw Cumulative line
-    ctx.strokeStyle = "#58a6ff";
+    ctx.strokeStyle = colorCum;
     ctx.lineWidth = 2.2;
     ctx.beginPath();
     filteredData.forEach((d, idx) => {
@@ -347,8 +387,8 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
       const x = getX(idx);
       const y = getY(d.cumProfit);
 
-      ctx.fillStyle = "#58a6ff";
-      ctx.strokeStyle = "#0d1117";
+      ctx.fillStyle = colorCum;
+      ctx.strokeStyle = colorCumStroke;
       ctx.lineWidth = 1.5;
 
       ctx.beginPath();
@@ -358,7 +398,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     });
 
     // 8. Draw X Axis Labels
-    ctx.fillStyle = "#7d8590";
+    ctx.fillStyle = colorText;
     ctx.font = "9px Segoe UI, system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -370,7 +410,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         ctx.fillText(d.label, x, padTop + graphHeight + 6);
       }
     });
-  }, [canvasSize, filteredData, hoveredIndex, currencyMode, brlRate]);
+  }, [canvasSize, filteredData, hoveredIndex, currencyMode, brlRate, theme]);
 
   // 9. Handle mouse actions for tooltip
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -418,24 +458,25 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   return (
     <div
       style={{
-        background: "#161b22",
-        border: "1px solid #21262d",
+        background: "var(--bg-card-gradient)",
+        border: "1px solid var(--border-light)",
         borderRadius: "14px",
         padding: "1.25rem",
         fontFamily: "Segoe UI, system-ui, sans-serif",
-        color: "#e6edf3",
+        color: "var(--text-primary)",
         display: "flex",
         flexDirection: "column",
         gap: "1.25rem",
         boxSizing: "border-box",
         width: "100%",
-        overflow: "hidden"
+        overflow: "hidden",
+        boxShadow: theme === "light" ? "0 4px 20px rgba(0, 0, 0, 0.04)" : "none"
       }}
     >
       {/* 1. HEADER ROW */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             <span>💰</span> LUCRO REALIZADO · ORION HEDGE
           </div>
           <h2
@@ -443,22 +484,22 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
               fontSize: "2.1rem",
               fontWeight: 700,
               margin: "0.35rem 0 0.15rem 0",
-              color: totalAccumulated >= 0 ? "#3fb950" : "#f85149",
+              color: totalAccumulated >= 0 ? "var(--neon-green)" : "var(--neon-red)",
               letterSpacing: "-0.02em"
             }}
           >
             {formatVal(totalAccumulated, true)}
           </h2>
-          <div style={{ fontSize: "0.82rem", color: "#7d8590" }}>
-            Acumulado no período · <span style={{ color: totalAccumulated >= 0 ? "#3fb950" : "#f85149", fontWeight: 600 }}>{totalAccumulated >= 0 ? "+" : ""}{accumulatedPct.toFixed(2)}%</span> sobre equity
+          <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+            Acumulado no período · <span style={{ color: totalAccumulated >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontWeight: 600 }}>{totalAccumulated >= 0 ? "+" : ""}{accumulatedPct.toFixed(2)}%</span> sobre equity
           </div>
         </div>
 
         {/* Timeframe selector tabs */}
         <div
           style={{
-            background: "#0d1117",
-            border: "1px solid #21262d",
+            background: "var(--bg-deep)",
+            border: "1px solid var(--border-light)",
             borderRadius: "8px",
             padding: "0.25rem",
             display: "flex",
@@ -470,15 +511,16 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
               key={t}
               onClick={() => setTimeframe(t)}
               style={{
-                background: timeframe === t ? "#21262d" : "transparent",
+                background: timeframe === t ? "var(--bg-panel-solid)" : "transparent",
                 border: "none",
                 borderRadius: "6px",
                 padding: "0.35rem 0.75rem",
-                color: timeframe === t ? "#e6edf3" : "#7d8590",
+                color: timeframe === t ? "var(--text-primary)" : "var(--text-muted)",
                 fontSize: "0.8rem",
                 fontWeight: 600,
                 cursor: "pointer",
-                transition: "all 0.15s ease"
+                transition: "all 0.15s ease",
+                boxShadow: timeframe === t && theme === "light" ? "0 1px 3px rgba(0,0,0,0.06)" : "none"
               }}
             >
               {t}
@@ -497,39 +539,39 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         }}
       >
         {/* Positive Days Pill */}
-        <div style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: "10px", padding: "0.75rem" }}>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.03em" }}>DIAS POSITIVOS</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "#3fb950", margin: "0.25rem 0 0.05rem 0" }}>
+        <div style={{ background: "var(--bg-deep)", border: "1px solid var(--border-light)", borderRadius: "10px", padding: "0.75rem" }}>
+          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.03em" }}>DIAS POSITIVOS</div>
+          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--neon-green)", margin: "0.25rem 0 0.05rem 0" }}>
             {positiveDays.length} {positiveDays.length === 1 ? "dia" : "dias"}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "#7d8590" }}>{winRate.toFixed(0)}% de acerto</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{winRate.toFixed(0)}% de acerto</div>
         </div>
 
         {/* Best Day Pill */}
-        <div style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: "10px", padding: "0.75rem" }}>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.03em" }}>MELHOR DIA</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "#3fb950", margin: "0.25rem 0 0.05rem 0" }}>
+        <div style={{ background: "var(--bg-deep)", border: "1px solid var(--border-light)", borderRadius: "10px", padding: "0.75rem" }}>
+          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.03em" }}>MELHOR DIA</div>
+          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--neon-green)", margin: "0.25rem 0 0.05rem 0" }}>
             {formatVal(bestDay, true)}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "#7d8590" }}>Maior ganho diário</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Maior ganho diário</div>
         </div>
 
         {/* Worst Day Pill */}
-        <div style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: "10px", padding: "0.75rem" }}>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.03em" }}>PIOR DIA</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "#f85149", margin: "0.25rem 0 0.05rem 0" }}>
+        <div style={{ background: "var(--bg-deep)", border: "1px solid var(--border-light)", borderRadius: "10px", padding: "0.75rem" }}>
+          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.03em" }}>PIOR DIA</div>
+          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--neon-red)", margin: "0.25rem 0 0.05rem 0" }}>
             {formatVal(worstDay, true)}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "#7d8590" }}>Maior perda diária</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Maior perda diária</div>
         </div>
 
         {/* Average Daily Profit Pill */}
-        <div style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: "10px", padding: "0.75rem" }}>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.03em" }}>MÉDIA / DIA</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: averageDailyProfit >= 0 ? "#3fb950" : "#f85149", margin: "0.25rem 0 0.05rem 0" }}>
+        <div style={{ background: "var(--bg-deep)", border: "1px solid var(--border-light)", borderRadius: "10px", padding: "0.75rem" }}>
+          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.03em" }}>MÉDIA / DIA</div>
+          <div style={{ fontSize: "1.15rem", fontWeight: 700, color: averageDailyProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)", margin: "0.25rem 0 0.05rem 0" }}>
             {formatVal(averageDailyProfit, true)}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "#7d8590" }}>dias com trade</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>dias com trade</div>
         </div>
       </div>
 
@@ -538,8 +580,8 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         ref={chartWrapperRef}
         style={{
           position: "relative",
-          background: "#0d1117",
-          border: "1px solid #21262d",
+          background: "var(--bg-deep)",
+          border: "1px solid var(--border-light)",
           borderRadius: "10px",
           padding: "0.75rem 0.5rem 0.5rem 0.5rem",
           overflow: "hidden",
@@ -548,23 +590,23 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         }}
       >
         {/* Legend above */}
-        <div style={{ display: "flex", gap: "1rem", fontSize: "0.7rem", color: "#7d8590", marginBottom: "0.5rem", paddingLeft: "10px" }}>
+        <div style={{ display: "flex", gap: "1rem", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "0.5rem", paddingLeft: "10px" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ width: "8px", height: "8px", background: "#238636", borderRadius: "2px" }} />
+            <span style={{ width: "8px", height: "8px", background: "var(--neon-green)", borderRadius: "2px" }} />
             Ganho Diário
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ width: "8px", height: "8px", background: "#da3633", borderRadius: "2px" }} />
+            <span style={{ width: "8px", height: "8px", background: "var(--neon-red)", borderRadius: "2px" }} />
             Perda Diária
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ width: "12px", height: "2px", background: "#58a6ff" }} />
+            <span style={{ width: "12px", height: "2px", background: theme === "light" ? "#0066cc" : "#58a6ff" }} />
             Acumulado
           </span>
         </div>
 
         {filteredData.length === 0 ? (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "210px", color: "#7d8590", fontSize: "0.85rem" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "210px", color: "var(--text-muted)", fontSize: "0.85rem" }}>
             Nenhum dado disponível no período selecionado.
           </div>
         ) : (
@@ -593,33 +635,33 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
               position: "absolute",
               left: `${tooltipPos.x}px`,
               top: `${tooltipPos.y}px`,
-              backgroundColor: "#0d1117",
-              border: "1px solid #21262d",
+              backgroundColor: "var(--bg-panel-solid)",
+              border: "1px solid var(--border-light)",
               borderRadius: "8px",
               padding: "8px 12px",
-              color: "#e6edf3",
+              color: "var(--text-primary)",
               fontFamily: "Segoe UI, system-ui",
               fontSize: "11px",
               pointerEvents: "none",
-              boxShadow: "0 4px 14px rgba(0, 0, 0, 0.6)",
+              boxShadow: theme === "light" ? "0 4px 14px rgba(0, 0, 0, 0.08)" : "0 4px 14px rgba(0, 0, 0, 0.6)",
               zIndex: 10,
               display: "flex",
               flexDirection: "column",
               gap: "4px"
             }}
           >
-            <div style={{ fontWeight: 700, borderBottom: "1px solid #21262d", paddingBottom: "4px", marginBottom: "4px", color: "#e6edf3" }}>
+            <div style={{ fontWeight: 700, borderBottom: "1px solid var(--border-light)", paddingBottom: "4px", marginBottom: "4px", color: "var(--text-primary)" }}>
               {filteredData[hoveredIndex].dateRaw ? formatDate(filteredData[hoveredIndex].dateRaw) : filteredData[hoveredIndex].label}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "20px" }}>
-              <span style={{ color: "#7d8590" }}>Ganho Diário:</span>
-              <span style={{ color: filteredData[hoveredIndex].daily >= 0 ? "#3fb950" : "#f85149", fontWeight: 700 }}>
+              <span style={{ color: "var(--text-muted)" }}>Ganho Diário:</span>
+              <span style={{ color: filteredData[hoveredIndex].daily >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontWeight: 700 }}>
                 {formatVal(filteredData[hoveredIndex].daily, true)}
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "20px" }}>
-              <span style={{ color: "#7d8590" }}>Acumulado:</span>
-              <span style={{ color: "#58a6ff", fontWeight: 700 }}>
+              <span style={{ color: "var(--text-muted)" }}>Acumulado:</span>
+              <span style={{ color: theme === "light" ? "#0066cc" : "#58a6ff", fontWeight: 700 }}>
                 {formatVal(filteredData[hoveredIndex].cumProfit, true)}
               </span>
             </div>
@@ -629,19 +671,19 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
       {/* 4. DETAIL BY DAY ROW */}
       <div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#7d8590", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem" }}>
+        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.6rem" }}>
           DETALHAMENTO POR DIA
         </div>
 
         {filteredData.length === 0 ? (
-          <div style={{ color: "#7d8590", fontSize: "0.8rem", textAlign: "center", padding: "1rem" }}>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", textAlign: "center", padding: "1rem" }}>
             Sem registros.
           </div>
         ) : (
           <div
             style={{
-              background: "#0d1117",
-              border: "1px solid #21262d",
+              background: "var(--bg-deep)",
+              border: "1px solid var(--border-light)",
               borderRadius: "10px",
               maxHeight: "280px",
               overflowY: "auto",
@@ -659,28 +701,28 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
                 return (
                   <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0.65rem 0.85rem",
-                      borderBottom: idx === filteredData.length - 1 ? "none" : "1px solid #21262d",
-                      fontSize: "0.85rem",
-                      gap: "1.25rem"
-                    }}
+                     key={idx}
+                     style={{
+                       display: "flex",
+                       alignItems: "center",
+                       justifyContent: "space-between",
+                       padding: "0.65rem 0.85rem",
+                       borderBottom: idx === filteredData.length - 1 ? "none" : "1px solid var(--border-light)",
+                       fontSize: "0.85rem",
+                       gap: "1.25rem"
+                     }}
                   >
                     {/* Date label */}
-                    <div style={{ width: "45px", color: "#7d8590", fontWeight: 600 }}>{day.label}</div>
+                    <div style={{ width: "45px", color: "var(--text-muted)", fontWeight: 600 }}>{day.label}</div>
 
                     {/* Progress Bar Container */}
-                    <div style={{ flex: 1, height: "6px", background: "#161b22", borderRadius: "3px", overflow: "hidden", position: "relative" }}>
+                    <div style={{ flex: 1, height: "6px", background: "var(--bg-card-gradient)", borderRadius: "3px", overflow: "hidden", position: "relative" }}>
                       {absVal > 0 && (
                         <div
                           style={{
                             width: `${percentWidth}%`,
                             height: "100%",
-                            background: isPositive ? "#238636" : "#da3633",
+                            background: isPositive ? "var(--neon-green)" : "var(--neon-red)",
                             borderRadius: "3px"
                           }}
                         />
@@ -689,7 +731,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
                     {/* Right Info: Cumulative and daily badge */}
                     <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", justifySelf: "flex-end" }}>
-                      <span style={{ color: "#7d8590", fontSize: "0.78rem" }}>
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
                         &Sigma; {formatVal(day.cumProfit, true)}
                       </span>
 
@@ -701,10 +743,10 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
                           fontWeight: 700,
                           padding: "0.22rem 0.5rem",
                           borderRadius: "6px",
-                          color: isPositive ? "#3fb950" : (isNegative ? "#f85149" : "#7d8590"),
+                          color: isPositive ? "var(--neon-green)" : (isNegative ? "var(--neon-red)" : "var(--text-muted)"),
                           background: isPositive
-                            ? "rgba(63, 185, 80, 0.1)"
-                            : (isNegative ? "rgba(248, 81, 73, 0.1)" : "rgba(125, 133, 144, 0.1)"),
+                            ? "var(--neon-green-glow)"
+                            : (isNegative ? "var(--neon-red-glow)" : "rgba(125, 133, 144, 0.1)"),
                           border: isPositive
                             ? "1px solid rgba(63, 185, 80, 0.15)"
                             : (isNegative ? "1px solid rgba(248, 81, 73, 0.15)" : "1px solid rgba(125, 133, 144, 0.15)")
