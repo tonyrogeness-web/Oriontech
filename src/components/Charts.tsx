@@ -2,17 +2,74 @@
 
 import React, { useState } from "react";
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   ReferenceLine,
   Cell
 } from "recharts";
 import styles from "./components.module.css";
+
+const CustomTooltip = ({ active, payload, formatValPrimary }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div style={{
+        backgroundColor: "var(--bg-panel-solid)",
+        border: "1px solid var(--border-active)",
+        borderRadius: "8px",
+        padding: "0.5rem 0.75rem",
+        color: "var(--text-primary)",
+        fontFamily: "var(--font-primary)",
+        fontSize: "0.75rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.25rem",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+        zIndex: 1000
+      }}>
+        <div style={{ fontWeight: 700, borderBottom: "1px solid var(--opacity-divider)", paddingBottom: "0.25rem", marginBottom: "0.25rem" }}>
+          {data.name}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
+          <span style={{ color: "var(--text-secondary)" }}>Ganho Diário:</span>
+          <span style={{ color: data.profit >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontWeight: 700 }}>
+            {data.profit >= 0 ? "+" : ""}{formatValPrimary(data.profit)} ({data.formattedPercent})
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
+          <span style={{ color: "var(--text-secondary)" }}>Lucro Global:</span>
+          <span style={{ color: "#00e676", fontWeight: 700 }}>
+            {data.cumProfit >= 0 ? "+" : ""}{formatValPrimary(data.cumProfit)}
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
+          <span style={{ color: "var(--text-secondary)" }}>Perda Flutuante:</span>
+          <span style={{ color: "#ffb300", fontWeight: 700 }}>
+            {data.floatingPl >= 0 ? "+" : ""}{formatValPrimary(data.floatingPl)}
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
+          <span style={{ color: "var(--text-secondary)" }}>L. Líquido:</span>
+          <span style={{ color: "#34b4ff", fontWeight: 700 }}>
+            {data.netProfit >= 0 ? "+" : ""}{formatValPrimary(data.netProfit)}
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem", fontSize: "0.7rem", color: "var(--text-muted)", borderTop: "1px solid var(--opacity-divider)", paddingTop: "0.25rem", marginTop: "0.25rem" }}>
+          <span>Saldo Conta:</span>
+          <span>{formatValPrimary(data.balance)}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 interface PerformancePoint {
   date: string;
@@ -78,19 +135,28 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   };
 
   // Process history: calculate currency conversions and percentages per day
+  let cumProfit = 0;
   const processedHistory = history.map((h) => {
     let balVal = h.balance;
     let profitVal = h.profit;
+    let eqVal = h.equity !== null && h.equity !== undefined ? h.equity : h.balance;
 
     if (currencyMode === "BRL") {
       balVal = (h.balance / 100) * brlRate;
       profitVal = (h.profit / 100) * brlRate;
+      eqVal = ((h.equity ?? h.balance) / 100) * brlRate;
     }
+
+    cumProfit += profitVal;
 
     // Previous balance (start of day)
     const prevBal = balVal - profitVal;
     // Daily percentage profit
     const profitPercent = prevBal > 0 ? (profitVal / prevBal) * 100 : 0;
+
+    // Perda flutuante (floating loss) = equity - balance
+    // L. Líquido (Net profit) = cumProfit + floatingPl
+    const floatingPl = eqVal - balVal;
 
     return {
       dateRaw: h.date,
@@ -99,6 +165,9 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
       profit: parseFloat(profitVal.toFixed(2)),
       profitPercent: parseFloat(profitPercent.toFixed(2)),
       formattedPercent: `${profitVal >= 0 ? "+" : ""}${profitPercent.toFixed(2)}%`,
+      cumProfit: parseFloat(cumProfit.toFixed(2)),
+      floatingPl: parseFloat(floatingPl.toFixed(2)),
+      netProfit: parseFloat((cumProfit + floatingPl).toFixed(2))
     };
   });
 
@@ -144,8 +213,13 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
   // Find max absolute value to align Y axis symmetrically
   let maxAbsVal = 5;
   chartData.forEach((d) => {
-    const val = Math.abs(d.profit);
-    if (val > maxAbsVal) maxAbsVal = val;
+    const valProfit = Math.abs(d.profit);
+    const valCum = Math.abs(d.cumProfit);
+    const valFloat = Math.abs(d.floatingPl);
+    const valNet = Math.abs(d.netProfit);
+    
+    const maxVal = Math.max(valProfit, valCum, valFloat, valNet);
+    if (maxVal > maxAbsVal) maxAbsVal = maxVal;
   });
   
   // Calculate a clean rounded maximum for symmetric axis domain and grid ticks
@@ -235,7 +309,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 15, right: 10, left: 15, bottom: 0 }}>
+            <ComposedChart data={chartData} margin={{ top: 15, right: 10, left: 15, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--opacity-grid)" />
               <XAxis
                 dataKey="name"
@@ -252,44 +326,64 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 ticks={yTicks}
                 tickFormatter={formatAxisCurrency}
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--bg-panel-solid)",
-                  borderColor: "var(--border-active)",
-                  borderRadius: "8px",
-                  color: "var(--text-primary)",
+              <Tooltip content={<CustomTooltip formatValPrimary={formatValPrimary} />} />
+              <Legend
+                verticalAlign="top"
+                height={36}
+                iconType="circle"
+                wrapperStyle={{
+                  fontSize: "10px",
                   fontFamily: "var(--font-primary)",
-                }}
-                formatter={(value: any, name: any, props: any) => {
-                  const item = props.payload;
-                  return [
-                    <div key="tooltip-content" style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
-                      <span style={{ color: item.profit >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontWeight: 700 }}>
-                        {formatValPrimary(item.profit)} ({item.formattedPercent})
-                      </span>
-                      <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                        Saldo Final: {formatValPrimary(item.balance)}
-                      </span>
-                    </div>,
-                    "Retorno Diário"
-                  ];
+                  color: "var(--text-secondary)",
+                  marginBottom: "10px"
                 }}
               />
               <ReferenceLine y={0} stroke="var(--opacity-border)" strokeWidth={1} />
               
-              <Bar dataKey="profit" radius={[4, 4, 4, 4]} maxBarSize={30}>
+              <Bar name="Ganho Diário" dataKey="profit" radius={[4, 4, 4, 4]} maxBarSize={25}>
                 {chartData.map((entry, index) => {
                   const isPositive = entry.profit >= 0;
                   return (
                     <Cell
                       key={`cell-${index}`}
                       fill={isPositive ? "var(--neon-green)" : "var(--neon-red)"}
-                      fillOpacity={0.85}
+                      fillOpacity={0.8}
                     />
                   );
                 })}
               </Bar>
-            </BarChart>
+
+              <Line
+                name="Lucro Global"
+                type="monotone"
+                dataKey="cumProfit"
+                stroke="#00e676"
+                strokeWidth={2.5}
+                dot={{ r: 3, strokeWidth: 1, fill: "#00e676" }}
+                activeDot={{ r: 5 }}
+              />
+
+              <Line
+                name="Perda Flutuante"
+                type="monotone"
+                dataKey="floatingPl"
+                stroke="#ffb300"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={{ r: 2.5, strokeWidth: 1, fill: "#ffb300" }}
+                activeDot={{ r: 4 }}
+              />
+
+              <Line
+                name="L. Líquido"
+                type="monotone"
+                dataKey="netProfit"
+                stroke="#34b4ff"
+                strokeWidth={2.5}
+                dot={{ r: 3, strokeWidth: 1, fill: "#34b4ff" }}
+                activeDot={{ r: 5 }}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </div>
