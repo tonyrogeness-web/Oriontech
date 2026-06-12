@@ -147,7 +147,11 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     const val = Math.abs(d.profit);
     if (val > maxAbsVal) maxAbsVal = val;
   });
-  const yDomain = [-maxAbsVal * 1.15, maxAbsVal * 1.15];
+  
+  // Calculate a clean rounded maximum for symmetric axis domain and grid ticks
+  const roundedMax = Math.ceil(maxAbsVal * 1.15);
+  const yDomain = [-roundedMax, roundedMax];
+  const yTicks = [-roundedMax, 0, roundedMax];
 
   return (
     <div className={styles.chartsCard}>
@@ -245,6 +249,7 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
                 tickLine={false}
                 width={65}
                 domain={yDomain}
+                ticks={yTicks}
                 tickFormatter={formatAxisCurrency}
               />
               <Tooltip
