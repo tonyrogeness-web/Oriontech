@@ -157,6 +157,13 @@ export async function POST(request: Request) {
           console.warn(`[MT5 Update] Data inválida recebida no histórico: ${h.date}`);
           continue;
         }
+
+        // Cutoff test history: ignore any records before June 12, 2026
+        const cutoffDate = new Date("2026-06-12T00:00:00.000Z");
+        if (hDate.getTime() < cutoffDate.getTime()) {
+          continue;
+        }
+
         // Normalize date to midnight (00:00:00) to ensure single record per day
         hDate.setUTCHours(0, 0, 0, 0);
         const todayDate = new Date();
