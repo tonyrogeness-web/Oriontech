@@ -3196,3 +3196,67 @@
     padding-bottom: 0.5rem;
   }
 }
+
+/* Custom mobile adjustments for Patrimonio grid columns */
+@media (max-width: 500px) {
+  .patrimonioColsGrid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+  .patrimonioCol {
+    border-right: none !important;
+    border-bottom: 1px solid var(--opacity-divider);
+    padding-right: 0 !important;
+    padding-bottom: 0.75rem !important;
+  }
+  .patrimonioCol:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Custom styles for equity cycle grid and responsive progress bar */
+.eqCycleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+  margin-bottom: 0.6rem;
+}
+
+.eqCycleGridItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.eqCycleProgressBarContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.eqCycleProgressBarTrack {
+  flex-grow: 1;
+  height: 6px;
+  background: var(--opacity-divider);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.eqCycleProgressBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 600px) {
+  .eqCycleGrid {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+}
+

@@ -381,21 +381,31 @@ export default function KpiCards({
         {/* Center: Meta Base / Target on Line 1, Profit / Progress on Line 2 */}
         <div className={styles.eqCycleCenter}>
           {trailingActive ? (
-            <div className={styles.eqCycleValueColumn}>
-              <div className={styles.eqCycleValueRow}>
-                <span className={styles.eqCycleValueLabel}>BASE:</span>
-                <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
-                <span className={styles.eqCycleArrow}>➔</span>
-                <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%):</span>
-                <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+            <div className={styles.eqCycleValueColumn} style={{ width: "100%" }}>
+              <div className={styles.eqCycleGrid}>
+                <div className={styles.eqCycleGridItem}>
+                  <span className={styles.eqCycleValueLabel}>BASE</span>
+                  <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
+                </div>
+                <div className={styles.eqCycleGridItem}>
+                  <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%)</span>
+                  <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+                </div>
+                <div className={styles.eqCycleGridItem}>
+                  <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO LÍQ.</span>
+                  <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
+                    {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
+                  </span>
+                </div>
               </div>
-              <div className={styles.eqCycleValueRow}>
-                <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO:</span>
-                <span className={`${styles.eqCycleProfitValue} tabular-nums`} style={{ color: profitColor }}>
-                  {profitNet >= 0 ? "+" : ""}{formatValPrimary(profitNet)} ({trailingPeak >= 0 ? "+" : ""}{trailingPeak.toFixed(2)}%)
-                </span>
-                <span className={`${styles.eqCycleProgressText} tabular-nums`} style={{ color: cycleColorVal, marginLeft: "0.75rem" }}>
-                  {barStr} {progressPercentText}%
+              
+              {/* Graphical Progress Bar instead of text bracket */}
+              <div className={styles.eqCycleProgressBarContainer}>
+                <div className={styles.eqCycleProgressBarTrack}>
+                  <div className={styles.eqCycleProgressBarFill} style={{ width: `${clampedProgress}%`, background: cycleColorVal }} />
+                </div>
+                <span className={styles.eqCycleProgressText} style={{ color: cycleColorVal }}>
+                  {progressPercentText}%
                 </span>
               </div>
             </div>
