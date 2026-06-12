@@ -550,15 +550,15 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         {/* Legend above */}
         <div style={{ display: "flex", gap: "1rem", fontSize: "0.7rem", color: "#7d8590", marginBottom: "0.5rem", paddingLeft: "10px" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ inlineSize: "8px", blockSize: "8px", background: "#238636", borderRadius: "2px" }} />
+            <span style={{ width: "8px", height: "8px", background: "#238636", borderRadius: "2px" }} />
             Ganho Diário
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ inlineSize: "8px", blockSize: "8px", background: "#da3633", borderRadius: "2px" }} />
+            <span style={{ width: "8px", height: "8px", background: "#da3633", borderRadius: "2px" }} />
             Perda Diária
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ inlineSize: "12px", blockSize: "2px", background: "#58a6ff" }} />
+            <span style={{ width: "12px", height: "2px", background: "#58a6ff" }} />
             Acumulado
           </span>
         </div>
