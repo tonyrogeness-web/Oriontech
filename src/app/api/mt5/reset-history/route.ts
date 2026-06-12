@@ -16,22 +16,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!account) {
-      return NextResponse.json({ error: "Account required" }, { status: 400 });
-    }
+    const whereFilter = account && account !== "all" ? { account: String(account) } : {};
 
-    // Deleta todo o histórico de performance para a conta informada
+    // Deleta o histórico de performance
     const deleteResult = await prisma.performanceHistory.deleteMany({
-      where: {
-        account: String(account),
-      },
+      where: whereFilter,
     });
 
     // Reseta o estado acumulado da conta (Lucro global, DD e histórico) no AccountState
     await prisma.accountState.updateMany({
-      where: {
-        account: String(account),
-      },
+      where: whereFilter,
       data: {
         dailyProfit: 0.0,
         totalProfit: 0.0,
@@ -45,7 +39,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       status: "success",
-      message: `Historico de performance e acúmulos da conta ${account} limpos com sucesso!`,
+      message: `Historico de performance e acúmulos limpos com sucesso!`,
       deletedRecords: deleteResult.count,
     });
   } catch (error: any) {
