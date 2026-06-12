@@ -20,9 +20,9 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartWrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 260 });
+  const [canvasSize, setCanvasSize] = useState({ width: 500, height: 210 });
 
   // 1. Safe Date Parser & Formatter
   const parseSafeDate = (dateStr: string) => {
@@ -126,18 +126,20 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   const worstDay = filteredData.length > 0 ? Math.min(...filteredData.map((d) => d.daily)) : 0;
   const averageDailyProfit = tradingDays.length > 0 ? totalAccumulated / tradingDays.length : 0;
 
-  // 7. Track resizing to keep Canvas responsive
+  // 7. Stable Resizing using Wrapper element and Absolute positioning
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const wrapper = chartWrapperRef.current;
+    if (!wrapper) return;
 
     const observer = new ResizeObserver((entries) => {
       if (!entries || entries.length === 0) return;
       const { width } = entries[0].contentRect;
-      setCanvasSize({ width: Math.max(280, width), height: 260 });
+      // Deduct internal padding (approx 16px) to get raw drawing width
+      const drawWidth = Math.max(260, width - 16);
+      setCanvasSize({ width: drawWidth, height: 210 });
     });
 
-    observer.observe(container);
+    observer.observe(wrapper);
     return () => observer.disconnect();
   }, []);
 
@@ -174,8 +176,6 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     const dpr = window.devicePixelRatio || 1;
     canvas.width = canvasSize.width * dpr;
     canvas.height = canvasSize.height * dpr;
-    canvas.style.width = `${canvasSize.width}px`;
-    canvas.style.height = `${canvasSize.height}px`;
     ctx.scale(dpr, dpr);
 
     const width = canvasSize.width;
@@ -187,9 +187,9 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
     // Margins
     const padLeft = 60;
-    const padRight = 20;
-    const padTop = 30;
-    const padBottom = 35;
+    const padRight = 10;
+    const padTop = 15;
+    const padBottom = 20;
     const graphWidth = width - padLeft - padRight;
     const graphHeight = height - padTop - padBottom;
 
@@ -367,7 +367,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     filteredData.forEach((d, idx) => {
       if (idx % labelInterval === 0 || idx === filteredData.length - 1) {
         const x = getX(idx);
-        ctx.fillText(d.label, x, padTop + graphHeight + 8);
+        ctx.fillText(d.label, x, padTop + graphHeight + 6);
       }
     });
   }, [canvasSize, filteredData, hoveredIndex, currencyMode, brlRate]);
@@ -381,7 +381,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
     const x = e.clientX - rect.left;
 
     const padLeft = 60;
-    const padRight = 20;
+    const padRight = 10;
     const graphWidth = canvasSize.width - padLeft - padRight;
 
     if (x >= padLeft && x <= canvasSize.width - padRight) {
@@ -428,9 +428,9 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
         flexDirection: "column",
         gap: "1.25rem",
         boxSizing: "border-box",
-        width: "100%"
+        width: "100%",
+        overflow: "hidden"
       }}
-      ref={containerRef}
     >
       {/* 1. HEADER ROW */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
@@ -535,42 +535,55 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
       {/* 3. CANVAS CHART AND TOOLTIP */}
       <div
+        ref={chartWrapperRef}
         style={{
           position: "relative",
           background: "#0d1117",
           border: "1px solid #21262d",
           borderRadius: "10px",
           padding: "0.75rem 0.5rem 0.5rem 0.5rem",
-          overflow: "hidden"
+          overflow: "hidden",
+          width: "100%",
+          boxSizing: "border-box"
         }}
       >
         {/* Legend above */}
         <div style={{ display: "flex", gap: "1rem", fontSize: "0.7rem", color: "#7d8590", marginBottom: "0.5rem", paddingLeft: "10px" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ display: "inline-block", width: "8px", height: "8px", background: "#238636", borderRadius: "2px" }} />
+            <span style={{ inlineSize: "8px", blockSize: "8px", background: "#238636", borderRadius: "2px" }} />
             Ganho Diário
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ display: "inline-block", width: "8px", height: "8px", background: "#da3633", borderRadius: "2px" }} />
+            <span style={{ inlineSize: "8px", blockSize: "8px", background: "#da3633", borderRadius: "2px" }} />
             Perda Diária
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ display: "inline-block", width: "12px", height: "2px", background: "#58a6ff" }} />
+            <span style={{ inlineSize: "12px", blockSize: "2px", background: "#58a6ff" }} />
             Acumulado
           </span>
         </div>
 
         {filteredData.length === 0 ? (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px", color: "#7d8590", fontSize: "0.85rem" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "210px", color: "#7d8590", fontSize: "0.85rem" }}>
             Nenhum dado disponível no período selecionado.
           </div>
         ) : (
-          <canvas
-            ref={canvasRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{ display: "block", cursor: "crosshair" }}
-          />
+          <div style={{ position: "relative", width: "100%", height: "210px", overflow: "hidden" }}>
+            <canvas
+              ref={canvasRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                display: "block",
+                cursor: "crosshair"
+              }}
+            />
+          </div>
         )}
 
         {/* HTML Floating Tooltip */}
