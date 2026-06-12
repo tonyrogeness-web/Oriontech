@@ -88,12 +88,20 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     };
   });
 
+  // Filter out today and tomorrow (in local timezone context) to ensure ONLY fixed completed days are shown
+  const todayStr = new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
+  const tomorrowStr = new Date(Date.now() + 86400000).toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
+
+  const completedHistory = processedHistory.filter((h) => {
+    return h.name !== todayStr && h.name !== tomorrowStr;
+  });
+
   // Filter based on selected timeframe
   const getFilteredHistory = () => {
-    if (!processedHistory || processedHistory.length === 0) return [];
-    if (timeframe === "DIÁRIO") return processedHistory.slice(-2); // Yesterday & Today
-    if (timeframe === "7D") return processedHistory.slice(-7);
-    return processedHistory.slice(-30);
+    if (!completedHistory || completedHistory.length === 0) return [];
+    if (timeframe === "DIÁRIO") return completedHistory.slice(-2); // 2 last completed days
+    if (timeframe === "7D") return completedHistory.slice(-7);
+    return completedHistory.slice(-30);
   };
 
   const chartData = getFilteredHistory();
