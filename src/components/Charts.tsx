@@ -30,7 +30,7 @@ interface ChartsProps {
 }
 
 export default function Charts({ history = [], currencyMode = "CENT", brlRate = 5.45 }: ChartsProps) {
-  const [timeframe, setTimeframe] = useState<"DIÁRIO" | "7D" | "30D">("7D");
+  const [timeframe, setTimeframe] = useState<"DIÁRIO" | "7D" | "30D" | "MÊS_ATUAL">("7D");
 
   const formatDate = (dateStr: string) => {
     try {
@@ -88,20 +88,22 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
     };
   });
 
-  // Filter out today and tomorrow (in local timezone context) to ensure ONLY fixed completed days are shown
-  const todayStr = new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
-  const tomorrowStr = new Date(Date.now() + 86400000).toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
-
-  const completedHistory = processedHistory.filter((h) => {
-    return h.name !== todayStr && h.name !== tomorrowStr;
-  });
-
   // Filter based on selected timeframe
   const getFilteredHistory = () => {
-    if (!completedHistory || completedHistory.length === 0) return [];
-    if (timeframe === "DIÁRIO") return completedHistory.slice(-2); // 2 last completed days
-    if (timeframe === "7D") return completedHistory.slice(-7);
-    return completedHistory.slice(-30);
+    if (!processedHistory || processedHistory.length === 0) return [];
+    if (timeframe === "DIÁRIO") return processedHistory.slice(-2); // Yesterday & Today
+    if (timeframe === "7D") return processedHistory.slice(-7);
+    if (timeframe === "30D") return processedHistory.slice(-30);
+    
+    // Mês Atual (Filter by current calendar month)
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    return processedHistory.filter((h) => {
+      if (!h.dateRaw) return false;
+      const d = new Date(h.dateRaw);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    });
   };
 
   const chartData = getFilteredHistory();
@@ -163,6 +165,12 @@ export default function Charts({ history = [], currencyMode = "CENT", brlRate = 
             onClick={() => setTimeframe("30D")}
           >
             30 Dias
+          </button>
+          <button
+            className={`${styles.chartFilterBtn} ${timeframe === "MÊS_ATUAL" ? styles.chartFilterBtnActive : ""}`}
+            onClick={() => setTimeframe("MÊS_ATUAL")}
+          >
+            Mês Atual
           </button>
         </div>
       </div>
