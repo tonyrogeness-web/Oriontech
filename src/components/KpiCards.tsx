@@ -406,12 +406,16 @@ export default function KpiCards({
             <div className={styles.eqCycleValueColumn} style={{ width: "100%" }}>
               <div className={styles.eqCycleGrid}>
                 <div className={styles.eqCycleGridItem}>
-                  <span className={styles.eqCycleValueLabel}>BASE</span>
-                  <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
-                </div>
-                <div className={styles.eqCycleGridItem}>
-                  <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%)</span>
-                  <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+                  <div className={styles.eqCycleInlineRow}>
+                    <div className={styles.eqCycleValueSubBlock}>
+                      <span className={styles.eqCycleValueLabel}>BASE</span>
+                      <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(equityCycleBase)}</span>
+                    </div>
+                    <div className={styles.eqCycleValueSubBlock}>
+                      <span className={styles.eqCycleValueLabel}>ALVO (+{targetPct.toFixed(0)}%)</span>
+                      <span className={`${styles.eqCycleValue} tabular-nums`}>{formatValPrimary(targetValue)}</span>
+                    </div>
+                  </div>
                 </div>
                 <div className={styles.eqCycleGridItem}>
                   <span className={styles.eqCycleValueLabel} style={{ color: profitColor }}>LUCRO LÍQ.</span>

@@ -3230,13 +3230,25 @@
 /* Custom styles for equity cycle grid and responsive progress bar */
 .eqCycleGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.2fr 1fr;
   gap: 1.25rem;
   width: 100%;
   margin-bottom: 0.6rem;
 }
 
 .eqCycleGridItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.eqCycleInlineRow {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.eqCycleValueSubBlock {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
