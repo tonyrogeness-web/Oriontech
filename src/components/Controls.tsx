@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Play, Pause, Zap, XCircle, RefreshCw, Lock, Delete } from "lucide-react";
+import { Play, Pause, Zap, XCircle, RefreshCw, Lock, Delete, Sliders } from "lucide-react";
 import styles from "./components.module.css";
 
 const CORRECT_PIN = "4141";
@@ -367,10 +367,13 @@ export default function Controls({
       <div className={styles.controlsCard} style={{ display: "flex", flexDirection: "column", height: "fit-content", justifyContent: "space-between" }}>
         <div>
           {/* Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", margin: 0 }}>
-              Controles do Robô
-            </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid var(--opacity-divider)", paddingBottom: "0.65rem" }}>
+            <div className={styles.patrimonioTitleGroup}>
+              <div className={`${styles.kpiIconContainer} ${styles.goldGlow}`}>
+                <Sliders size={15} />
+              </div>
+              <span className={styles.patrimonioMainTitle}>Controle do Robô</span>
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               {/* Lock / unlock indicator */}
               <div
