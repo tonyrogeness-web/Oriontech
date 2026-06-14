@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, List } from "lucide-react";
 import styles from "./components.module.css";
 
 interface Trade {
@@ -126,29 +126,24 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
 
   return (
     <div className={styles.tradesCard} style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-        <div>
-          <h3 className={styles.cardTitle} style={{ textTransform: "none", fontSize: "1.1rem", marginBottom: "0.15rem" }}>
-            Todas as Posições
-          </h3>
-          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 500 }}>
-            {trades.length} ordens · {totalLots.toFixed(3)} lotes · P&L:{" "}
-            <strong style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
-              {formatProfitPrimary(totalProfit)}
-            </strong>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid var(--opacity-divider)", paddingBottom: "0.65rem" }}>
+        <div className={styles.patrimonioTitleGroup}>
+          <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
+            <List size={15} />
+          </div>
+          <span className={styles.patrimonioMainTitle}>Todas as Posições</span>
+          <span className={styles.badgeCount}>
+            {trades.length}
           </span>
         </div>
-        <span style={{
-          background: "var(--opacity-bg-header)",
-          border: "1px solid var(--border-light)",
-          color: "var(--text-secondary)",
-          fontSize: "0.7rem",
-          fontWeight: 700,
-          padding: "0.2rem 0.5rem",
-          borderRadius: "6px"
-        }}>
-          {trades.length} ordens
-        </span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
+          <span style={{ fontSize: "0.95rem", fontWeight: 700, color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
+            {totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(totalProfit)}
+          </span>
+          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", marginTop: "0.1rem" }}>
+            {totalLots.toFixed(3)} lotes total
+          </span>
+        </div>
       </div>
 
       {trades.length === 0 ? (
