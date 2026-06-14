@@ -3176,25 +3176,34 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
-.patrimonioStackRowValueGroup {
-  display: flex;
+.patrimonioRowContentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
   align-items: center;
-  gap: 0.75rem;
+  flex: 1;
+  margin-right: 0.75rem;
 }
-.patrimonioStackRowValues {
+.patrimonioCombinedRowGrid {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  flex: 1;
+  margin-right: 0.75rem;
+}
+.patrimonioStackRowValuesCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 .patrimonioStackRowValue {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+  font-size: clamp(1rem, 2.6vw, 1.3rem);
   line-height: 1.2;
   white-space: nowrap;
 }
 .patrimonioStackRowSubValue {
-  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  font-size: clamp(0.75rem, 1.9vw, 0.88rem);
   color: var(--text-secondary);
   line-height: 1.1;
   margin-top: 0.15rem;
@@ -3203,22 +3212,8 @@
 .patrimonioStackRowBadgeContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   min-width: 65px;
-}
-
-.patrimonioCombinedValuesContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.2rem;
-}
-.patrimonioCombinedTextLine {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(0.82rem, 2.1vw, 0.98rem);
-  line-height: 1.2;
-  white-space: nowrap;
 }
 
 @media (max-width: 640px) {
@@ -3238,14 +3233,11 @@
   .patrimonioStackRow {
     padding: 0.7rem 0;
   }
-  .patrimonioStackRowValueGroup {
-    gap: 0.4rem;
-  }
   .patrimonioStackRowBadgeContainer {
     min-width: 55px;
   }
-  .patrimonioCombinedValuesContainer {
-    gap: 0.5rem;
+  .patrimonioRowContentGrid {
+    grid-template-columns: 1.1fr 1.1fr;
   }
 }
 
