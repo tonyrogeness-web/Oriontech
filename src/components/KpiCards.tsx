@@ -262,7 +262,6 @@ export default function KpiCards({
       </div>
 
       {/* ── PATRIMÔNIO SECTION ── */}
-      <div className={styles.kpiSectionHeader}>Patrimônio</div>
       
       {/* Header bar outside the cards */}
       <div className={styles.patrimonioHeader} style={{ marginBottom: '1rem', borderBottom: 'none', paddingBottom: 0 }}>
@@ -270,7 +269,7 @@ export default function KpiCards({
           <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
             <Coins size={15} />
           </div>
-          <span className={styles.patrimonioMainTitle}>Visão Geral</span>
+          <span className={styles.patrimonioMainTitle}>Patrimônio</span>
         </div>
         <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`}>
           P/L Flutuante: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
@@ -345,7 +344,6 @@ export default function KpiCards({
       </div>
 
       {/* ── DRAWDOWN SECTION ── */}
-      <div className={styles.kpiSectionHeader}>Risco de Drawdown</div>
       <div className={styles.kpiRowGrid}>
         {/* 6. Drawdown Atual */}
         <div className={`${styles.kpiCardMockup} ${ddBorderClass} ${styles.kpiCardFull}`}>
