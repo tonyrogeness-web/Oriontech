@@ -325,32 +325,19 @@ export default function KpiCards({
           </div>
         </div>
 
-        {/* Row 3: Desempenho do Ciclo (Saldo Líquido & Lucro Líquido Combinados) */}
+        {/* Row 3: Desempenho (Saldo Líquido & Lucro Líquido Combinados) */}
         <div className={styles.patrimonioStackRow}>
-          <span className={styles.patrimonioStackRowLabel}>DESEMPENHO DO CICLO</span>
+          <span className={styles.patrimonioStackRowLabel}>DESEMPENHO</span>
           <div className={styles.patrimonioStackRowValueGroup}>
             <div className={styles.patrimonioCombinedValuesContainer}>
               {/* S. Líquido */}
-              <div className={styles.patrimonioCombinedValueCol}>
-                <span className={styles.patrimonioCombinedSubLabel}>S. Líquido</span>
-                <span className={`${styles.patrimonioCombinedValue} tabular-nums`} style={{ color: isEquityAboveStart ? "var(--neon-green)" : "var(--neon-red)" }}>
-                  {formatValPrimary(equityCalc)}
-                </span>
-                <span className={`${styles.patrimonioCombinedSubValue} tabular-nums`}>
-                  {formatValSecondary(equityCalc)}
-                </span>
-              </div>
-
+              <span className={`${styles.patrimonioCombinedTextLine} tabular-nums`} style={{ color: "var(--text-primary)" }}>
+                S. Líq: {formatValPrimary(equityCalc)}
+              </span>
               {/* L. Líquido */}
-              <div className={styles.patrimonioCombinedValueCol}>
-                <span className={styles.patrimonioCombinedSubLabel}>L. Líquido</span>
-                <span className={`${styles.patrimonioCombinedValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-                  {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
-                </span>
-                <span className={`${styles.patrimonioCombinedSubValue} tabular-nums`}>
-                  {formatValSecondary(netProfitCalc)}
-                </span>
-              </div>
+              <span className={`${styles.patrimonioCombinedTextLine} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+                L. Líq: {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
+              </span>
             </div>
             
             <div className={styles.patrimonioStackRowBadgeContainer}>

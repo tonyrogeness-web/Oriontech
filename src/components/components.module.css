@@ -3209,34 +3209,15 @@
 
 .patrimonioCombinedValuesContainer {
   display: flex;
-  gap: clamp(0.75rem, 2.5vw, 1.5rem);
-  align-items: center;
-}
-.patrimonioCombinedValueCol {
-  display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 0.2rem;
 }
-.patrimonioCombinedSubLabel {
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.15rem;
-}
-.patrimonioCombinedValue {
+.patrimonioCombinedTextLine {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.82rem, 2.1vw, 0.98rem);
   line-height: 1.2;
-  white-space: nowrap;
-}
-.patrimonioCombinedSubValue {
-  font-size: clamp(0.7rem, 1.8vw, 0.85rem);
-  color: var(--text-secondary);
-  line-height: 1.1;
-  margin-top: 0.1rem;
   white-space: nowrap;
 }
 
