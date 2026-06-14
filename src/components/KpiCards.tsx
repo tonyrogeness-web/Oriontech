@@ -284,68 +284,84 @@ export default function KpiCards({
       </div>
 
       {/* Grid: 2x2 columns containing 4 separate cards */}
-      <div className={styles.patrimonioColsGrid}>
-        {/* Col 1: Saldo Inicial */}
-        <div className={`${styles.patrimonioCol} ${styles.patrimonioColTeal}`}>
-          <span className={styles.patrimonioColLabel}>SALDO INICIAL</span>
-          <span className={`${styles.patrimonioColValue} tabular-nums`} style={{ color: "var(--text-muted)" }}>
-            {formatValPrimary(startBalance)}
-          </span>
-          <span className={`${styles.patrimonioColSubValue} tabular-nums`}>
-            {formatValSecondary(startBalance)}
-          </span>
-          <div className={styles.patrimonioColBadgeContainer}>
-            <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeMuted}`} style={{ marginTop: 0 }}>
-              BASE
-            </span>
+      <div className={styles.patrimonioUnifiedStackCard}>
+        {/* Row 1: Saldo Inicial */}
+        <div className={styles.patrimonioStackRow}>
+          <span className={styles.patrimonioStackRowLabel}>SALDO INICIAL</span>
+          <div className={styles.patrimonioStackRowValueGroup}>
+            <div className={styles.patrimonioStackRowValues}>
+              <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-muted)" }}>
+                {formatValPrimary(startBalance)}
+              </span>
+              <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                {formatValSecondary(startBalance)}
+              </span>
+            </div>
+            <div className={styles.patrimonioStackRowBadgeContainer}>
+              <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeMuted}`} style={{ marginTop: 0 }}>
+                BASE
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Col 2: Saldo Atual */}
-        <div className={`${styles.patrimonioCol} ${styles.patrimonioColGold}`}>
-          <span className={styles.patrimonioColLabel}>SALDO ATUAL</span>
-          <span className={`${styles.patrimonioColValue} tabular-nums`} style={{ color: "var(--neon-gold)" }}>
-            {formatValPrimary(balance)}
-          </span>
-          <span className={`${styles.patrimonioColSubValue} tabular-nums`}>
-            {formatValSecondary(balance)}
-          </span>
-          <div className={styles.patrimonioColBadgeContainer}>
-            <span className={`${styles.kpiBadgeMockup} ${balanceDiffPct >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
-              {balanceDiffPct >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
-            </span>
+        {/* Row 2: Saldo Atual */}
+        <div className={styles.patrimonioStackRow}>
+          <span className={styles.patrimonioStackRowLabel}>SALDO ATUAL</span>
+          <div className={styles.patrimonioStackRowValueGroup}>
+            <div className={styles.patrimonioStackRowValues}>
+              <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--neon-gold)" }}>
+                {formatValPrimary(balance)}
+              </span>
+              <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                {formatValSecondary(balance)}
+              </span>
+            </div>
+            <div className={styles.patrimonioStackRowBadgeContainer}>
+              <span className={`${styles.kpiBadgeMockup} ${balanceDiffPct >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
+                {balanceDiffPct >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Col 3: Saldo Líquido */}
-        <div className={`${styles.patrimonioCol} ${styles.patrimonioColBlue}`}>
-          <span className={styles.patrimonioColLabel}>SALDO LÍQUIDO</span>
-          <span className={`${styles.patrimonioColValue} tabular-nums`} style={{ color: isEquityAboveStart ? "var(--neon-green)" : "var(--neon-red)" }}>
-            {formatValPrimary(equityCalc)}
-          </span>
-          <span className={`${styles.patrimonioColSubValue} tabular-nums`}>
-            {formatValSecondary(equityCalc)}
-          </span>
-          <div className={styles.patrimonioColBadgeContainer}>
-            <span className={`${styles.kpiBadgeMockup} ${equityDiffPctFromStart >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
-              {equityDiffPctFromStart >= 0 ? "+" : ""}{equityDiffPctFromStart.toFixed(2)}%
-            </span>
+        {/* Row 3: Saldo Líquido */}
+        <div className={styles.patrimonioStackRow}>
+          <span className={styles.patrimonioStackRowLabel}>SALDO LÍQUIDO</span>
+          <div className={styles.patrimonioStackRowValueGroup}>
+            <div className={styles.patrimonioStackRowValues}>
+              <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: isEquityAboveStart ? "var(--neon-green)" : "var(--neon-red)" }}>
+                {formatValPrimary(equityCalc)}
+              </span>
+              <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                {formatValSecondary(equityCalc)}
+              </span>
+            </div>
+            <div className={styles.patrimonioStackRowBadgeContainer}>
+              <span className={`${styles.kpiBadgeMockup} ${equityDiffPctFromStart >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
+                {equityDiffPctFromStart >= 0 ? "+" : ""}{equityDiffPctFromStart.toFixed(2)}%
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Col 4: L. Líquido */}
-        <div className={`${styles.patrimonioCol} ${netProfitCalc >= 0 ? styles.patrimonioColGreen : styles.patrimonioColRed}`}>
-          <span className={styles.patrimonioColLabel}>L. LÍQUIDO</span>
-          <span className={`${styles.patrimonioColValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-            {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
-          </span>
-          <span className={`${styles.patrimonioColSubValue} tabular-nums`}>
-            {formatValSecondary(netProfitCalc)}
-          </span>
-          <div className={styles.patrimonioColBadgeContainer}>
-            <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
-              {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
-            </span>
+        {/* Row 4: L. Líquido */}
+        <div className={styles.patrimonioStackRow}>
+          <span className={styles.patrimonioStackRowLabel}>L. LÍQUIDO</span>
+          <div className={styles.patrimonioStackRowValueGroup}>
+            <div className={styles.patrimonioStackRowValues}>
+              <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
+                {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
+              </span>
+              <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                {formatValSecondary(netProfitCalc)}
+              </span>
+            </div>
+            <div className={styles.patrimonioStackRowBadgeContainer}>
+              <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
+                {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
+              </span>
+            </div>
           </div>
         </div>
       </div>

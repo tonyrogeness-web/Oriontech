@@ -3119,11 +3119,12 @@
   letter-spacing: 0.08em;
 }
 .patrimonioPlBadge {
-  font-size: 0.92rem;
+  font-size: clamp(0.72rem, 2.1vw, 0.92rem);
   font-weight: 700;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 6px;
   font-family: monospace;
+  white-space: nowrap;
 }
 .badgeGreen {
   color: var(--neon-green);
@@ -3136,102 +3137,74 @@
   border: 1px solid rgba(255, 23, 68, 0.2);
 }
 
-.patrimonioColsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.85rem 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-.patrimonioCol {
+.patrimonioUnifiedStackCard {
   background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 1.25rem 1.15rem !important;
+  border-radius: 16px;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  position: relative;
   transition: var(--transition-smooth);
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.12);
+  margin-bottom: 1.25rem;
 }
-.patrimonioCol:hover {
+.patrimonioUnifiedStackCard:hover {
   transform: translateY(-2px);
   background: var(--bg-card-gradient-hover);
-  box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.18);
+  border-color: rgba(255, 184, 0, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(255, 184, 0, 0.08);
 }
-
-.patrimonioColTeal {
-  border-color: rgba(0, 230, 118, 0.25);
+.patrimonioStackRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--opacity-divider);
 }
-.patrimonioColTeal:hover {
-  border-color: var(--neon-green);
-  box-shadow: 0 6px 24px 0 rgba(0, 230, 118, 0.12);
+.patrimonioStackRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
-
-.patrimonioColGold {
-  border-color: rgba(255, 179, 0, 0.25);
+.patrimonioStackRow:first-child {
+  padding-top: 0;
 }
-.patrimonioColGold:hover {
-  border-color: var(--neon-gold);
-  box-shadow: 0 6px 24px 0 rgba(255, 179, 0, 0.12);
-}
-
-.patrimonioColBlue {
-  border-color: rgba(59, 130, 246, 0.25);
-}
-.patrimonioColBlue:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.12);
-}
-
-.patrimonioColGreen {
-  border-color: rgba(0, 230, 118, 0.25);
-}
-.patrimonioColGreen:hover {
-  border-color: var(--neon-green);
-  box-shadow: 0 6px 24px 0 rgba(0, 230, 118, 0.12);
-}
-
-.patrimonioColRed {
-  border-color: rgba(255, 23, 68, 0.25);
-}
-.patrimonioColRed:hover {
-  border-color: var(--neon-red);
-  box-shadow: 0 6px 24px 0 rgba(255, 23, 68, 0.12);
-}
-
-.patrimonioColLabel {
-  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+.patrimonioStackRowLabel {
+  font-size: clamp(0.72rem, 1.8vw, 0.82rem);
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.45rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-.patrimonioColValue {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.25rem, 3.2vw, 1.65rem);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.patrimonioColSubValue {
-  font-size: clamp(0.85rem, 2.2vw, 1.05rem);
-  color: var(--text-secondary);
-  margin-top: 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.patrimonioColBadgeContainer {
-  margin-top: 0.6rem;
+.patrimonioStackRowValueGroup {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+}
+.patrimonioStackRowValues {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.patrimonioStackRowValue {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.patrimonioStackRowSubValue {
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  color: var(--text-secondary);
+  line-height: 1.1;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+}
+.patrimonioStackRowBadgeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 65px;
 }
 
 @media (max-width: 640px) {
@@ -3244,17 +3217,21 @@
   }
 }
 
-/* Custom mobile adjustments for Patrimonio grid columns - Keep 2x2 compact */
-@media (max-width: 500px) {
-  .patrimonioColsGrid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.65rem !important;
+@media (max-width: 480px) {
+  .patrimonioUnifiedStackCard {
+    padding: 0.95rem 0.85rem;
   }
-  .patrimonioCol {
-    padding: 0.85rem 0.65rem !important;
-    border-radius: 8px !important;
+  .patrimonioStackRow {
+    padding: 0.7rem 0;
+  }
+  .patrimonioStackRowValueGroup {
+    gap: 0.5rem;
+  }
+  .patrimonioStackRowBadgeContainer {
+    min-width: 55px;
   }
 }
+
 
 /* Custom styles for equity cycle grid and responsive progress bar */
 .eqCycleGrid {
