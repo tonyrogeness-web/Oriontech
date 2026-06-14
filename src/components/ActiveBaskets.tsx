@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronUp, ChevronDown, AlertTriangle } from "lucide-react";
+import { ChevronUp, ChevronDown, AlertTriangle, Layers } from "lucide-react";
 import styles from "./components.module.css";
 
 /* ── Tipos ───────────────────────────────────────────────────────── */
@@ -587,9 +587,12 @@ export default function ActiveBaskets({
     <div className={styles.basketsSection}>
 
       {/* ── Cabeçalho da seção ── */}
-      <div className={styles.basketsSectionHeader}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span className={styles.basketsSectionTitle}>Cestos de Moedas</span>
+      <div className={styles.patrimonioHeader} style={{ marginBottom: '1rem', borderBottom: 'none', paddingBottom: 0 }}>
+        <div className={styles.patrimonioTitleGroup}>
+          <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
+            <Layers size={15} />
+          </div>
+          <span className={styles.patrimonioMainTitle}>Cestos de Moedas</span>
           <span className={styles.basketsCount}>
             {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ativo{baskets.length !== 1 ? "s" : ""}
           </span>
