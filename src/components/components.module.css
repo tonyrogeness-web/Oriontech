@@ -3143,21 +3143,60 @@
 }
 
 .patrimonioCol {
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.25rem 1.15rem !important;
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 0.25rem 0.5rem;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.12);
+}
+.patrimonioCol:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-gradient-hover);
+  box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* 2x2 grid dividers - Minimalist borderless styling */
-.patrimonioCol:nth-child(1),
-.patrimonioCol:nth-child(2) {
-  padding-bottom: 0.75rem;
+.patrimonioColTeal {
+  border-color: rgba(0, 230, 118, 0.25);
+}
+.patrimonioColTeal:hover {
+  border-color: var(--neon-green);
+  box-shadow: 0 6px 24px 0 rgba(0, 230, 118, 0.12);
 }
 
-.patrimonioCol:nth-child(1),
-.patrimonioCol:nth-child(3) {
-  padding-right: 1.25rem;
+.patrimonioColGold {
+  border-color: rgba(255, 179, 0, 0.25);
+}
+.patrimonioColGold:hover {
+  border-color: var(--neon-gold);
+  box-shadow: 0 6px 24px 0 rgba(255, 179, 0, 0.12);
+}
+
+.patrimonioColBlue {
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.patrimonioColBlue:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.12);
+}
+
+.patrimonioColGreen {
+  border-color: rgba(0, 230, 118, 0.25);
+}
+.patrimonioColGreen:hover {
+  border-color: var(--neon-green);
+  box-shadow: 0 6px 24px 0 rgba(0, 230, 118, 0.12);
+}
+
+.patrimonioColRed {
+  border-color: rgba(255, 23, 68, 0.25);
+}
+.patrimonioColRed:hover {
+  border-color: var(--neon-red);
+  box-shadow: 0 6px 24px 0 rgba(255, 23, 68, 0.12);
 }
 
 .patrimonioColLabel {
@@ -3208,18 +3247,11 @@
 @media (max-width: 500px) {
   .patrimonioColsGrid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.5rem 0.75rem !important;
+    gap: 0.65rem !important;
   }
   .patrimonioCol {
-    padding: 0.15rem 0.25rem !important;
-  }
-  .patrimonioCol:nth-child(1),
-  .patrimonioCol:nth-child(2) {
-    padding-bottom: 0.5rem !important;
-  }
-  .patrimonioCol:nth-child(1),
-  .patrimonioCol:nth-child(3) {
-    padding-right: 0.75rem !important;
+    padding: 0.85rem 0.65rem !important;
+    border-radius: 8px !important;
   }
 }
 
