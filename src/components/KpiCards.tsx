@@ -218,7 +218,14 @@ export default function KpiCards({
   return (
     <>
       {/* ── PERFORMANCE DO DIA SECTION ── */}
-      <div className={styles.kpiSectionHeader}>Performance do Dia</div>
+      <div className={styles.patrimonioHeader} style={{ marginBottom: '1rem', borderBottom: 'none', paddingBottom: 0 }}>
+        <div className={styles.patrimonioTitleGroup}>
+          <div className={`${styles.kpiIconContainer} ${styles.greenGlow}`}>
+            <TrendingUp size={15} />
+          </div>
+          <span className={styles.patrimonioMainTitle}>Performance do Dia</span>
+        </div>
+      </div>
       <div className={styles.kpiRowGrid}>
         {/* 2. Lucro Hoje */}
         <div className={`${styles.kpiCardMockup} ${dailyProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
