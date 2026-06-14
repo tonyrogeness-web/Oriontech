@@ -270,7 +270,7 @@ export default function KpiCards({
             <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
               <Coins size={15} />
             </div>
-            <span className={styles.patrimonioMainTitle}>PATRIMÔNIO</span>
+            <span className={styles.patrimonioMainTitle}>Visão Geral</span>
           </div>
           <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`}>
             P/L: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}

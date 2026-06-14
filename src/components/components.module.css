@@ -3149,16 +3149,14 @@
   padding: 0.25rem 0.5rem;
 }
 
-/* 2x2 grid border dividers */
+/* 2x2 grid dividers - Minimalist borderless styling */
 .patrimonioCol:nth-child(1),
 .patrimonioCol:nth-child(2) {
-  border-bottom: 1px solid var(--opacity-divider);
   padding-bottom: 0.75rem;
 }
 
 .patrimonioCol:nth-child(1),
 .patrimonioCol:nth-child(3) {
-  border-right: 1px solid var(--opacity-divider);
   padding-right: 1.25rem;
 }
 
@@ -3217,12 +3215,10 @@
   }
   .patrimonioCol:nth-child(1),
   .patrimonioCol:nth-child(2) {
-    border-bottom: 1px solid var(--opacity-divider) !important;
     padding-bottom: 0.5rem !important;
   }
   .patrimonioCol:nth-child(1),
   .patrimonioCol:nth-child(3) {
-    border-right: 1px solid var(--opacity-divider) !important;
     padding-right: 0.75rem !important;
   }
 }
