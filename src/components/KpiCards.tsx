@@ -333,9 +333,9 @@ export default function KpiCards({
         <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
           <div className={`${styles.patrimonioPerformanceGroupBlock} ${netProfitCalc >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
             <div className={styles.patrimonioCombinedRowGrid}>
-              {/* Sub-row 1: S. Líquido */}
+              {/* Sub-row 1: P. Líquido */}
               <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginRight: 0 }}>
-                <span className={styles.patrimonioStackRowLabel}>S. LÍQUIDO</span>
+                <span className={styles.patrimonioStackRowLabel}>P. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
                   <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-primary)" }}>
                     {formatValPrimary(equityCalc)}

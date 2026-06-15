@@ -155,11 +155,9 @@ export async function GET() {
       };
     });
 
-    const sumProfit = cleanHistory.reduce((sum, h) => sum + h.profit, 0.0);
-
     const adjustedAccounts = accounts.map((acc) => ({
       ...acc,
-      totalProfit: sumProfit,
+      totalProfit: acc.totalProfit,
     }));
 
     return NextResponse.json({
