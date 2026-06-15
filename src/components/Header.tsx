@@ -445,8 +445,19 @@ export default function Header({
   // Clean expired recent notifications every tick
   useEffect(() => {
     const nowTick = Date.now();
-    // Expire read notifications that finished their countdown, or unread ones after 20 minutes
-    const expiredIds = recentNotifications.filter((r) => r.expiresAt <= nowTick).map((r) => r.id);
+    const today = new Date();
+    // Expire read notifications that finished their countdown, unread ones after 24h, or any notification from a different calendar day
+    const expiredIds = recentNotifications
+      .filter((r) => {
+        if (r.expiresAt <= nowTick) return true;
+        const d = new Date(r.createdAt);
+        const isDiffDay = d.getDate() !== today.getDate() || 
+                          d.getMonth() !== today.getMonth() || 
+                          d.getFullYear() !== today.getFullYear();
+        return isDiffDay;
+      })
+      .map((r) => r.id);
+
     if (expiredIds.length > 0) {
       const nonExpired = recentNotifications.filter((r) => !expiredIds.includes(r.id));
       saveRecentNotifications(nonExpired);
