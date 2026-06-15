@@ -221,19 +221,33 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
   const doneDist  = isBuy ? (currentPrice - pm) : (pm - currentPrice);
   const progress  = totalDist > 0 ? Math.round((doneDist / totalDist) * 100) : 0;
   const isDrawdown = progress < 0;
+  const isTrailing = progress >= 100;
   const clamped   = Math.max(0, Math.min(100, progress));
-  const color     = isDrawdown ? "var(--neon-red)" : "var(--neon-green)";
-  const tpPts     = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
+  
+  // Custom styling based on status
+  const color = isDrawdown 
+    ? "var(--neon-red)" 
+    : isTrailing 
+      ? "#00e5ff" // Cyan for trailing
+      : "var(--neon-green)"; // Green for normal progress
+      
+  const tpPts = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
 
   // Carrega a barra apenas conforme a porcentagem real positiva
   const fillWidth = clamped;
+
+  const labelText = isDrawdown 
+    ? "Abaixo do PM (Drawdown)" 
+    : isTrailing 
+      ? `+${progress}% (Perseguindo)` 
+      : `+${progress}%`;
 
   return (
     <div className={styles.tpProgressWrapper}>
       <div className={styles.tpProgressHeader}>
         <span className={styles.basketRowLabel}>Progresso ao TP</span>
         <span style={{ fontSize: "0.7rem", fontWeight: 700, color }}>
-          {isDrawdown ? "Abaixo do PM (Drawdown)" : `+${clamped}%`}
+          {labelText}
         </span>
       </div>
       <div className={styles.progressBarOuter}>
@@ -243,8 +257,14 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
             width: `${fillWidth}%`,
             background: isDrawdown
               ? "linear-gradient(90deg, #c62828, #ff1744)"
-              : "linear-gradient(90deg, #00c853, #00ff88)",
-            boxShadow: `0 0 5px ${color}88`,
+              : isTrailing
+                ? "linear-gradient(90deg, #00c853, #00e5ff)" // glowing cyan/green gradient
+                : "linear-gradient(90deg, #00c853, #00ff88)",
+            boxShadow: isDrawdown
+              ? `0 0 5px var(--neon-red)88`
+              : isTrailing
+                ? `0 0 10px #00e5ff, 0 0 5px #00ff88` // extra bright glow for trailing
+                : `0 0 5px var(--neon-green)88`,
             transition: "width 0.5s ease",
           }}
         />
