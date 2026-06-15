@@ -334,7 +334,7 @@ export default function KpiCards({
           <div className={`${styles.patrimonioPerformanceGroupBlock} ${netProfitCalc >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
             <div className={styles.patrimonioCombinedRowGrid}>
               {/* Sub-row 1: S. Líquido */}
-              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0 }}>
+              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginRight: 0 }}>
                 <span className={styles.patrimonioStackRowLabel}>S. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
                   <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-primary)" }}>
@@ -347,7 +347,7 @@ export default function KpiCards({
               </div>
 
               {/* Sub-row 2: L. Líquido */}
-              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginTop: '0.75rem' }}>
+              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginTop: '0.75rem', marginRight: 0 }}>
                 <span className={styles.patrimonioStackRowLabel}>L. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
                   <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)", position: "relative" }}>
