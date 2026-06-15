@@ -3230,6 +3230,16 @@
   box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1);
   transition: var(--transition-smooth);
 }
+.patrimonioOuterGroupBlock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  padding: 0.95rem 1rem;
+  width: 100%;
+  transition: var(--transition-smooth);
+}
 .glowLeftGreen {
   border-left: 3px solid var(--neon-green);
   box-shadow: inset 4px 0 10px -4px rgba(0, 230, 118, 0.15);
