@@ -197,30 +197,30 @@ export async function POST(request: Request) {
             },
           });
         } else {
-          // For past days, we ONLY create the record if it does not exist yet!
-          // We NEVER update it once it is written, preserving it as fixed.
-          const existing = await prisma.performanceHistory.findUnique({
+          // For past days, we update/upsert to ensure the database stays in sync with MT5 ground truth
+          await prisma.performanceHistory.upsert({
             where: {
               account_date: {
                 account: String(account),
                 date: hDate,
               },
             },
+            update: {
+              profit: parseFloat(h.profit),
+              balance: parseFloat(h.balance),
+              gain: h.gain !== undefined ? parseFloat(h.gain) : undefined,
+              loss: h.loss !== undefined ? parseFloat(h.loss) : undefined,
+            },
+            create: {
+              account: String(account),
+              date: hDate,
+              profit: parseFloat(h.profit),
+              balance: parseFloat(h.balance),
+              equity: h.equity !== undefined ? parseFloat(h.equity) : null,
+              gain: h.gain !== undefined ? parseFloat(h.gain) : 0.0,
+              loss: h.loss !== undefined ? parseFloat(h.loss) : 0.0,
+            },
           });
-          
-          if (!existing) {
-            await prisma.performanceHistory.create({
-              data: {
-                account: String(account),
-                date: hDate,
-                profit: parseFloat(h.profit),
-                balance: parseFloat(h.balance),
-                equity: h.equity !== undefined ? parseFloat(h.equity) : null,
-                gain: h.gain !== undefined ? parseFloat(h.gain) : 0.0,
-                loss: h.loss !== undefined ? parseFloat(h.loss) : 0.0,
-              },
-            });
-          }
         }
       }
     }
