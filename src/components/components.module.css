@@ -3213,7 +3213,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  min-width: 65px;
+  width: 75px;
+  min-width: 75px;
+  flex-shrink: 0;
 }
 .patrimonioPerformanceGroupBlock {
   display: flex;
