@@ -356,7 +356,7 @@ export default function Header({
           title: `✅ ${symbol} ${direction} fechou — ${formatValue(profitVal, true)}`,
           desc: `TP atingido N${level}`,
           createdAt: nowTick,
-          expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes to prevent accumulation if unread
+          expiresAt: nowTick + 24 * 60 * 60 * 1000, // Expires after 24 hours (1 day) to cover market cycle if unread
           read: false,
           type: "close",
           profitVal: profitVal,
@@ -390,7 +390,7 @@ export default function Header({
             title: `🔵 ${symbol} ${direction} iniciada — Lote ${t.volume.toFixed(2)}`,
             desc: `Nova entrada no mercado (N1)`,
             createdAt: nowTick,
-            expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes if unread
+            expiresAt: nowTick + 24 * 60 * 60 * 1000, // Expires after 24 hours (1 day) if unread
             read: false,
             type: "open",
             volume: t.volume,
@@ -404,7 +404,7 @@ export default function Header({
             title: `🟡 ${symbol} ${direction} recompra — Lote ${t.volume.toFixed(2)}`,
             desc: `Recompra efetuada N${level}`,
             createdAt: nowTick,
-            expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes if unread
+            expiresAt: nowTick + 24 * 60 * 60 * 1000, // Expires after 24 hours (1 day) if unread
             read: false,
             type: "recompra",
             volume: t.volume,
@@ -461,12 +461,10 @@ export default function Header({
       const newReadCrits = Array.from(new Set([...readCriticalIds, ...currentActiveIds]));
       saveReadCrits(newReadCrits);
 
-      // Mark all recents as read and activate their expiration timers (1m for N1, 3m for N2, 5m for N3+)
+      // Mark all recents as read and activate their expiration timers to 20 minutes
       const newRecents = recentNotifications.map((r) => {
         if (!r.read) {
-          const lvl = r.level || 1;
-          const expiryMins = lvl === 1 ? 1 : lvl === 2 ? 3 : 5;
-          return { ...r, read: true, expiresAt: Date.now() + expiryMins * 60 * 1000 };
+          return { ...r, read: true, expiresAt: Date.now() + 20 * 60 * 1000 };
         }
         return r;
       });
