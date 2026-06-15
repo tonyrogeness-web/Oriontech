@@ -93,6 +93,19 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
       balanceVal = (h.balance / 100) * brlRate;
     }
 
+    // [SPECIAL FILTER] Ignore the manual adjustment on June 12, 2026 (treat it as 0 profit)
+    if (h.date && h.date.startsWith("2026-06-12")) {
+      daily = 0.0;
+      if (currencyMode === "BRL") {
+        balanceVal = 3410.55;
+        equity = 3410.55;
+      } else {
+        const centVal = (3410.55 * 100) / brlRate;
+        balanceVal = centVal;
+        equity = centVal;
+      }
+    }
+
     return {
       label: formatDate(h.date),
       daily: daily,

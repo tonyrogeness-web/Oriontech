@@ -130,18 +130,30 @@ export async function GET() {
       where: { status: "PENDING" },
     });
 
-    return NextResponse.json({
-      isMock: false,
-      accounts,
-      trades,
-      history: history.map((h) => ({
+    const cleanHistory = history.map((h) => {
+      const isJune12 = h.date.toISOString().startsWith("2026-06-12");
+      return {
         date: h.date.toISOString(),
-        profit: h.profit,
+        profit: isJune12 ? 0.0 : h.profit,
         balance: h.balance,
         equity: h.equity,
-        gain: h.gain,
-        loss: h.loss,
-      })),
+        gain: isJune12 ? 0.0 : h.gain,
+        loss: isJune12 ? 0.0 : h.loss,
+      };
+    });
+
+    const sumProfit = cleanHistory.reduce((sum, h) => sum + h.profit, 0.0);
+
+    const adjustedAccounts = accounts.map((acc) => ({
+      ...acc,
+      totalProfit: sumProfit,
+    }));
+
+    return NextResponse.json({
+      isMock: false,
+      accounts: adjustedAccounts,
+      trades,
+      history: cleanHistory,
       pendingCommandsCount,
     });
   } catch (error: any) {
