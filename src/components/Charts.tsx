@@ -95,21 +95,15 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
       balanceVal = (h.balance / 100) * brlRate;
     }
 
-    // [SPECIAL FILTER] Ignore the manual adjustment loss on June 12, 2026 (keep only gains)
+    // [SPECIAL FILTER] Zero out the manual adjustment day (June 12, 2026) to start the cumulative chart at 0.00
     if (h.date && h.date.startsWith("2026-06-12")) {
-      const rawGain = h.gain !== undefined && h.gain !== null ? h.gain : 0.0;
-      const rawLoss = h.loss !== undefined && h.loss !== null ? h.loss : 0.0;
-      const rawBalanceNoLoss = h.balance - rawLoss;
-      const rawEquityNoLoss = (h.equity !== undefined && h.equity !== null ? h.equity : h.balance) - rawLoss;
-
+      daily = 0.0;
       if (currencyMode === "BRL") {
-        daily = (rawGain / 100) * brlRate;
-        balanceVal = (rawBalanceNoLoss / 100) * brlRate;
-        equity = (rawEquityNoLoss / 100) * brlRate;
+        balanceVal = (h.balance / 100) * brlRate;
+        equity = ((h.equity ?? h.balance) / 100) * brlRate;
       } else {
-        daily = rawGain;
-        balanceVal = rawBalanceNoLoss;
-        equity = rawEquityNoLoss;
+        balanceVal = h.balance;
+        equity = h.equity ?? h.balance;
       }
     }
 

@@ -147,10 +147,10 @@ export async function GET() {
       const isJune12 = h.date.toISOString().startsWith("2026-06-12");
       return {
         date: h.date.toISOString(),
-        profit: isJune12 ? h.gain : h.profit,
+        profit: isJune12 ? 0.0 : h.profit,
         balance: h.balance,
         equity: h.equity,
-        gain: h.gain,
+        gain: isJune12 ? 0.0 : h.gain,
         loss: isJune12 ? 0.0 : h.loss,
       };
     });
