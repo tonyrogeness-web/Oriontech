@@ -226,11 +226,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // 6. Fetch pending commands
+    // 6. Fetch pending commands (both PENDING and SENT, to retry if not confirmed yet)
     const pendingCommands = await prisma.commandQueue.findMany({
       where: {
         account: String(account),
-        status: "PENDING",
+        status: { in: ["PENDING", "SENT"] },
       },
       orderBy: {
         createdAt: "asc",
@@ -238,15 +238,17 @@ export async function POST(request: Request) {
     });
 
     if (pendingCommands.length > 0) {
-      await prisma.commandQueue.updateMany({
-        where: {
-          id: { in: pendingCommands.map((c) => c.id) },
-        },
-        data: {
-          status: "EXECUTED",
-          executedAt: new Date(),
-        },
-      });
+      const pendingIds = pendingCommands.filter((c) => c.status === "PENDING").map((c) => c.id);
+      if (pendingIds.length > 0) {
+        await prisma.commandQueue.updateMany({
+          where: {
+            id: { in: pendingIds },
+          },
+          data: {
+            status: "SENT",
+          },
+        });
+      }
     }
 
     return NextResponse.json({
