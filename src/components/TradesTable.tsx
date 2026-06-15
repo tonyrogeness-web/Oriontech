@@ -132,8 +132,8 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
             <List size={15} />
           </div>
           <span className={styles.patrimonioMainTitle}>Todas as Posições</span>
-          <span className={styles.badgeCount}>
-            [ Posições: {trades.length} ]
+          <span className={styles.badgeCount} style={{ whiteSpace: "nowrap" }}>
+            [ {trades.length} Posições ]
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>

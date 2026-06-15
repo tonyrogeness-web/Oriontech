@@ -647,6 +647,7 @@
   font-weight: 700;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 /* ===================================================================
