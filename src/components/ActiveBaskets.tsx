@@ -437,19 +437,29 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
 
         {/* Próximo Alvo de Recompra */}
         {level < 6 && (() => {
-          // Calculate next recompra price using same grid logic as MT5 EA
-          // dist base = 1.2 * ATR, step = 0.30 per level, min 400pts
-          // Without live ATR, we estimate based on current PM distPips
-          // Use the distPips as a guide: next level triggers at ~120% of current distance
           const pipValue = b.digits <= 3 ? 0.001 : 0.00001;
-          // Heuristic: use 200 pips as base step estimate if no better data
-          const estimatedStepPips = 200 + (level - 1) * 60; // grows with level
-          const nextPrice = isBuy
-            ? b.pm - estimatedStepPips * pipValue
-            : b.pm + estimatedStepPips * pipValue;
-          const distToNext = isBuy
-            ? Math.round((b.currentPrice - nextPrice) / pipValue)
-            : Math.round((nextPrice - b.currentPrice) / pipValue);
+          const slTrade = b.trades.find((t) => t.sl && t.sl > 0);
+          const slPrice = slTrade?.sl ?? null;
+
+          let nextPrice = 0;
+          let distToNext = 0;
+
+          if (slPrice && slPrice > 0) {
+            nextPrice = slPrice;
+            distToNext = isBuy
+              ? Math.round((b.currentPrice - nextPrice) / pipValue)
+              : Math.round((nextPrice - b.currentPrice) / pipValue);
+          } else {
+            // Heuristic: use 200 pips as base step estimate if no better data
+            const estimatedStepPips = 200 + (level - 1) * 60; // grows with level
+            nextPrice = isBuy
+              ? b.pm - estimatedStepPips * pipValue
+              : b.pm + estimatedStepPips * pipValue;
+            distToNext = isBuy
+              ? Math.round((b.currentPrice - nextPrice) / pipValue)
+              : Math.round((nextPrice - b.currentPrice) / pipValue);
+          }
+
           const distLabel = distToNext <= 0 ? "PRÓXIMO!" : `${Math.abs(distToNext)} pts`;
           const distColor = distToNext <= 0 ? "var(--neon-amber)" : "var(--text-secondary)";
           return (
