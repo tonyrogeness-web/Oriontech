@@ -152,23 +152,24 @@ export async function POST(request: Request) {
       for (const h of history) {
         if (!h.date) continue;
         const cleanDateStr = String(h.date).replace(/\./g, "-");
-        const hDate = new Date(cleanDateStr);
+        // Parse as UTC Noon to prevent timezone shifting
+        const [yr, mo, dy] = cleanDateStr.split("-").map(Number);
+        const hDate = new Date(Date.UTC(yr, mo - 1, dy, 12, 0, 0, 0));
+
         if (isNaN(hDate.getTime())) {
           console.warn(`[MT5 Update] Data inválida recebida no histórico: ${h.date}`);
           continue;
         }
 
         // Cutoff test history: ignore any records before June 12, 2026
-        const cutoffDate = new Date("2026-06-12T00:00:00.000Z");
+        const cutoffDate = new Date(Date.UTC(2026, 5, 12, 12, 0, 0, 0));
         if (hDate.getTime() < cutoffDate.getTime()) {
           continue;
         }
 
-        // Normalize date to midnight (00:00:00) to ensure single record per day
-        hDate.setUTCHours(0, 0, 0, 0);
         const todayDate = new Date();
-        todayDate.setUTCHours(0, 0, 0, 0);
-        const isToday = hDate.getTime() === todayDate.getTime();
+        const todayUTCNoon = new Date(Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), todayDate.getUTCDate(), 12, 0, 0, 0));
+        const isToday = hDate.getTime() === todayUTCNoon.getTime();
 
         if (isToday) {
           // For today, we upsert/update live
