@@ -654,7 +654,9 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
               {filteredData[hoveredIndex].dateRaw ? formatDate(filteredData[hoveredIndex].dateRaw) : filteredData[hoveredIndex].label}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "20px" }}>
-              <span style={{ color: "var(--text-muted)" }}>Ganho Diário:</span>
+              <span style={{ color: "var(--text-muted)" }}>
+                {filteredData[hoveredIndex].daily >= 0 ? "Ganho Diário:" : "Perda Diária:"}
+              </span>
               <span style={{ color: filteredData[hoveredIndex].daily >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontWeight: 700 }}>
                 {formatVal(filteredData[hoveredIndex].daily, true)}
               </span>
