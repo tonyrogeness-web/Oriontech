@@ -350,8 +350,11 @@ export default function KpiCards({
               <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginTop: '0.75rem' }}>
                 <span className={styles.patrimonioStackRowLabel}>L. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
-                  <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
-                    {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
+                  <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)", position: "relative" }}>
+                    <span style={{ position: "absolute", left: "-0.65rem", fontWeight: "bold" }}>
+                      {netProfitCalc >= 0 ? "+" : "-"}
+                    </span>
+                    {formatValPrimary(netProfitCalc).replace(/^[+-]/, "")}
                   </span>
                   <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
                     {formatValSecondary(netProfitCalc)}
