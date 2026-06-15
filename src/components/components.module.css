@@ -3215,6 +3215,27 @@
   justify-content: flex-end;
   min-width: 65px;
 }
+.patrimonioPerformanceGroupBlock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1);
+  transition: var(--transition-smooth);
+}
+.glowLeftGreen {
+  border-left: 3px solid var(--neon-green);
+  box-shadow: inset 4px 0 10px -4px rgba(0, 230, 118, 0.15);
+}
+.glowLeftRed {
+  border-left: 3px solid var(--neon-red);
+  box-shadow: inset 4px 0 10px -4px rgba(255, 23, 68, 0.15);
+}
 
 @media (max-width: 640px) {
   .patrimonioUnifiedCard {
@@ -3238,6 +3259,9 @@
   }
   .patrimonioRowContentGrid {
     grid-template-columns: 1.1fr 1.1fr;
+  }
+  .patrimonioPerformanceGroupBlock {
+    padding: 0.75rem 0.65rem;
   }
 }
 
