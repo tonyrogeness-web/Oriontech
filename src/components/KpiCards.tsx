@@ -331,7 +331,7 @@ export default function KpiCards({
             <div className={styles.patrimonioCombinedRowGrid}>
               {/* Sub-row 1: S. Líquido */}
               <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0 }}>
-                <span className={styles.patrimonioStackRowLabel}>S. LÍQ</span>
+                <span className={styles.patrimonioStackRowLabel}>S. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
                   <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-primary)" }}>
                     {formatValPrimary(equityCalc)}
@@ -344,7 +344,7 @@ export default function KpiCards({
 
               {/* Sub-row 2: L. Líquido */}
               <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginTop: '0.75rem' }}>
-                <span className={styles.patrimonioStackRowLabel}>L. LÍQUI</span>
+                <span className={styles.patrimonioStackRowLabel}>L. LÍQUIDO</span>
                 <div className={styles.patrimonioStackRowValuesCenter}>
                   <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: netProfitCalc >= 0 ? "var(--neon-green)" : "var(--neon-red)" }}>
                     {netProfitCalc >= 0 ? "+" : ""}{formatValPrimary(netProfitCalc)}
