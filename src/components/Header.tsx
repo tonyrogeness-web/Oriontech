@@ -356,7 +356,7 @@ export default function Header({
           title: `✅ ${symbol} ${direction} fechou — ${formatValue(profitVal, true)}`,
           desc: `TP atingido N${level}`,
           createdAt: nowTick,
-          expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
+          expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes to prevent accumulation if unread
           read: false,
           type: "close",
           profitVal: profitVal,
@@ -390,7 +390,7 @@ export default function Header({
             title: `🔵 ${symbol} ${direction} iniciada — Lote ${t.volume.toFixed(2)}`,
             desc: `Nova entrada no mercado (N1)`,
             createdAt: nowTick,
-            expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
+            expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes if unread
             read: false,
             type: "open",
             volume: t.volume,
@@ -404,7 +404,7 @@ export default function Header({
             title: `🟡 ${symbol} ${direction} recompra — Lote ${t.volume.toFixed(2)}`,
             desc: `Recompra efetuada N${level}`,
             createdAt: nowTick,
-            expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
+            expiresAt: nowTick + 20 * 60 * 1000, // Expires after 20 minutes if unread
             read: false,
             type: "recompra",
             volume: t.volume,
@@ -445,8 +445,8 @@ export default function Header({
   // Clean expired recent notifications every tick
   useEffect(() => {
     const nowTick = Date.now();
-    // Only expire notifications that have been read and whose timer has run out
-    const expiredIds = recentNotifications.filter((r) => r.read && r.expiresAt <= nowTick).map((r) => r.id);
+    // Expire read notifications that finished their countdown, or unread ones after 20 minutes
+    const expiredIds = recentNotifications.filter((r) => r.expiresAt <= nowTick).map((r) => r.id);
     if (expiredIds.length > 0) {
       const nonExpired = recentNotifications.filter((r) => !expiredIds.includes(r.id));
       saveRecentNotifications(nonExpired);
