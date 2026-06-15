@@ -356,7 +356,7 @@ export default function Header({
           title: `✅ ${symbol} ${direction} fechou — ${formatValue(profitVal, true)}`,
           desc: `TP atingido N${level}`,
           createdAt: nowTick,
-          expiresAt: nowTick + expiryMins * 60 * 1000,
+          expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
           read: false,
           type: "close",
           profitVal: profitVal,
@@ -384,16 +384,13 @@ export default function Header({
         const index = sameGroupTrades.findIndex((ct) => ct.ticket === t.ticket);
         const level = index !== -1 ? index + 1 : 1;
 
-        // Expiration: N1 = 1m, N2 = 3m, N3+ = 5m
-        const expiryMins = level === 1 ? 1 : level === 2 ? 3 : 5;
-
         if (level === 1) {
           newItems.push({
             id: `trade_open_${t.ticket}_${nowTick}`,
             title: `🔵 ${symbol} ${direction} iniciada — Lote ${t.volume.toFixed(2)}`,
             desc: `Nova entrada no mercado (N1)`,
             createdAt: nowTick,
-            expiresAt: nowTick + expiryMins * 60 * 1000,
+            expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
             read: false,
             type: "open",
             volume: t.volume,
@@ -407,7 +404,7 @@ export default function Header({
             title: `🟡 ${symbol} ${direction} recompra — Lote ${t.volume.toFixed(2)}`,
             desc: `Recompra efetuada N${level}`,
             createdAt: nowTick,
-            expiresAt: nowTick + expiryMins * 60 * 1000,
+            expiresAt: nowTick + 365 * 24 * 60 * 60 * 1000, // Never expire while unread (1 year default)
             read: false,
             type: "recompra",
             volume: t.volume,
@@ -448,7 +445,8 @@ export default function Header({
   // Clean expired recent notifications every tick
   useEffect(() => {
     const nowTick = Date.now();
-    const expiredIds = recentNotifications.filter((r) => r.expiresAt <= nowTick).map((r) => r.id);
+    // Only expire notifications that have been read and whose timer has run out
+    const expiredIds = recentNotifications.filter((r) => r.read && r.expiresAt <= nowTick).map((r) => r.id);
     if (expiredIds.length > 0) {
       const nonExpired = recentNotifications.filter((r) => !expiredIds.includes(r.id));
       saveRecentNotifications(nonExpired);
@@ -463,8 +461,15 @@ export default function Header({
       const newReadCrits = Array.from(new Set([...readCriticalIds, ...currentActiveIds]));
       saveReadCrits(newReadCrits);
 
-      // Mark all recents as read
-      const newRecents = recentNotifications.map((r) => ({ ...r, read: true }));
+      // Mark all recents as read and activate their expiration timers (1m for N1, 3m for N2, 5m for N3+)
+      const newRecents = recentNotifications.map((r) => {
+        if (!r.read) {
+          const lvl = r.level || 1;
+          const expiryMins = lvl === 1 ? 1 : lvl === 2 ? 3 : 5;
+          return { ...r, read: true, expiresAt: Date.now() + expiryMins * 60 * 1000 };
+        }
+        return r;
+      });
       saveRecentNotifications(newRecents);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1076,7 +1081,16 @@ export default function Header({
                             </div>
                           </div>
                           <p className={styles.notificationDesc}>
-                            {r.desc} &rarr; {formatTimeLeft(r.expiresAt)}
+                            {r.desc}
+                            {r.read ? (
+                              <span style={{ color: "var(--text-muted)", fontSize: "0.62rem", marginLeft: "0.5rem" }}>
+                                &rarr; {formatTimeLeft(r.expiresAt)}
+                              </span>
+                            ) : (
+                              <span className="badge badge-info" style={{ fontSize: "0.6rem", padding: "1px 4px", marginLeft: "0.5rem", display: "inline-block" }}>
+                                NOVO
+                              </span>
+                            )}
                           </p>
                           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.2rem" }}>
                             <span 
