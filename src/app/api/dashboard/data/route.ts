@@ -122,6 +122,19 @@ export async function GET() {
       },
     });
 
+    // Cleanup old midnight duplicates to ensure only UTC noon records are kept
+    const allHistoryDb = await prisma.performanceHistory.findMany({
+      where: { account: String(accounts[0].account) },
+    });
+    const midnightIds = allHistoryDb
+      .filter((h) => h.date.getUTCHours() === 0)
+      .map((h) => h.id);
+    if (midnightIds.length > 0) {
+      await prisma.performanceHistory.deleteMany({
+        where: { id: { in: midnightIds } },
+      });
+    }
+
     const history = await prisma.performanceHistory.findMany({
       orderBy: { date: "asc" },
     });
@@ -134,10 +147,10 @@ export async function GET() {
       const isJune12 = h.date.toISOString().startsWith("2026-06-12");
       return {
         date: h.date.toISOString(),
-        profit: isJune12 ? 0.0 : h.profit,
+        profit: isJune12 ? h.gain : h.profit,
         balance: h.balance,
         equity: h.equity,
-        gain: isJune12 ? 0.0 : h.gain,
+        gain: h.gain,
         loss: isJune12 ? 0.0 : h.loss,
       };
     });

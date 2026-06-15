@@ -7,6 +7,8 @@ interface PerformancePoint {
   profit: number;
   balance: number;
   equity?: number | null;
+  gain?: number;
+  loss?: number;
 }
 
 interface ChartsProps {
@@ -93,16 +95,21 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
       balanceVal = (h.balance / 100) * brlRate;
     }
 
-    // [SPECIAL FILTER] Ignore the manual adjustment on June 12, 2026 (treat it as 0 profit)
+    // [SPECIAL FILTER] Ignore the manual adjustment loss on June 12, 2026 (keep only gains)
     if (h.date && h.date.startsWith("2026-06-12")) {
-      daily = 0.0;
+      const rawGain = h.gain !== undefined && h.gain !== null ? h.gain : 0.0;
+      const rawLoss = h.loss !== undefined && h.loss !== null ? h.loss : 0.0;
+      const rawBalanceNoLoss = h.balance - rawLoss;
+      const rawEquityNoLoss = (h.equity !== undefined && h.equity !== null ? h.equity : h.balance) - rawLoss;
+
       if (currencyMode === "BRL") {
-        balanceVal = 3410.55;
-        equity = 3410.55;
+        daily = (rawGain / 100) * brlRate;
+        balanceVal = (rawBalanceNoLoss / 100) * brlRate;
+        equity = (rawEquityNoLoss / 100) * brlRate;
       } else {
-        const centVal = (3410.55 * 100) / brlRate;
-        balanceVal = centVal;
-        equity = centVal;
+        daily = rawGain;
+        balanceVal = rawBalanceNoLoss;
+        equity = rawEquityNoLoss;
       }
     }
 
