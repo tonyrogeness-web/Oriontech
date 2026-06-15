@@ -113,6 +113,15 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    // Programs manual delete of performance history before June 12, 2026
+    await prisma.performanceHistory.deleteMany({
+      where: {
+        date: {
+          lt: new Date("2026-06-12T00:00:00.000Z"),
+        },
+      },
+    });
+
     const history = await prisma.performanceHistory.findMany({
       orderBy: { date: "asc" },
     });

@@ -85,16 +85,19 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   const mappedData = history.map((h) => {
     let daily = h.profit;
     let equity = h.equity !== null && h.equity !== undefined ? h.equity : h.balance;
+    let balanceVal = h.balance;
 
     if (currencyMode === "BRL") {
       daily = (h.profit / 100) * brlRate;
       equity = ((h.equity ?? h.balance) / 100) * brlRate;
+      balanceVal = (h.balance / 100) * brlRate;
     }
 
     return {
       label: formatDate(h.date),
       daily: daily,
       equity: equity,
+      balance: balanceVal,
       dateRaw: h.date
     };
   });
@@ -139,7 +142,10 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
 
   // 6. Summary metrics
   const totalAccumulated = filteredData.length > 0 ? filteredData[filteredData.length - 1].cumProfit : 0;
-  const startEquity = filteredData.length > 0 ? filteredData[0].equity : 1000;
+  // Start base calculation: balance before the first day's trade
+  const startEquity = filteredData.length > 0
+    ? (filteredData[0].balance !== undefined ? filteredData[0].balance - filteredData[0].daily : filteredData[0].equity)
+    : 3410.55;
   const accumulatedPct = startEquity > 0 ? (totalAccumulated / startEquity) * 100 : 0;
 
   const tradingDays = filteredData.filter((d) => d.daily !== 0);
