@@ -492,7 +492,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
           const tpLimit = calculateTakeProfitLimit(balance);
           const remainingDist = isBuy ? (virtualTp - b.currentPrice) : (b.currentPrice - virtualTp);
           const remainingPts = Math.round(remainingDist / (b.digits <= 3 ? 0.001 : 0.00001));
-          const remainingPtsStr = remainingPts <= 0 ? "PRONTO!" : `▲ ${remainingPts} pts`;
+          const remainingPtsStr = remainingPts <= 0 ? "PRONTO!" : `${isBuy ? "▲" : "▼"} ${remainingPts} pts`;
 
           const formatTargetProfit = (val: number) => {
             if (currencyMode === "CENT") {
