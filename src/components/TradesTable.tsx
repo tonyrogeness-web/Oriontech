@@ -126,16 +126,28 @@ export default function TradesTable({ trades = [], currencyMode = "CENT", brlRat
 
   return (
     <div className={styles.tradesCard} style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid var(--opacity-divider)", paddingBottom: "0.65rem" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        marginBottom: "1rem",
+        borderBottom: "1px solid var(--opacity-divider)",
+        paddingBottom: "0.65rem",
+        width: "100%"
+      }}>
         <div className={styles.patrimonioTitleGroup}>
           <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
             <List size={15} />
           </div>
           <span className={styles.patrimonioMainTitle}>Todas as Posições</span>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           <span className={styles.badgeCount} style={{ whiteSpace: "nowrap" }}>
             [ {trades.length} Posições ]
           </span>
         </div>
+
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
           <span style={{ fontSize: "0.95rem", fontWeight: 700, color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
             {totalProfit >= 0 ? "+" : ""}{formatProfitPrimary(totalProfit)}

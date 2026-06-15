@@ -75,11 +75,11 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
   // 2. Format Value helper
   const formatVal = (val: number, showSign = false) => {
     const absVal = Math.abs(val);
-    const sign = val < 0 ? "-" : (showSign && val > 0 ? "+" : "");
+    const sign = val < 0 ? "- " : (showSign && val > 0 ? "+ " : "");
     if (currencyMode === "CENT") {
       return `${sign}${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USC`;
     } else {
-      return `${sign}R$${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return `${sign}R$ ${absVal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   };
 

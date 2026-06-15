@@ -648,16 +648,28 @@ export default function ActiveBaskets({
     <div className={styles.basketsSection}>
 
       {/* ── Cabeçalho da seção ── */}
-      <div className={styles.patrimonioHeader} style={{ marginBottom: '1rem', borderBottom: 'none', paddingBottom: 0 }}>
+      <div className={styles.patrimonioHeader} style={{
+        marginBottom: '1rem',
+        borderBottom: 'none',
+        paddingBottom: 0,
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        width: "100%"
+      }}>
         <div className={styles.patrimonioTitleGroup}>
           <div className={`${styles.kpiIconContainer} ${styles.blueGlow}`}>
             <Layers size={15} />
           </div>
           <span className={styles.patrimonioMainTitle}>Cestos de Moedas</span>
-          <span className={styles.basketsCount}>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <span className={styles.basketsCount} style={{ whiteSpace: "nowrap" }}>
             {baskets.length} cesto{baskets.length !== 1 ? "s" : ""} ativo{baskets.length !== 1 ? "s" : ""}
           </span>
         </div>
+
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
           <span style={{ fontSize: "0.95rem", fontWeight: 700, color: totalPl >= 0 ? "var(--neon-green)" : "var(--neon-red)", fontFamily: "monospace" }}>
             {totalPl >= 0 ? "+" : ""}{formatSecondaryVal(totalPl)}
