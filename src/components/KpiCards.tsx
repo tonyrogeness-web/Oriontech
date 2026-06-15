@@ -289,7 +289,7 @@ export default function KpiCards({
         <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
           <div className={styles.patrimonioOuterGroupBlock}>
             <div className={styles.patrimonioRowContentGrid}>
-              <span className={styles.patrimonioStackRowLabel}>SALDO INICIAL</span>
+              <span className={styles.patrimonioStackRowLabel}>S. INICIAL</span>
               <div className={styles.patrimonioStackRowValuesCenter}>
                 <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-muted)" }}>
                   {formatValPrimary(startBalance)}
@@ -311,7 +311,7 @@ export default function KpiCards({
         <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
           <div className={styles.patrimonioOuterGroupBlock}>
             <div className={styles.patrimonioRowContentGrid}>
-              <span className={styles.patrimonioStackRowLabel}>SALDO ATUAL</span>
+              <span className={styles.patrimonioStackRowLabel}>S. ATUAL</span>
               <div className={styles.patrimonioStackRowValuesCenter}>
                 <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--neon-gold)" }}>
                   {formatValPrimary(balance)}
