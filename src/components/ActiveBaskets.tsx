@@ -222,19 +222,26 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
   const progress  = totalDist > 0 ? Math.round((doneDist / totalDist) * 100) : 0;
   const isDrawdown = progress < 0;
   const isTrailing = progress >= 100;
-  const clamped   = Math.max(0, Math.min(100, progress));
   
-  // Custom styling based on status
+  // Escala dinâmica para progressos acima de 100% (Trailing)
+  const maxVal = isTrailing 
+    ? (progress > 120 ? Math.ceil(progress / 50) * 50 : 150)
+    : 100;
+  
+  const targetPos = isTrailing ? (100 / maxVal) * 100 : 100;
+  const fillWidth = isDrawdown ? 0 : Math.min(100, (progress / maxVal) * 100);
+  
+  // Cores personalizadas conforme o status
   const color = isDrawdown 
     ? "var(--neon-red)" 
     : isTrailing 
-      ? "#00e5ff" // Cyan for trailing
-      : "var(--neon-green)"; // Green for normal progress
+      ? "#00e5ff" // Ciano para trailing
+      : "var(--neon-green)"; // Verde para progresso normal
       
   const tpPts = Math.round(Math.abs(totalDist) / (digits <= 3 ? 0.001 : 0.00001));
-
-  // Carrega a barra apenas conforme a porcentagem real positiva
-  const fillWidth = clamped;
+  const ptsBeyond = isTrailing 
+    ? Math.round(Math.abs(doneDist - totalDist) / (digits <= 3 ? 0.001 : 0.00001))
+    : 0;
 
   const labelText = isDrawdown 
     ? "Abaixo do PM (Drawdown)" 
@@ -251,6 +258,21 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
         </span>
       </div>
       <div className={styles.progressBarOuter}>
+        {isTrailing && (
+          <div
+            style={{
+              position: "absolute",
+              left: `${targetPos}%`,
+              top: 0,
+              bottom: 0,
+              width: "2px",
+              backgroundColor: "rgba(255, 255, 255, 0.85)",
+              boxShadow: "0 0 6px #fff, 0 0 3px var(--neon-green)",
+              zIndex: 10,
+            }}
+            title="Alvo original (100%)"
+          />
+        )}
         <div
           className={styles.progressBarInner}
           style={{
@@ -258,20 +280,29 @@ function TpBar({ pm, currentPrice, tpPrice, isBuy, digits }: {
             background: isDrawdown
               ? "linear-gradient(90deg, #c62828, #ff1744)"
               : isTrailing
-                ? "linear-gradient(90deg, #00c853, #00e5ff)" // glowing cyan/green gradient
+                ? `linear-gradient(90deg, #00c853 0%, #00ff88 ${targetPos}%, #00e5ff ${targetPos}%, #00b0ff 100%)`
                 : "linear-gradient(90deg, #00c853, #00ff88)",
             boxShadow: isDrawdown
               ? `0 0 5px var(--neon-red)88`
               : isTrailing
-                ? `0 0 10px #00e5ff, 0 0 5px #00ff88` // extra bright glow for trailing
+                ? `0 0 10px #00e5ff, 0 0 5px #00ff88` // brilho extra para trailing
                 : `0 0 5px var(--neon-green)88`,
             transition: "width 0.5s ease",
           }}
         />
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-        <span>Alvo a favor do PM</span>
-        <span style={{ color: "var(--neon-gold)", fontWeight: 700 }}>Meta: {tpPts} pts</span>
+        {isTrailing ? (
+          <>
+            <span>Trailing TP (Meta superada)</span>
+            <span style={{ color: "var(--neon-green)", fontWeight: 700 }}>+{ptsBeyond} pts</span>
+          </>
+        ) : (
+          <>
+            <span>Alvo a favor do PM</span>
+            <span style={{ color: "var(--neon-gold)", fontWeight: 700 }}>Meta: {tpPts} pts</span>
+          </>
+        )}
       </div>
     </div>
   );
