@@ -94,12 +94,12 @@ function getMockData() {
 export async function GET() {
   try {
     // Test DB connection first
-    const accounts = await prisma.accountState.findMany({
+    const allAccounts = await prisma.accountState.findMany({
       orderBy: { lastUpdated: "desc" },
     });
 
     // If there is no data in the database yet, return mock data for initial UI rendering
-    if (accounts.length === 0) {
+    if (allAccounts.length === 0) {
       // DB is accessible but empty — robot hasn't sent data yet
       return NextResponse.json({
         ...getMockData(),
@@ -108,8 +108,20 @@ export async function GET() {
       });
     }
 
-    // Otherwise, fetch real data from database
+    // Filter out ghost/stale accounts: only keep accounts updated within the last 2 days
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    const accounts = allAccounts.filter(
+      (acc) => new Date(acc.lastUpdated) >= twoDaysAgo
+    );
+
+    // If all accounts are stale (VPS down?), return the most recent one anyway
+    const activeAccounts = accounts.length > 0 ? accounts : allAccounts.slice(0, 1);
+    const primaryAccount = activeAccounts[0];
+
+    // Otherwise, fetch real data from database — scoped to active accounts only
+    const activeAccountIds = activeAccounts.map((a) => String(a.account));
     const trades = await prisma.activeTrade.findMany({
+      where: { account: { in: activeAccountIds } },
       orderBy: { createdAt: "desc" },
     });
 
@@ -122,25 +134,13 @@ export async function GET() {
       },
     });
 
-    // Cleanup old midnight duplicates to ensure only UTC noon records are kept
-    const allHistoryDb = await prisma.performanceHistory.findMany({
-      where: { account: String(accounts[0].account) },
-    });
-    const midnightIds = allHistoryDb
-      .filter((h) => h.date.getUTCHours() === 0)
-      .map((h) => h.id);
-    if (midnightIds.length > 0) {
-      await prisma.performanceHistory.deleteMany({
-        where: { id: { in: midnightIds } },
-      });
-    }
-
     const history = await prisma.performanceHistory.findMany({
+      where: { account: String(primaryAccount.account) },
       orderBy: { date: "asc" },
     });
 
     const pendingCommandsCount = await prisma.commandQueue.count({
-      where: { status: "PENDING" },
+      where: { status: "PENDING", account: String(primaryAccount.account) },
     });
 
     const cleanHistory = history.map((h) => {
@@ -155,14 +155,9 @@ export async function GET() {
       };
     });
 
-    const adjustedAccounts = accounts.map((acc) => ({
-      ...acc,
-      totalProfit: acc.totalProfit,
-    }));
-
     return NextResponse.json({
       isMock: false,
-      accounts: adjustedAccounts,
+      accounts: activeAccounts,
       trades,
       history: cleanHistory,
       pendingCommandsCount,
