@@ -161,8 +161,8 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Cutoff test history: ignore any records before June 12, 2026
-        const cutoffDate = new Date(Date.UTC(2026, 5, 12, 12, 0, 0, 0));
+        // Cutoff test history: ignore any records before June 16, 2026
+        const cutoffDate = new Date(Date.UTC(2026, 5, 16, 12, 0, 0, 0));
         if (hDate.getTime() < cutoffDate.getTime()) {
           continue;
         }

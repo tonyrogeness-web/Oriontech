@@ -95,8 +95,8 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
       balanceVal = (h.balance / 100) * brlRate;
     }
 
-    // [SPECIAL FILTER] Zero out the manual adjustment day (June 12, 2026) to start the cumulative chart at 0.00
-    if (h.date && h.date.startsWith("2026-06-12")) {
+    // [SPECIAL FILTER] Zero out the manual adjustment day (June 16, 2026) to start the cumulative chart at 0.00
+    if (h.date && h.date.startsWith("2026-06-16")) {
       daily = 0.0;
       if (currencyMode === "BRL") {
         balanceVal = (h.balance / 100) * brlRate;

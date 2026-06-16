@@ -113,11 +113,11 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    // Programs manual delete of performance history before June 12, 2026
+    // Programs manual delete of performance history before June 16, 2026
     await prisma.performanceHistory.deleteMany({
       where: {
         date: {
-          lt: new Date("2026-06-12T00:00:00.000Z"),
+          lt: new Date("2026-06-16T00:00:00.000Z"),
         },
       },
     });
@@ -144,14 +144,14 @@ export async function GET() {
     });
 
     const cleanHistory = history.map((h) => {
-      const isJune12 = h.date.toISOString().startsWith("2026-06-12");
+      const isJune16 = h.date.toISOString().startsWith("2026-06-16");
       return {
         date: h.date.toISOString(),
-        profit: isJune12 ? 0.0 : h.profit,
+        profit: isJune16 ? 0.0 : h.profit,
         balance: h.balance,
         equity: h.equity,
-        gain: isJune12 ? 0.0 : h.gain,
-        loss: isJune12 ? 0.0 : h.loss,
+        gain: isJune16 ? 0.0 : h.gain,
+        loss: isJune16 ? 0.0 : h.loss,
       };
     });
 
