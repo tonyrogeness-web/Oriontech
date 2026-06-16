@@ -159,7 +159,7 @@ export default function KpiCards({
   const drawdownTrendHistory = history.map((h) => (h.profit < 0 ? Math.abs(h.profit) : 0));
 
   // Saldo Inicial
-  const startBalance = equityCycleBase > 0 ? equityCycleBase : (balance - totalProfit);
+  const startBalance = balance - totalProfit;
 
   // Patrimônio Líquido (Saldo Líquido)
   const equityCalc = equity;
