@@ -113,7 +113,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    // Programs manual delete of performance history before June 16, 2026
+    // Clean up performance history before June 16, 2026 to reset the chart starting today
     await prisma.performanceHistory.deleteMany({
       where: {
         date: {
