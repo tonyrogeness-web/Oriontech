@@ -159,7 +159,7 @@ function getVirtualTp(b: Basket, balance: number): number {
 
   // Estimar valor de 1 ponto em USC por lote
   const isJpy = b.symbol.toUpperCase().includes("JPY");
-  const pipValue = isJpy ? 0.001 : 0.00001; // pipValue aqui refere-se a 1 ponto
+  const pointValue = isJpy ? 0.001 : 0.00001; // valor de 1 ponto em preço
 
   let pointValueForOneLot = 100; // default para USD quote (1 ponto de 1 lote = 1 USD = 100 USC)
   if (isJpy) {
@@ -172,7 +172,7 @@ function getVirtualTp(b: Basket, balance: number): number {
 
   const basketPointValue = b.totalVolume * pointValueForOneLot;
   const targetDistInPoints = basketPointValue > 0 ? (tpLimit / basketPointValue) : 0;
-  const targetDistInPrice = targetDistInPoints * pipValue;
+  const targetDistInPrice = targetDistInPoints * pointValue;
   
   return isBuy ? (b.pm + targetDistInPrice) : (b.pm - targetDistInPrice);
 }

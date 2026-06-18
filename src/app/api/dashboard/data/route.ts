@@ -14,7 +14,6 @@ function getMockData() {
     maxDrawdown: 1.49,
     status: "RUNNING",
     lastUpdated: new Date().toISOString(),
-    // [BUG-N4 FIX] Campos de filtro de noticias ausentes no mock — adicionados com defaults
     newsActive: false,
     newsFrozen: false,
     newsName: "",
@@ -100,7 +99,6 @@ export async function GET() {
 
     // If there is no data in the database yet, return mock data for initial UI rendering
     if (allAccounts.length === 0) {
-      // DB is accessible but empty — robot hasn't sent data yet
       return NextResponse.json({
         ...getMockData(),
         isMock: true,
@@ -118,21 +116,14 @@ export async function GET() {
     const activeAccounts = accounts.length > 0 ? accounts : allAccounts.slice(0, 1);
     const primaryAccount = activeAccounts[0];
 
-    // Otherwise, fetch real data from database — scoped to active accounts only
+    // Scope queries to active accounts only
     const activeAccountIds = activeAccounts.map((a) => String(a.account));
     const trades = await prisma.activeTrade.findMany({
       where: { account: { in: activeAccountIds } },
       orderBy: { createdAt: "desc" },
     });
 
-    // Clean up performance history before June 16, 2026 to reset the chart starting today
-    await prisma.performanceHistory.deleteMany({
-      where: {
-        date: {
-          lt: new Date("2026-06-16T00:00:00.000Z"),
-        },
-      },
-    });
+    // BUG-D1: Removed the destructive deleteMany operation from GET query to preserve history
 
     const history = await prisma.performanceHistory.findMany({
       where: { account: String(primaryAccount.account) },
@@ -143,17 +134,18 @@ export async function GET() {
       where: { status: "PENDING", account: String(primaryAccount.account) },
     });
 
-    const cleanHistory = history.map((h) => {
-      const isJune16 = h.date.toISOString().startsWith("2026-06-16");
-      return {
+    // Filtro de data: ignorar histórico anterior a 16/06/2026 (fechamento forçado, não voluntário)
+    const histCutoff = new Date(Date.UTC(2026, 5, 16, 0, 0, 0, 0));
+    const cleanHistory = history
+      .filter((h) => new Date(h.date).getTime() >= histCutoff.getTime())
+      .map((h) => ({
         date: h.date.toISOString(),
-        profit: isJune16 ? 0.0 : h.profit,
+        profit: h.profit,
         balance: h.balance,
         equity: h.equity,
-        gain: isJune16 ? 0.0 : h.gain,
-        loss: isJune16 ? 0.0 : h.loss,
-      };
-    });
+        gain: h.gain,
+        loss: h.loss,
+      }));
 
     return NextResponse.json({
       isMock: false,
@@ -164,7 +156,6 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error("Dashboard Data Fetch Error (falling back to mock data):", error);
-    // Return mock data but also expose diagnostic info for debugging
     return NextResponse.json({
       ...getMockData(),
       isMock: true,

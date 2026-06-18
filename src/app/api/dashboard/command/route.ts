@@ -1,15 +1,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+// Helper for security token verification
+const verifyToken = (reqToken: string) => {
+  const secureToken = process.env.WEB_API_KEY || "aura_secret_token_123456";
+  return reqToken === secureToken;
+};
+
 export async function POST(request: Request) {
   try {
-    const { account, command, symbol = "" } = await request.json();
+    const { account, command, symbol = "", token } = await request.json();
 
     if (!account || !command) {
       return NextResponse.json(
         { error: "Account and Command are required" },
         { status: 400 }
       );
+    }
+
+    // Secure command authentication check (BUG-D13)
+    if (!token || !verifyToken(token)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const validCommands = ["PAUSE", "RESUME", "PANIC_LOCAL", "PANIC_GLOBAL", "RESET_STATS"];

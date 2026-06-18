@@ -59,7 +59,11 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Update Active Trades and AccountState in a single database transaction to prevent race conditions/empty states
+    // 3. Update Active Trades and AccountState in a single database transaction
+    const parsedBalance = parseFloat(balance) || 0;
+    const parsedEquity = parseFloat(equity !== undefined && equity !== null ? equity : balance) || 0;
+    const parsedBrlRate = parseFloat(brlRate) || 5.20;
+
     await prisma.$transaction(async (tx) => {
       if (symbol) {
         await tx.activeTrade.deleteMany({
@@ -92,15 +96,12 @@ export async function POST(request: Request) {
         });
       }
 
-      // 4. Calculate Global floatingPl, equity, and maxDrawdown from all active trades of the account within the transaction
+      // 4. Calculate Global floatingPl, equity, and maxDrawdown from all active trades
       const allActiveTrades = await tx.activeTrade.findMany({
         where: { account: String(account) },
       });
       const globalFloatingPl = allActiveTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
-      const parsedBalance = parseFloat(balance);
-      const parsedEquity = parseFloat(equity !== undefined && equity !== null ? equity : balance);
       const globalDrawdown = parsedBalance > 0 ? (Math.abs(Math.min(0, globalFloatingPl)) / parsedBalance) * 100 : 0;
-      const parsedBrlRate = parseFloat(brlRate || 5.20);
 
       // 5. Upsert AccountState with global unified calculations
       await tx.accountState.upsert({
@@ -108,41 +109,41 @@ export async function POST(request: Request) {
         update: {
           balance: parsedBalance,
           equity: parsedEquity,
-          dailyProfit: parseFloat(dailyProfit),
+          dailyProfit: parseFloat(dailyProfit) || 0,
           floatingPl: globalFloatingPl,
-          totalProfit: parseFloat(totalProfit || 0),
+          totalProfit: parseFloat(totalProfit) || 0,
           maxDrawdown: globalDrawdown,
           status: status || "RUNNING",
           newsActive: Boolean(newsActive),
           newsFrozen: Boolean(newsFrozen),
           newsName: String(newsName || ""),
           trailingActive: Boolean(trailingActive),
-          trailingPeak: parseFloat(trailingPeak || 0),
+          trailingPeak: parseFloat(trailingPeak) || 0,
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
           brlRate: parsedBrlRate,
-          equityCycleBase: parseFloat(equityCycleBase || 0.0),
-          equityCycleTargetPct: parseFloat(equityCycleTargetPct || 5.0),
+          equityCycleBase: parseFloat(equityCycleBase) || 0.0,
+          equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
         },
         create: {
           account: String(account),
           balance: parsedBalance,
           equity: parsedEquity,
-          dailyProfit: parseFloat(dailyProfit),
+          dailyProfit: parseFloat(dailyProfit) || 0,
           floatingPl: globalFloatingPl,
-          totalProfit: parseFloat(totalProfit || 0),
+          totalProfit: parseFloat(totalProfit) || 0,
           maxDrawdown: globalDrawdown,
           status: status || "RUNNING",
           newsActive: Boolean(newsActive),
           newsFrozen: Boolean(newsFrozen),
           newsName: String(newsName || ""),
           trailingActive: Boolean(trailingActive),
-          trailingPeak: parseFloat(trailingPeak || 0),
+          trailingPeak: parseFloat(trailingPeak) || 0,
           ddReached10: Boolean(ddReached10),
           ddReached20: Boolean(ddReached20),
           brlRate: parsedBrlRate,
-          equityCycleBase: parseFloat(equityCycleBase || 0.0),
-          equityCycleTargetPct: parseFloat(equityCycleTargetPct || 5.0),
+          equityCycleBase: parseFloat(equityCycleBase) || 0.0,
+          equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
         },
       });
     });
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Cutoff test history: ignore any records before June 16, 2026
+        // Cutoff: ignorar dados anteriores a 16/06/2026 — fechamento forçado (não voluntário) antes dessa data
         const cutoffDate = new Date(Date.UTC(2026, 5, 16, 12, 0, 0, 0));
         if (hDate.getTime() < cutoffDate.getTime()) {
           continue;
@@ -181,24 +182,24 @@ export async function POST(request: Request) {
               },
             },
             update: {
-              profit: parseFloat(h.profit),
-              balance: parseFloat(h.balance),
-              equity: parseFloat(equity),
+              profit: parseFloat(h.profit) || 0,
+              balance: parseFloat(h.balance) || 0,
+              equity: parsedEquity,
               gain: h.gain !== undefined ? parseFloat(h.gain) : undefined,
               loss: h.loss !== undefined ? parseFloat(h.loss) : undefined,
             },
             create: {
               account: String(account),
               date: hDate,
-              profit: parseFloat(h.profit),
-              balance: parseFloat(h.balance),
-              equity: parseFloat(equity),
+              profit: parseFloat(h.profit) || 0,
+              balance: parseFloat(h.balance) || 0,
+              equity: parsedEquity,
               gain: h.gain !== undefined ? parseFloat(h.gain) : 0.0,
               loss: h.loss !== undefined ? parseFloat(h.loss) : 0.0,
             },
           });
         } else {
-          // For past days, we update/upsert to ensure the database stays in sync with MT5 ground truth
+          // For past days, we update/upsert using h.equity or h.balance to preserve historical accuracy (BUG-D3)
           await prisma.performanceHistory.upsert({
             where: {
               account_date: {
@@ -207,17 +208,18 @@ export async function POST(request: Request) {
               },
             },
             update: {
-              profit: parseFloat(h.profit),
-              balance: parseFloat(h.balance),
+              profit: parseFloat(h.profit) || 0,
+              balance: parseFloat(h.balance) || 0,
+              equity: h.equity !== undefined ? parseFloat(h.equity) : parseFloat(h.balance),
               gain: h.gain !== undefined ? parseFloat(h.gain) : undefined,
               loss: h.loss !== undefined ? parseFloat(h.loss) : undefined,
             },
             create: {
               account: String(account),
               date: hDate,
-              profit: parseFloat(h.profit),
-              balance: parseFloat(h.balance),
-              equity: h.equity !== undefined ? parseFloat(h.equity) : null,
+              profit: parseFloat(h.profit) || 0,
+              balance: parseFloat(h.balance) || 0,
+              equity: h.equity !== undefined ? parseFloat(h.equity) : parseFloat(h.balance),
               gain: h.gain !== undefined ? parseFloat(h.gain) : 0.0,
               loss: h.loss !== undefined ? parseFloat(h.loss) : 0.0,
             },

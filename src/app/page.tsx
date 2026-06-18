@@ -11,30 +11,51 @@ import TradesTable from "@/components/TradesTable";
 import Controls from "@/components/Controls";
 import styles from "@/components/components.module.css";
 
-// Dynamic SoftStop limit calculation matching MT5 robot formula
-const calculateSoftStopLimit = (bal: number) => {
+// ═══════════════════════════════════════════════════════════════════════════
+// REGRA DE CONVERSÃO USC ↔ BRL — ÚNICA FONTE DE VERDADE DO FRONTEND
+//
+// Conta cent (USC): 1 USC = 0.01 USD
+// Conversão: BRL = (USC / 100) * brlRate
+//
+// Exemplo prático:
+//   Saldo: 93.934,23 USC
+//   brlRate: 5.88
+//   Em USD: 93.934,23 / 100 = 939,34 USD
+//   Em BRL: 939,34 * 5,88 = R$ 5.523,27
+//
+// Todos os valores do banco chegam em USC.
+// Nenhum componente deve dividir por 100 internamente — isso é feito
+// apenas na função de formatação, garantindo que USC e BRL mostrem
+// exatamente o mesmo valor relativo.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Replica a fórmula exata do EA para o SoftStop dinâmico
+// Deve ser mantida sincronizada com AtualizarLoteBase() no MQL5
+const calculateSoftStopLimit = (bal: number): number => {
   const InpLotInitial = 0.015;
   const InpSoftStopEquity = 400.0;
   const InpBancaRef = 1000.0;
   const InpLotDeceleration = 0.90;
+  const step = 0.01;
+  const minV = 0.01;
+  const maxV = 500.0;
 
   let ratio = bal / InpBancaRef;
   if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
     ratio = Math.pow(ratio, InpLotDeceleration);
   }
   const raw = InpLotInitial * ratio;
-  const step = 0.01;
-  const minV = 0.01;
-  const maxV = 500.0;
-  
   let loteBase = Math.max(minV, Math.floor(raw / step) * step);
-  if (loteBase > maxV) {
-    loteBase = maxV;
-  }
-  
+  if (loteBase > maxV) loteBase = maxV;
+
   const fat = loteBase / 0.01;
   return InpSoftStopEquity * fat;
 };
+
+// Token de segurança para envio de comandos ao robô.
+// Em produção, mover para variável de ambiente NEXT_PUBLIC_API_TOKEN.
+const API_TOKEN =
+  process.env.NEXT_PUBLIC_API_TOKEN || "aura_secret_token_123456";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -43,19 +64,16 @@ export default function DashboardPage() {
   const [brlRate, setBrlRate] = useState(5.45);
   const [currencyMode, setCurrencyMode] = useState<"CENT" | "BRL">("BRL");
 
-  // Visual polling timer state
   const [syncProgress, setSyncProgress] = useState(0);
   const [isFlashActive, setIsFlashActive] = useState(false);
   const [loadingAttempts, setLoadingAttempts] = useState(1);
   const [loadingPhase, setLoadingPhase] = useState("Conectando ao servidor...");
   const [hasFetchedFallback, setHasFetchedFallback] = useState(false);
 
-  // Load currency mode preference from localStorage
+  // Restaura preferência de moeda do usuário
   useEffect(() => {
     const saved = localStorage.getItem("orion_currency_mode");
-    if (saved === "CENT" || saved === "BRL") {
-      setCurrencyMode(saved);
-    }
+    if (saved === "CENT" || saved === "BRL") setCurrencyMode(saved);
   }, []);
 
   const handleCurrencyModeChange = (mode: "CENT" | "BRL") => {
@@ -63,15 +81,15 @@ export default function DashboardPage() {
     localStorage.setItem("orion_currency_mode", mode);
   };
 
-  // Sync BRL rate from robot, fallback to internet APIs if not available
+  // Taxa BRL: vem do robô (já calcula a taxa real via AwesomeAPI ou USDBRL do broker).
+  // Fallback para APIs públicas apenas se o robô não enviou nada ainda.
   useEffect(() => {
     const activeAcc = data?.accounts?.[0];
-    if (activeAcc && activeAcc.brlRate && activeAcc.brlRate > 0) {
+    if (activeAcc?.brlRate && activeAcc.brlRate > 0) {
       setBrlRate(activeAcc.brlRate);
       return;
     }
 
-    // Fallback: fetch from public APIs if no rate is sent by the robot yet
     if (data && !hasFetchedFallback) {
       setHasFetchedFallback(true);
       const fetchBrlRate = async () => {
@@ -79,78 +97,63 @@ export default function DashboardPage() {
           const res = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
           if (res.ok) {
             const json = await res.json();
-            if (json && json.USDBRL && json.USDBRL.bid) {
-              const val = parseFloat(json.USDBRL.bid);
-              if (!isNaN(val) && val > 0) {
-                setBrlRate(val);
-                return;
-              }
-            }
+            const val = parseFloat(json?.USDBRL?.bid);
+            if (!isNaN(val) && val > 0) { setBrlRate(val); return; }
           }
-        } catch (e) {
-          console.warn("Falha ao buscar taxa no AwesomeAPI, tentando fallback...", e);
-        }
-
+        } catch {}
         try {
           const res = await fetch("https://open.er-api.com/v6/latest/USD");
           if (res.ok) {
             const json = await res.json();
-            if (json && json.rates && json.rates.BRL) {
-              const val = parseFloat(json.rates.BRL);
-              if (!isNaN(val) && val > 0) {
-                setBrlRate(val);
-              }
-            }
+            const val = parseFloat(json?.rates?.BRL);
+            if (!isNaN(val) && val > 0) setBrlRate(val);
           }
         } catch (e) {
-          console.error("Falha ao buscar taxa em todos os serviços", e);
+          console.error("Falha ao buscar taxa BRL:", e);
         }
       };
       fetchBrlRate();
     }
   }, [data, hasFetchedFallback]);
 
-  // Poll database every 5 seconds for real-time update feel with smooth progress tracking
+  // Polling a cada 5 segundos
   useEffect(() => {
     let active = true;
     let elapsed = 0;
-    const totalTime = 5000; // 5 seconds
-    const step = 100; // Update progress bar every 100ms
+    const totalTime = 5000;
+    const step = 100;
 
     async function fetchData() {
       try {
         if (!data) {
-          if (loadingAttempts === 1) setLoadingPhase("Conectando ao servidor...");
-          else if (loadingAttempts === 2) setLoadingPhase("Autenticando sessão...");
-          else if (loadingAttempts === 3) setLoadingPhase("Carregando base de dados...");
-          else if (loadingAttempts === 4) setLoadingPhase("Verificando conexão com MT5...");
-          else setLoadingPhase("Sincronizando estatísticas...");
+          const phases = [
+            "Conectando ao servidor...",
+            "Autenticando sessão...",
+            "Carregando base de dados...",
+            "Verificando conexão com MT5...",
+            "Sincronizando estatísticas...",
+          ];
+          setLoadingPhase(phases[Math.min(loadingAttempts - 1, phases.length - 1)]);
         }
 
         const response = await fetch("/api/dashboard/data", { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Falha ao carregar dados do servidor.");
-        }
+        if (!response.ok) throw new Error("Falha ao carregar dados do servidor.");
+
         const json = await response.json();
         if (active) {
           setData(json);
           setError(null);
-          setLoadingAttempts(1); // reset attempts on success
-          // Trigger sync flash effect
+          setLoadingAttempts(1);
           setIsFlashActive(true);
-          setTimeout(() => {
-            if (active) setIsFlashActive(false);
-          }, 600);
+          setTimeout(() => { if (active) setIsFlashActive(false); }, 600);
         }
       } catch (err: any) {
         if (active) {
           if (!data && loadingAttempts < 5) {
             setLoadingAttempts((prev) => prev + 1);
-            setTimeout(() => {
-              if (active) setRefreshTrigger((prev) => prev + 1);
-            }, 1500);
+            setTimeout(() => { if (active) setRefreshTrigger((p) => p + 1); }, 1500);
           } else {
-            setError(err.message || "Sem sinal do servidor após 5 tentativas de conexão. Verifique se o banco de dados está online.");
+            setError(err.message || "Sem sinal do servidor após 5 tentativas.");
           }
         }
       }
@@ -164,19 +167,15 @@ export default function DashboardPage() {
         elapsed = 0;
         fetchData();
       }
-      if (active) {
-        setSyncProgress((elapsed / totalTime) * 100);
-      }
+      if (active) setSyncProgress((elapsed / totalTime) * 100);
     }, step);
 
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
+    return () => { active = false; clearInterval(interval); };
   }, [refreshTrigger]);
 
+  // Envia comando ao robô com autenticação
   const handleSendCommand = async (command: string, symbol: string = "") => {
-    if (!data || !data.accounts || data.accounts.length === 0) return;
+    if (!data?.accounts?.length) return;
     const activeAccount = data.accounts[0].account;
 
     try {
@@ -187,14 +186,11 @@ export default function DashboardPage() {
           account: activeAccount,
           command,
           symbol,
+          token: API_TOKEN,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Erro ao enviar comando.");
-      }
-
-      // Trigger immediate refresh
+      if (!response.ok) throw new Error("Erro ao enviar comando.");
       setRefreshTrigger((prev) => prev + 1);
     } catch (err: any) {
       alert(`Erro: ${err.message}`);
@@ -215,7 +211,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Premium loading screen when data is not yet loaded
   if (!data && !error) {
     return (
       <div className={styles.loadingScreen}>
@@ -239,48 +234,28 @@ export default function DashboardPage() {
     );
   }
 
-  // Set default initial state values
   const accounts = data?.accounts || [];
   const activeAccount = accounts[0] || {
     account: "Carregando...",
-    balance: 0,
-    equity: 0,
-    dailyProfit: 0,
-    floatingPl: 0,
-    totalProfit: 0,
-    maxDrawdown: 0,
-    status: "RUNNING",
-    lastUpdated: "",
+    balance: 0, equity: 0, dailyProfit: 0, floatingPl: 0,
+    totalProfit: 0, maxDrawdown: 0, status: "RUNNING", lastUpdated: "",
   };
-
-  const mockReason = data?.mockReason || null;
-  const dbError = data?.dbError || null;
-
-
 
   const trades = data?.trades || [];
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
-
-  // Extract unique active symbols from trades to allow targeted local panic triggers
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
-
-
-
   const dynamicSoftStopLimit = calculateSoftStopLimit(activeAccount.balance);
 
   return (
     <div className={isFlashActive ? styles.syncFlash : ""}>
-      {/* Sleek Polling Sync Progress Line */}
+      {/* Barra de progresso de sincronização */}
       <div className={styles.syncProgressBarOuter}>
-        <div
-          className={styles.syncProgressBarInner}
-          style={{ width: `${syncProgress}%` }}
-        />
+        <div className={styles.syncProgressBarInner} style={{ width: `${syncProgress}%` }} />
       </div>
 
       <div className="dashboard-container">
-        {/* Contextual Alert Banners */}
+        {/* Banners de alerta contextuais */}
         <div className={styles.alertBannersContainer}>
           {activeAccount.newsActive && (
             <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
@@ -289,25 +264,14 @@ export default function DashboardPage() {
                   <span className={styles.newsAlertIcon}>⚠️</span>
                   <span className={styles.newsAlertText}>
                     <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
-                    {activeAccount.newsFrozen ? " (Novas recompras bloqueadas e grade congelada)" : " (Novas entradas bloqueadas)"}
+                    {activeAccount.newsFrozen ? " (Novas recompras bloqueadas)" : " (Novas entradas bloqueadas)"}
                   </span>
                 </div>
                 <a
                   href="https://www.forexfactory.com/calendar"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    marginLeft: "1rem",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    color: "var(--neon-gold)",
-                    textDecoration: "underline",
-                    fontSize: "0.7rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap"
-                  }}
+                  style={{ marginLeft: "1rem", color: "var(--neon-gold)", textDecoration: "underline", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" }}
                 >
                   Ver no Forex Factory ↗
                 </a>
@@ -320,7 +284,7 @@ export default function DashboardPage() {
               <div className={styles.newsAlertContent}>
                 <span className={styles.newsAlertIcon}>🔴</span>
                 <span className={styles.newsAlertText}>
-                  <strong>DD VERMELHO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento crítico de 20% alcançado no ciclo de equity.
+                  <strong>DD VERMELHO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento crítico de 20% alcançado.
                 </span>
               </div>
             </div>
@@ -331,25 +295,27 @@ export default function DashboardPage() {
               <div className={styles.newsAlertContent}>
                 <span className={styles.newsAlertIcon}>🟡</span>
                 <span className={styles.newsAlertText}>
-                  <strong>DD AMARELO ATIVO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário de 10% alcançado no ciclo de equity.
+                  <strong>DD AMARELO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário de 10% alcançado.
                 </span>
               </div>
             </div>
           )}
 
-          {activeAccount.floatingPl < 0 && Math.abs(activeAccount.floatingPl) >= dynamicSoftStopLimit && (
+          {activeAccount.floatingPl < 0 &&
+            Math.abs(activeAccount.floatingPl) >= dynamicSoftStopLimit && (
             <div className={`${styles.newsAlertBanner} ${styles.alertBannerCritical}`}>
               <div className={styles.newsAlertContent}>
                 <span className={styles.newsAlertIcon}>🔴</span>
                 <span className={styles.newsAlertText}>
-                  <strong>SOFTSTOP ATIVADO:</strong> Perda flutuante ({Math.abs(activeAccount.floatingPl).toFixed(2)} USC) atingiu ou superou o limite SoftStop de {dynamicSoftStopLimit.toFixed(2)} USC. Abertura de novos cestos bloqueada!
+                  <strong>SOFTSTOP ATIVADO:</strong> Perda flutuante (
+                  {Math.abs(activeAccount.floatingPl).toFixed(2)} USC) atingiu o limite de{" "}
+                  {dynamicSoftStopLimit.toFixed(2)} USC. Novos cestos bloqueados!
                 </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* 1. Header component */}
         <Header
           accountNumber={activeAccount.account}
           status={activeAccount.status}
@@ -368,7 +334,6 @@ export default function DashboardPage() {
           trailingPeak={activeAccount.trailingPeak}
         />
 
-        {/* 2. Row of 6 KPI Cards */}
         <KpiCards
           balance={activeAccount.balance}
           equity={activeAccount.equity}
@@ -387,7 +352,6 @@ export default function DashboardPage() {
           equityCycleTargetPct={activeAccount.equityCycleTargetPct}
         />
 
-        {/* 3. Chart & Risk Management */}
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
           <Charts history={history} currencyMode={currencyMode} brlRate={brlRate} />
           <RiskManagement
@@ -400,14 +364,15 @@ export default function DashboardPage() {
             brlRate={brlRate}
             history={history}
           />
-
-
         </div>
 
-        {/* 4. Active Baskets (por moeda) */}
-        <ActiveBaskets trades={trades} brlRate={brlRate} currencyMode={currencyMode} balance={activeAccount.balance} />
+        <ActiveBaskets
+          trades={trades}
+          brlRate={brlRate}
+          currencyMode={currencyMode}
+          balance={activeAccount.balance}
+        />
 
-        {/* 5. Trades Table & Controls */}
         <div className={styles.mainGrid}>
           <TradesTable trades={trades} currencyMode={currencyMode} brlRate={brlRate} />
           <Controls
@@ -418,9 +383,8 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* 6. Rodapé */}
         <footer className={styles.footerSection} style={{ marginTop: "1.5rem" }}>
-          <span>Orion Hedge Sistema Web v1.0.0</span>
+          <span>Orion Hedge Sistema Web v1.1.0</span>
           <span>Sincronização Ativa • MetaTrader 5</span>
         </footer>
       </div>
