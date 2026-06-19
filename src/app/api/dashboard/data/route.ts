@@ -134,8 +134,10 @@ export async function GET() {
       where: { status: "PENDING", account: String(primaryAccount.account) },
     });
 
-    // Filtro de data: ignorar histórico anterior a 16/06/2026 (fechamento forçado, não voluntário)
-    const histCutoff = new Date(Date.UTC(2026, 5, 16, 0, 0, 0, 0));
+    // Filtro de data: ignorar histórico anterior a data configurada por env ou 16/06/2026
+    const envCutoff = process.env.HISTORY_CUTOFF_DATE || "2026-06-16";
+    const [cyr, cmo, cdy] = envCutoff.split("-").map(Number);
+    const histCutoff = new Date(Date.UTC(cyr, cmo - 1, cdy, 0, 0, 0, 0));
     const cleanHistory = history
       .filter((h) => new Date(h.date).getTime() >= histCutoff.getTime())
       .map((h) => ({

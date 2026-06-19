@@ -171,8 +171,10 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Cutoff: ignorar dados anteriores a 16/06/2026 — fechamento forçado (não voluntário) antes dessa data
-        const cutoffDate = new Date(Date.UTC(2026, 5, 16, 12, 0, 0, 0));
+        // Cutoff: ignorar dados anteriores a 16/06/2026 — ou data customizada via env (ex: "2026-06-16")
+        const envCutoff = process.env.HISTORY_CUTOFF_DATE || "2026-06-16";
+        const [cyr, cmo, cdy] = envCutoff.split("-").map(Number);
+        const cutoffDate = new Date(Date.UTC(cyr, cmo - 1, cdy, 12, 0, 0, 0));
         if (hDate.getTime() < cutoffDate.getTime()) {
           continue;
         }
@@ -238,10 +240,25 @@ export async function POST(request: Request) {
     }
 
     // 6. Fetch pending commands (both PENDING and SENT, to retry if not confirmed yet)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    // Auto-expire commands older than 5 minutes to prevent them from executing upon reconnection/restart
+    await prisma.commandQueue.updateMany({
+      where: {
+        account: String(account),
+        status: { in: ["PENDING", "SENT"] },
+        createdAt: { lt: fiveMinutesAgo },
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
     const pendingCommands = await prisma.commandQueue.findMany({
       where: {
         account: String(account),
         status: { in: ["PENDING", "SENT"] },
+        createdAt: { gte: fiveMinutesAgo },
       },
       orderBy: {
         createdAt: "asc",
