@@ -37,6 +37,8 @@ export async function POST(request: Request) {
       softStopLimit = 400.0,
       loteBase = 0.012,
       takeProfitLimit = 1.50,
+      buySosScheduled = false,
+      sellSosScheduled = false,
     } = payload;
 
     // 1. Verify token
@@ -130,6 +132,8 @@ export async function POST(request: Request) {
           softStopLimit: parseFloat(softStopLimit) || 400.0,
           loteBase: parseFloat(loteBase) || 0.012,
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
+          buySosScheduled: Boolean(buySosScheduled),
+          sellSosScheduled: Boolean(sellSosScheduled),
         },
         create: {
           account: String(account),
@@ -153,6 +157,8 @@ export async function POST(request: Request) {
           softStopLimit: parseFloat(softStopLimit) || 400.0,
           loteBase: parseFloat(loteBase) || 0.012,
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
+          buySosScheduled: Boolean(buySosScheduled),
+          sellSosScheduled: Boolean(sellSosScheduled),
         },
       });
     });

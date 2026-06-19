@@ -363,6 +363,8 @@ export default function DashboardPage() {
           balance={activeAccount.balance}
           loteBase={activeAccount.loteBase}
           takeProfitLimit={activeAccount.takeProfitLimit}
+          buySosScheduled={activeAccount.buySosScheduled}
+          sellSosScheduled={activeAccount.sellSosScheduled}
         />
 
         <div className={styles.mainGrid}>

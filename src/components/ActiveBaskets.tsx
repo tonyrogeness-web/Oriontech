@@ -300,9 +300,10 @@ interface BasketCardProps {
   balance: number;
   loteBase?: number;
   takeProfitLimit?: number;
+  isScheduled?: boolean;
 }
 
-function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLimit }: BasketCardProps) {
+function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLimit, isScheduled = false }: BasketCardProps) {
   const isBuy    = b.direction === "COMPRA";
   const isProfit = b.totalProfit >= 0;
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
@@ -370,6 +371,15 @@ function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLim
           {isAlert && (
             <span className={styles.riskBadge}>
               <AlertTriangle size={9} /> NÍVEL {level}
+            </span>
+          )}
+          {isScheduled && (
+            <span className={styles.riskBadge} style={{ 
+              backgroundColor: "rgba(255, 193, 7, 0.15)", 
+              color: "var(--neon-gold)", 
+              borderColor: "rgba(255, 193, 7, 0.3)" 
+            }}>
+              <AlertTriangle size={9} /> S.O.S AGENDADO
             </span>
           )}
         </div>
@@ -580,6 +590,8 @@ interface ActiveBasketsProps {
   balance?: number;
   loteBase?: number;
   takeProfitLimit?: number;
+  buySosScheduled?: boolean;
+  sellSosScheduled?: boolean;
 }
 
 export default function ActiveBaskets({
@@ -589,6 +601,8 @@ export default function ActiveBaskets({
   balance = 0,
   loteBase,
   takeProfitLimit,
+  buySosScheduled = false,
+  sellSosScheduled = false,
 }: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
@@ -701,14 +715,14 @@ export default function ActiveBaskets({
               <div className={styles.symbolBaskets}>
                 {/* 1. COMPRA (topo) */}
                 {buyBasket ? (
-                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} />
+                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={buySosScheduled} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="COMPRA" />
                 )}
 
                 {/* 2. VENDA (base) */}
                 {sellBasket ? (
-                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} />
+                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={sellSosScheduled} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="VENDA" />
                 )}

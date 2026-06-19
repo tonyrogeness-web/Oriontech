@@ -31,6 +31,8 @@ model AccountState {
   softStopLimit        Float    @default(400.0)
   loteBase             Float    @default(0.012)
   takeProfitLimit      Float    @default(1.50)
+  buySosScheduled      Boolean  @default(false)
+  sellSosScheduled     Boolean  @default(false)
 }
 
 model ActiveTrade {
