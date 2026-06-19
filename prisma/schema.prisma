@@ -48,6 +48,7 @@ model ActiveTrade {
   magicNumber   Int
   tp            Float?
   sl            Float?
+  sosScheduled  Boolean  @default(false)
   createdAt     DateTime @default(now())
 }
 

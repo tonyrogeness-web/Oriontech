@@ -97,6 +97,7 @@ export async function POST(request: Request) {
             magicNumber: parseInt(t.magicNumber || "0"),
             tp: t.tp !== undefined && t.tp !== null ? parseFloat(t.tp) : null,
             sl: t.sl !== undefined && t.sl !== null ? parseFloat(t.sl) : null,
+            sosScheduled: Boolean(t.sosScheduled),
           })),
         });
       }

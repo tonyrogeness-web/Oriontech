@@ -17,6 +17,7 @@ interface Trade {
   magicNumber: number;
   tp?: number;   // opcional: preço TP real da posição (enviado pelo robô v3.39+)
   sl?: number;   // opcional: SL real
+  sosScheduled?: boolean;
 }
 
 // ActiveBasketsProps is defined below in the primary component section
@@ -35,6 +36,7 @@ interface Basket {
   digits: number;
   pipValue: number;     // valor de 1 pip
   distPips: number;     // distância do PM ao preço atual em pips (+ = favor, - = contra)
+  isScheduled: boolean;
 }
 
 function buildBaskets(trades: Trade[]): Basket[] {
@@ -75,6 +77,8 @@ function buildBaskets(trades: Trade[]): Basket[] {
     const rawDist = isBuy ? (currentPrice - pm) : (pm - currentPrice);
     const distPips = Math.round(rawDist / pipValue);
 
+    const isScheduled = b.trades.some((t) => t.sosScheduled);
+
     return {
       symbol: b.symbol,
       direction: b.direction,
@@ -87,6 +91,7 @@ function buildBaskets(trades: Trade[]): Basket[] {
       digits,
       pipValue,
       distPips,
+      isScheduled,
     };
   });
 }
@@ -715,14 +720,14 @@ export default function ActiveBaskets({
               <div className={styles.symbolBaskets}>
                 {/* 1. COMPRA (topo) */}
                 {buyBasket ? (
-                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={buySosScheduled} />
+                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={buyBasket.isScheduled} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="COMPRA" />
                 )}
 
                 {/* 2. VENDA (base) */}
                 {sellBasket ? (
-                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={sellSosScheduled} />
+                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} isScheduled={sellBasket.isScheduled} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="VENDA" />
                 )}
