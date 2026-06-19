@@ -683,7 +683,7 @@ export default function Header({
           </span>
           {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
         </div>
-        <span className={styles.logoSubtitle}>v3.39 · PRO HEDGE</span>
+        <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
       </div>
 
       {/* Middle live sync display */}

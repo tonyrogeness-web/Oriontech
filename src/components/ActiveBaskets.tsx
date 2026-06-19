@@ -131,31 +131,15 @@ function GradeBlocks({ level, max = 6, isBuy }: { level: number; max?: number; i
 }
 
 /* ── Cálculo do TP Virtual estimado ───────────────────────────────── */
-function getVirtualTp(b: Basket, balance: number): number {
+function getVirtualTp(b: Basket, balance: number, loteBaseProp?: number, takeProfitLimitProp?: number): number {
   const isBuy = b.direction === "COMPRA";
   if (b.totalVolume <= 0 || b.pm <= 0) return 0;
 
-  const InpLotInitial = 0.015;
-  const InpTakeProfitDinheiro = 1.50;
-  const InpBancaRef = 1000.0;
-  const InpLotDeceleration = 0.90;
-
-  let ratio = balance / InpBancaRef;
-  if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
-    ratio = Math.pow(ratio, InpLotDeceleration);
-  }
-  const raw = InpLotInitial * ratio;
-  const step = 0.01;
-  const minV = 0.01;
-  const maxV = 500.0;
-  
-  let loteBase = Math.max(minV, Math.floor(raw / step) * step);
-  if (loteBase > maxV) {
-    loteBase = maxV;
-  }
+  const loteBase = loteBaseProp || 0.015;
+  const takeProfitLimit = takeProfitLimitProp || 1.50;
   
   const fat = loteBase / 0.01;
-  const tpLimit = InpTakeProfitDinheiro * fat; // Alvo em USC
+  const tpLimit = takeProfitLimit * fat; // Alvo em USC
 
   // Estimar valor de 1 ponto em USC por lote
   const isJpy = b.symbol.toUpperCase().includes("JPY");
@@ -314,9 +298,11 @@ interface BasketCardProps {
   currencyMode: "CENT" | "BRL";
   brlRate: number;
   balance: number;
+  loteBase?: number;
+  takeProfitLimit?: number;
 }
 
-function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
+function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLimit }: BasketCardProps) {
   const isBuy    = b.direction === "COMPRA";
   const isProfit = b.totalProfit >= 0;
   const profitColor = isProfit ? "var(--neon-green)" : "var(--neon-red)";
@@ -325,7 +311,7 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
   const sortedTrades = [...b.trades].sort((x, y) => parseFloat(x.ticket) - parseFloat(y.ticket));
 
   // Preço Alvo (TP) Virtual ou real
-  const virtualTp = b.tpPrice && b.tpPrice > 0 ? b.tpPrice : getVirtualTp(b, balance);
+  const virtualTp = b.tpPrice && b.tpPrice > 0 ? b.tpPrice : getVirtualTp(b, balance, loteBase, takeProfitLimit);
 
   const formatBasketProfit = (val: number) => {
     const absVal = Math.abs(val);
@@ -475,18 +461,6 @@ function BasketCard({ b, currencyMode, brlRate, balance }: BasketCardProps) {
 
         {/* Alvo do Cesto (igual ao painel do MT5) */}
         {virtualTp && virtualTp > 0 ? (() => {
-          const calculateTakeProfitLimit = (bal: number) => {
-            const InpLotInitial = 0.015;
-            const InpTakeProfitDinheiro = 1.50;
-            const InpBancaRef = 1000.0;
-            const InpLotDeceleration = 0.90;
-
-            let ratio = bal / InpBancaRef;
-            if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
-              ratio = Math.pow(ratio, InpLotDeceleration);
-            }
-            const raw = InpLotInitial * ratio;
-            const step = 0.01;
             const minV = 0.01;
             const maxV = 500.0;
             
@@ -612,6 +586,8 @@ interface ActiveBasketsProps {
   brlRate?: number;
   currencyMode?: "CENT" | "BRL";
   balance?: number;
+  loteBase?: number;
+  takeProfitLimit?: number;
 }
 
 export default function ActiveBaskets({
@@ -619,6 +595,8 @@ export default function ActiveBaskets({
   brlRate = 5.45,
   currencyMode = "CENT",
   balance = 0,
+  loteBase,
+  takeProfitLimit,
 }: ActiveBasketsProps) {
   const baskets = buildBaskets(trades);
   const grouped = groupBySymbol(baskets);
@@ -731,14 +709,14 @@ export default function ActiveBaskets({
               <div className={styles.symbolBaskets}>
                 {/* 1. COMPRA (topo) */}
                 {buyBasket ? (
-                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} />
+                  <BasketCard b={buyBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="COMPRA" />
                 )}
 
                 {/* 2. VENDA (base) */}
                 {sellBasket ? (
-                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} />
+                  <BasketCard b={sellBasket} currencyMode={currencyMode} brlRate={brlRate} balance={balance} loteBase={loteBase} takeProfitLimit={takeProfitLimit} />
                 ) : (
                   <InactiveBasketCard symbol={sym} direction="VENDA" />
                 )}

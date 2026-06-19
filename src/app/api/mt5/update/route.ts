@@ -34,6 +34,9 @@ export async function POST(request: Request) {
       brlRate = 5.20,
       equityCycleBase = 0.0,
       equityCycleTargetPct = 5.0,
+      softStopLimit = 400.0,
+      loteBase = 0.015,
+      takeProfitLimit = 1.50,
     } = payload;
 
     // 1. Verify token
@@ -112,7 +115,7 @@ export async function POST(request: Request) {
           dailyProfit: parseFloat(dailyProfit) || 0,
           floatingPl: globalFloatingPl,
           totalProfit: parseFloat(totalProfit) || 0,
-          maxDrawdown: globalDrawdown,
+          maxDrawdown: parseFloat(maxDrawdown) !== undefined && maxDrawdown !== null ? parseFloat(maxDrawdown) : globalDrawdown,
           status: status || "RUNNING",
           newsActive: Boolean(newsActive),
           newsFrozen: Boolean(newsFrozen),
@@ -124,6 +127,9 @@ export async function POST(request: Request) {
           brlRate: parsedBrlRate,
           equityCycleBase: parseFloat(equityCycleBase) || 0.0,
           equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
+          softStopLimit: parseFloat(softStopLimit) || 400.0,
+          loteBase: parseFloat(loteBase) || 0.015,
+          takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
         },
         create: {
           account: String(account),
@@ -132,7 +138,7 @@ export async function POST(request: Request) {
           dailyProfit: parseFloat(dailyProfit) || 0,
           floatingPl: globalFloatingPl,
           totalProfit: parseFloat(totalProfit) || 0,
-          maxDrawdown: globalDrawdown,
+          maxDrawdown: parseFloat(maxDrawdown) !== undefined && maxDrawdown !== null ? parseFloat(maxDrawdown) : globalDrawdown,
           status: status || "RUNNING",
           newsActive: Boolean(newsActive),
           newsFrozen: Boolean(newsFrozen),
@@ -144,6 +150,9 @@ export async function POST(request: Request) {
           brlRate: parsedBrlRate,
           equityCycleBase: parseFloat(equityCycleBase) || 0.0,
           equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
+          softStopLimit: parseFloat(softStopLimit) || 400.0,
+          loteBase: parseFloat(loteBase) || 0.015,
+          takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
         },
       });
     });

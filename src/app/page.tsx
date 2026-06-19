@@ -29,33 +29,17 @@ import styles from "@/components/components.module.css";
 // exatamente o mesmo valor relativo.
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Replica a fórmula exata do EA para o SoftStop dinâmico
-// Deve ser mantida sincronizada com AtualizarLoteBase() no MQL5
-const calculateSoftStopLimit = (bal: number): number => {
-  const InpLotInitial = 0.015;
-  const InpSoftStopEquity = 400.0;
-  const InpBancaRef = 1000.0;
-  const InpLotDeceleration = 0.90;
-  const step = 0.01;
-  const minV = 0.01;
-  const maxV = 500.0;
-
-  let ratio = bal / InpBancaRef;
-  if (ratio > 1.0 && InpLotDeceleration > 0.0 && InpLotDeceleration < 1.0) {
-    ratio = Math.pow(ratio, InpLotDeceleration);
+// Token de segurança recuperado dinamicamente no lado do cliente (Bug #1)
+const getApiToken = (): string => {
+  if (typeof window === "undefined") return "";
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get("token");
+  if (tokenFromUrl) {
+    localStorage.setItem("orion_api_token", tokenFromUrl);
+    return tokenFromUrl;
   }
-  const raw = InpLotInitial * ratio;
-  let loteBase = Math.max(minV, Math.floor(raw / step) * step);
-  if (loteBase > maxV) loteBase = maxV;
-
-  const fat = loteBase / 0.01;
-  return InpSoftStopEquity * fat;
+  return localStorage.getItem("orion_api_token") || "";
 };
-
-// Token de segurança para envio de comandos ao robô.
-// Em produção, mover para variável de ambiente NEXT_PUBLIC_API_TOKEN.
-const API_TOKEN =
-  process.env.NEXT_PUBLIC_API_TOKEN || "aura_secret_token_123456";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -178,6 +162,12 @@ export default function DashboardPage() {
     if (!data?.accounts?.length) return;
     const activeAccount = data.accounts[0].account;
 
+    const token = getApiToken();
+    if (!token) {
+      alert("Erro: Token de segurança não configurado. Por favor, acesse o painel com o parâmetro ?token=seu_token na URL para se autenticar e poder enviar comandos.");
+      return;
+    }
+
     try {
       const response = await fetch("/api/dashboard/command", {
         method: "POST",
@@ -186,7 +176,7 @@ export default function DashboardPage() {
           account: activeAccount,
           command,
           symbol,
-          token: API_TOKEN,
+          token: token,
         }),
       });
 
@@ -245,7 +235,7 @@ export default function DashboardPage() {
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
-  const dynamicSoftStopLimit = calculateSoftStopLimit(activeAccount.balance);
+  const dynamicSoftStopLimit = activeAccount.softStopLimit || 400.0;
 
   return (
     <div className={isFlashActive ? styles.syncFlash : ""}>
@@ -371,6 +361,8 @@ export default function DashboardPage() {
           brlRate={brlRate}
           currencyMode={currencyMode}
           balance={activeAccount.balance}
+          loteBase={activeAccount.loteBase}
+          takeProfitLimit={activeAccount.takeProfitLimit}
         />
 
         <div className={styles.mainGrid}>
