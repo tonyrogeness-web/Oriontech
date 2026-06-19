@@ -101,7 +101,7 @@ function groupBySymbol(baskets: Basket[]) {
 }
 
 /* ── Grade de blocos ─────────────────────────────────────────────── */
-function GradeBlocks({ level, max = 6, isBuy }: { level: number; max?: number; isBuy: boolean }) {
+function GradeBlocks({ level, max = 5, isBuy }: { level: number; max?: number; isBuy: boolean }) {
   return (
     <div className={styles.gridBlocks}>
       {Array.from({ length: max }, (_, i) => (
@@ -135,7 +135,7 @@ function getVirtualTp(b: Basket, balance: number, loteBaseProp?: number, takePro
   const isBuy = b.direction === "COMPRA";
   if (b.totalVolume <= 0 || b.pm <= 0) return 0;
 
-  const loteBase = loteBaseProp || 0.015;
+  const loteBase = loteBaseProp || 0.012;
   const takeProfitLimit = takeProfitLimitProp || 1.50;
   
   const fat = loteBase / 0.01;
@@ -461,7 +461,7 @@ function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLim
 
         {/* Alvo do Cesto (igual ao painel do MT5) */}
         {virtualTp && virtualTp > 0 ? (() => {
-          const cardLoteBase = loteBase || 0.015;
+          const cardLoteBase = loteBase || 0.012;
           const cardTakeProfitLimit = takeProfitLimit || 1.50;
           const fat = cardLoteBase / 0.01;
           const tpLimit = cardTakeProfitLimit * fat;
@@ -492,7 +492,7 @@ function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLim
         {/* Grade */}
         <div className={styles.basketRow}>
           <span className={styles.basketRowLabel}>Grade</span>
-          <GradeBlocks level={level} max={6} isBuy={isBuy} />
+          <GradeBlocks level={level} max={5} isBuy={isBuy} />
         </div>
 
         {/* Progresso ao TP (se TP real ou virtual disponível) */}

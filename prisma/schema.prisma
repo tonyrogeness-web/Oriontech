@@ -29,7 +29,7 @@ model AccountState {
   equityCycleBase      Float    @default(0.0)
   equityCycleTargetPct Float    @default(5.0)
   softStopLimit        Float    @default(400.0)
-  loteBase             Float    @default(0.015)
+  loteBase             Float    @default(0.012)
   takeProfitLimit      Float    @default(1.50)
 }
 

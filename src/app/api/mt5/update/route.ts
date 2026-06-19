@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       equityCycleBase = 0.0,
       equityCycleTargetPct = 5.0,
       softStopLimit = 400.0,
-      loteBase = 0.015,
+      loteBase = 0.012,
       takeProfitLimit = 1.50,
     } = payload;
 
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
           equityCycleBase: parseFloat(equityCycleBase) || 0.0,
           equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
           softStopLimit: parseFloat(softStopLimit) || 400.0,
-          loteBase: parseFloat(loteBase) || 0.015,
+          loteBase: parseFloat(loteBase) || 0.012,
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
         },
         create: {
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
           equityCycleBase: parseFloat(equityCycleBase) || 0.0,
           equityCycleTargetPct: parseFloat(equityCycleTargetPct) || 5.0,
           softStopLimit: parseFloat(softStopLimit) || 400.0,
-          loteBase: parseFloat(loteBase) || 0.015,
+          loteBase: parseFloat(loteBase) || 0.012,
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
         },
       });
