@@ -461,19 +461,11 @@ function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLim
 
         {/* Alvo do Cesto (igual ao painel do MT5) */}
         {virtualTp && virtualTp > 0 ? (() => {
-            const minV = 0.01;
-            const maxV = 500.0;
-            
-            let loteBase = Math.max(minV, Math.floor(raw / step) * step);
-            if (loteBase > maxV) {
-              loteBase = maxV;
-            }
-            
-            const fat = loteBase / 0.01;
-            return InpTakeProfitDinheiro * fat;
-          };
+          const cardLoteBase = loteBase || 0.015;
+          const cardTakeProfitLimit = takeProfitLimit || 1.50;
+          const fat = cardLoteBase / 0.01;
+          const tpLimit = cardTakeProfitLimit * fat;
 
-          const tpLimit = calculateTakeProfitLimit(balance);
           const remainingDist = isBuy ? (virtualTp - b.currentPrice) : (b.currentPrice - virtualTp);
           const remainingPts = Math.round(remainingDist / (b.digits <= 3 ? 0.001 : 0.00001));
           const remainingPtsStr = remainingPts <= 0 ? "PRONTO!" : `${isBuy ? "▲" : "▼"} ${remainingPts} pts`;
