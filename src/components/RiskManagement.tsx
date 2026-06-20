@@ -142,24 +142,26 @@ export default function RiskManagement({
   const plLoss       = Math.max(0, -floatingPl);
   // Floating loss percentage relative to total balance
   const plBalancePct = (floatingPl < 0 && balance > 0) ? clamp(plLoss, balance) : 0;
-  // Dynamic color for the floating loss bar based on the drawdown level (10% Amber, 20% Red)
-  const plBarColor   = plBalancePct >= 20 ? "var(--neon-red)" : plBalancePct >= 10 ? "var(--neon-gold)" : "var(--neon-green)";
+  // Dynamic color for the floating loss bar — mesmos limiares do Drawdown do painel MT5 (20%/40%, mesma metrica)
+  const plBarColor   = plBalancePct >= 40 ? "var(--neon-red)" : plBalancePct >= 20 ? "var(--neon-gold)" : "var(--neon-green)";
+  // Barra escalada com teto visual de 50%, igual a barra "Drawdown Local" do MT5
+  const plBarPct     = clamp(plBalancePct, 50);
 
   /* ═══════════════════════════════════════════════════════════════
      2. SOFT STOP — % do limite consumido
   ═══════════════════════════════════════════════════════════════ */
   const ssBarPct     = floatingPl < 0 ? clamp(plLoss, softStopLimit) : 0;
-  const ssColor      = ssBarPct >= 80 ? "var(--neon-red)" : ssBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
-  const ssStatus     = ssBarPct >= 80 ? "CRÍTICO" : ssBarPct >= 50 ? "ALERTA" : "SEGURO";
+  const ssColor      = ssBarPct >= 66 ? "var(--neon-red)" : ssBarPct >= 33 ? "var(--neon-gold)" : "var(--neon-green)";
+  const ssStatus     = ssBarPct >= 66 ? "CRÍTICO" : ssBarPct >= 33 ? "ALERTA" : "SEGURO";
   const ssHeadroom   = Math.max(0, softStopLimit - plLoss);
 
   /* ═══════════════════════════════════════════════════════════════
-     3. REBAIXAMENTO (DRAWDOWN)
+     3. REBAIXAMENTO (DRAWDOWN) — identico a barra "Drawdown Local" do painel MT5
   ═══════════════════════════════════════════════════════════════ */
-  const ddBarPct     = clamp(maxDrawdown, 40);
-  const ddColor      = maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-gold)" : "var(--neon-green)";
-  const ddStatus     = maxDrawdown >= 20 ? "CRÍTICO" : maxDrawdown >= 10 ? "ALERTA" : "SEGURO";
-  const ddHeadroom   = Math.max(0, 40 - maxDrawdown);
+  const ddBarPct     = clamp(maxDrawdown, 50);
+  const ddColor      = maxDrawdown >= 40 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)";
+  const ddStatus     = maxDrawdown >= 40 ? "CRÍTICO" : maxDrawdown >= 20 ? "ALERTA" : "SEGURO";
+  const ddHeadroom   = Math.max(0, 50 - maxDrawdown);
 
 
 
@@ -224,7 +226,7 @@ export default function RiskManagement({
 
           {/* Progress bar in relation to total balance */}
           <div style={{ margin: "0.45rem 0" }}>
-            <ZonedBar fillPct={plBalancePct} fillColor={plBarColor} zone1={10} zone2={20} />
+            <ZonedBar fillPct={plBarPct} fillColor={plBarColor} zone1={40} zone2={80} />
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
@@ -268,7 +270,7 @@ export default function RiskManagement({
           </div>
 
           {/* Zoned bar */}
-          <ZonedBar fillPct={ssBarPct} fillColor={ssColor} zone1={50} zone2={80} />
+          <ZonedBar fillPct={ssBarPct} fillColor={ssColor} zone1={33} zone2={66} />
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
@@ -305,12 +307,12 @@ export default function RiskManagement({
               {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>atual</span>
             </span>
             <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>40.00%</span>
+              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>50.00%</span>
             </span>
           </div>
 
           {/* Zoned bar */}
-          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={25} zone2={50} />
+          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={40} zone2={80} />
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>

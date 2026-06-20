@@ -245,67 +245,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="dashboard-container">
-        {/* Banners de alerta contextuais */}
-        <div className={styles.alertBannersContainer}>
-          {activeAccount.newsActive && (
-            <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
-              <div className={styles.newsAlertContent} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span className={styles.newsAlertIcon}>⚠️</span>
-                  <span className={styles.newsAlertText}>
-                    <strong>FILTRO DE NOTÍCIAS ATIVO:</strong> {activeAccount.newsName || "Proteção ativada."}
-                    {activeAccount.newsFrozen ? " (Novas recompras bloqueadas)" : " (Novas entradas bloqueadas)"}
-                  </span>
-                </div>
-                <a
-                  href="https://www.forexfactory.com/calendar"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ marginLeft: "1rem", color: "var(--neon-gold)", textDecoration: "underline", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" }}
-                >
-                  Ver no Forex Factory ↗
-                </a>
-              </div>
-            </div>
-          )}
-
-          {activeAccount.ddReached20 && (
-            <div className={`${styles.newsAlertBanner} ${styles.alertBannerCritical}`}>
-              <div className={styles.newsAlertContent}>
-                <span className={styles.newsAlertIcon}>🔴</span>
-                <span className={styles.newsAlertText}>
-                  <strong>DD VERMELHO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento crítico de 20% alcançado.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {!activeAccount.ddReached20 && activeAccount.ddReached10 && (
-            <div className={`${styles.newsAlertBanner} ${styles.alertBannerWarning}`}>
-              <div className={styles.newsAlertContent}>
-                <span className={styles.newsAlertIcon}>🟡</span>
-                <span className={styles.newsAlertText}>
-                  <strong>DD AMARELO ({activeAccount.maxDrawdown.toFixed(1)}%):</strong> Rebaixamento intermediário de 10% alcançado.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {activeAccount.floatingPl < 0 &&
-            Math.abs(activeAccount.floatingPl) >= dynamicSoftStopLimit && (
-            <div className={`${styles.newsAlertBanner} ${styles.alertBannerCritical}`}>
-              <div className={styles.newsAlertContent}>
-                <span className={styles.newsAlertIcon}>🔴</span>
-                <span className={styles.newsAlertText}>
-                  <strong>SOFTSTOP ATIVADO:</strong> Perda flutuante (
-                  {Math.abs(activeAccount.floatingPl).toFixed(2)} USC) atingiu o limite de{" "}
-                  {dynamicSoftStopLimit.toFixed(2)} USC. Novos cestos bloqueados!
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
         <Header
           accountNumber={activeAccount.account}
           status={activeAccount.status}
@@ -320,6 +259,7 @@ export default function DashboardPage() {
           softStopLimit={dynamicSoftStopLimit}
           newsActive={activeAccount.newsActive}
           newsName={activeAccount.newsName}
+          newsFrozen={activeAccount.newsFrozen}
           trailingActive={activeAccount.trailingActive}
           trailingPeak={activeAccount.trailingPeak}
         />

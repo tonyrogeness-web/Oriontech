@@ -28,6 +28,7 @@ interface HeaderProps {
   softStopLimit?: number;
   newsActive?: boolean;
   newsName?: string;
+  newsFrozen?: boolean;
   trailingActive?: boolean;
   trailingPeak?: number;
 }
@@ -46,6 +47,7 @@ export default function Header({
   softStopLimit = 400.0,
   newsActive = false,
   newsName = "",
+  newsFrozen = false,
   trailingActive = false,
   trailingPeak = 0,
 }: HeaderProps) {
@@ -196,43 +198,52 @@ export default function Header({
     }
   });
 
-  // B. Drawdown
-  if (maxDrawdown >= 20) {
+  // B. Drawdown — identico ao painel MT5 (verde <20%, amarelo 20-40%, vermelho >=40%)
+  if (maxDrawdown >= 40) {
     activeCriticals.push({
       id: "crit_dd_red",
       severity: "critical",
       title: `🔴 DD VERMELHO — ${worstSymbol}`,
-      desc: `Drawdown atingiu ${maxDrawdown.toFixed(2)}%`,
+      desc: `Drawdown atingiu ${maxDrawdown.toFixed(2)}% (zona final de risco, limite 50%)`,
       createdAt: 0,
       read: false,
     });
-  } else if (maxDrawdown >= 10) {
+  } else if (maxDrawdown >= 20) {
     activeCriticals.push({
       id: "crit_dd_yellow",
       severity: "warning",
       title: `🟡 DD AMARELO — ${worstSymbol}`,
-      desc: `Drawdown atingiu ${maxDrawdown.toFixed(2)}%`,
+      desc: `Drawdown atingiu ${maxDrawdown.toFixed(2)}% (limite 50%)`,
       createdAt: 0,
       read: false,
     });
   }
 
-  // C. SoftStop (reach 50% / 80%)
+  // C. SoftStop — identico ao painel MT5 (verde <33%, amarelo 33-66%, vermelho >=66%, 100% = bloqueado)
   if (floatingPl < 0 && softStopLimit > 0) {
     const absLoss = Math.abs(floatingPl);
     const reachPct = (absLoss / softStopLimit) * 100;
-    if (reachPct >= 80) {
+    if (reachPct >= 100) {
       activeCriticals.push({
-        id: "crit_softstop_80",
+        id: "crit_softstop_blocked",
+        severity: "critical",
+        title: `🔴 SOFTSTOP ATIVADO — BLOQUEADO`,
+        desc: `Perda flutuante (${formatValue(absLoss)}) atingiu o limite de ${formatValue(softStopLimit)}. Novos cestos bloqueados!`,
+        createdAt: 0,
+        read: false,
+      });
+    } else if (reachPct >= 66) {
+      activeCriticals.push({
+        id: "crit_softstop_66",
         severity: "critical",
         title: `🔴 SOFTSTOP CRÍTICO`,
         desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
-    } else if (reachPct >= 50) {
+    } else if (reachPct >= 33) {
       activeCriticals.push({
-        id: "crit_softstop_50",
+        id: "crit_softstop_33",
         severity: "warning",
         title: `🟡 SOFTSTOP ALERTA`,
         desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
@@ -240,6 +251,18 @@ export default function Header({
         read: false,
       });
     }
+  }
+
+  // D. Filtro de Notícias Ativo
+  if (newsActive) {
+    activeCriticals.push({
+      id: "crit_news_active",
+      severity: "warning",
+      title: `⚠️ FILTRO DE NOTÍCIAS ATIVO`,
+      desc: `${newsName || "Proteção ativada."} ${newsFrozen ? "(Novas recompras bloqueadas)" : "(Novas entradas bloqueadas)"}`,
+      createdAt: 0,
+      read: false,
+    });
   }
 
   // Assign timestamps and read status to activeCriticals
@@ -557,11 +580,11 @@ export default function Header({
       return;
     }
     const prev = prevDrawdownRef.current;
-    if (prev < 10 && maxDrawdown >= 10 && maxDrawdown < 20) {
+    if (prev < 20 && maxDrawdown >= 20 && maxDrawdown < 40) {
       addToast("🟡 Alerta de Drawdown", `Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Amarela)`, "warning");
-    } else if (prev < 20 && maxDrawdown >= 20) {
+    } else if (prev < 40 && maxDrawdown >= 40) {
       addToast("🔴 Drawdown Crítico", `Perigo: Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Vermelha)`, "error");
-    } else if (prev >= 10 && maxDrawdown < 10) {
+    } else if (prev >= 20 && maxDrawdown < 20) {
       addToast("🟢 Risco Normalizado", `Drawdown reduziu para ${maxDrawdown.toFixed(1)}% (Zona Verde)`, "success");
     }
     prevDrawdownRef.current = maxDrawdown;
@@ -583,9 +606,9 @@ export default function Header({
 
     const prev = prevSoftStopReachRef.current;
     if (floatingPl < 0) {
-      if (prev < 50 && reachPct >= 50 && reachPct < 80) {
+      if (prev < 33 && reachPct >= 33 && reachPct < 66) {
         addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
-      } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
+      } else if (prev < 66 && reachPct >= 66 && reachPct < 100) {
         addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
       } else if (prev < 100 && reachPct >= 100) {
         addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");
