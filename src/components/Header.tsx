@@ -741,30 +741,16 @@ export default function Header({
 
   return (
     <header className={styles.header}>
-      {/* Left logo & market status section */}
-      <div className={styles.logoAndMarketContainer}>
-        <div className={styles.brandContainer}>
-          <div className={styles.brand}>
-            <Activity size={24} className={styles.logoAccent} />
-            <span className={styles.logoText}>
-              ORION <span className={styles.desktopOnly}>HEDGE</span>
-            </span>
-            {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
-          </div>
-          <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
+      {/* Left logo section with brandContainer and logoSubtitle */}
+      <div className={styles.brandContainer}>
+        <div className={styles.brand}>
+          <Activity size={24} className={styles.logoAccent} />
+          <span className={styles.logoText}>
+            ORION <span className={styles.desktopOnly}>HEDGE</span>
+          </span>
+          {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
         </div>
-
-        <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
-          {market.isOpen ? (
-            <span className={styles.marketStatusOpen}>
-              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
-            </span>
-          ) : (
-            <span className={styles.marketStatusClosed}>
-              <span className={styles.statusBullet}>●</span> Mercado Fechado · {market.countdown}
-            </span>
-          )}
-        </div>
+        <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
       </div>
 
       {/* Middle live sync display */}
@@ -786,6 +772,19 @@ export default function Header({
 
       {/* Right side connection info */}
       <div className={styles.rightHeader}>
+        {/* Market Status Display in upper right */}
+        <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
+          {market.isOpen ? (
+            <span className={styles.marketStatusOpen}>
+              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
+            </span>
+          ) : (
+            <span className={styles.marketStatusClosed}>
+              <span className={styles.statusBullet}>●</span> Mercado Fechado · {market.countdown}
+            </span>
+          )}
+        </div>
+
         {/* Center-Right MT5 Account display */}
         <div className={`${styles.accountDisplay} ${styles.desktopOnly}`}>
           <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em" }}>CONTA MT5</span>
