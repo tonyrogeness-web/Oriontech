@@ -1079,22 +1079,24 @@ export default function Header({
             onClick={() => setShowNotifications(!showNotifications)}
             title="Alertas de Recompra e Risco"
           >
-            <Bell 
-              size={20} 
-              style={{ 
-                color: !isActive ? "#64748b" : showNotifications ? "var(--neon-gold)" : "var(--text-secondary)", 
-                transition: "color 0.2s" 
-              }} 
-            />
-            
-            {/* Badge render state */}
-            {!isActive ? (
-              <span className={styles.bellBadgeMuted} />
-            ) : unreadCriticalCount > 0 ? (
-              <span className={styles.bellBadgeRedPulse}>{unreadCriticalCount}</span>
-            ) : unreadRecentCount > 0 ? (
-              <span className={styles.bellBadge}>{unreadRecentCount}</span>
-            ) : null}
+            <div className={styles.bellIconWrapper}>
+              <Bell 
+                size={20} 
+                style={{ 
+                  color: !isActive ? "#64748b" : showNotifications ? "var(--neon-gold)" : "var(--text-secondary)", 
+                  transition: "color 0.2s" 
+                }} 
+              />
+              
+              {/* Badge render state */}
+              {!isActive ? (
+                <span className={styles.bellBadgeMuted} />
+              ) : unreadCriticalCount > 0 ? (
+                <span className={styles.bellBadgeRedPulse}>{unreadCriticalCount}</span>
+              ) : unreadRecentCount > 0 ? (
+                <span className={styles.bellBadge}>{unreadRecentCount}</span>
+              ) : null}
+            </div>
 
             {/* Dynamic notifications drop card */}
             {showNotifications && (

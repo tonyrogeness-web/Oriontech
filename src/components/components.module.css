@@ -36,6 +36,13 @@
   align-items: center;
 }
 
+.bellIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .statusContainer {
   display: flex;
   align-items: center;
