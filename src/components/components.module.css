@@ -2516,6 +2516,20 @@
   color: var(--neon-red);
 }
 
+.middleWidgetsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marketStatusOpen {
+  color: var(--neon-green);
+}
+
+.marketStatusClosed {
+  color: var(--neon-red);
+}
+
 .bulletPulse {
   animation: statusBlink 0.8s infinite alternate;
 }

@@ -695,6 +695,50 @@ export default function Header({
   const unreadCriticalCount = activeCriticals.filter((c) => !c.read).length;
   const unreadRecentCount = recentNotifications.filter((r) => !r.read).length;
 
+  // Calculate market status on each render
+  const getMarketStatus = () => {
+    const date = new Date();
+    const day = date.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const hour = date.getUTCHours();
+    const min = date.getUTCMinutes();
+    const sec = date.getUTCSeconds();
+
+    // Convert current time to seconds since Sunday 00:00 UTC
+    const currentWeekSeconds = day * 86400 + hour * 3600 + min * 60 + sec;
+
+    // Forex open session: Sunday 22:00 UTC to Friday 22:00 UTC
+    const openTimeSeconds = 22 * 3600; // Sunday 22:00
+    const closeTimeSeconds = 5 * 86400 + 22 * 3600; // Friday 22:00
+
+    let isOpen = false;
+    let secondsToTransition = 0;
+
+    if (currentWeekSeconds >= openTimeSeconds && currentWeekSeconds < closeTimeSeconds) {
+      isOpen = true;
+      secondsToTransition = closeTimeSeconds - currentWeekSeconds;
+    } else {
+      isOpen = false;
+      if (currentWeekSeconds < openTimeSeconds) {
+        secondsToTransition = openTimeSeconds - currentWeekSeconds;
+      } else {
+        const totalWeekSeconds = 7 * 86400;
+        secondsToTransition = (totalWeekSeconds - currentWeekSeconds) + openTimeSeconds;
+      }
+    }
+
+    const days = Math.floor(secondsToTransition / 86400);
+    const hours = Math.floor((secondsToTransition % 86400) / 3600);
+    const mins = Math.floor((secondsToTransition % 3600) / 60);
+
+    const countdown = isOpen
+      ? (days > 0 ? `Fecha em ${days}d ${hours}h` : hours > 0 ? `Fecha em ${hours}h ${mins}m` : `Fecha em ${mins}m`)
+      : (days > 0 ? `Abre ${days}d ${hours}h` : hours > 0 ? `Abre ${hours}h ${mins}m` : `Abre ${mins}m`);
+
+    return { isOpen, countdown };
+  };
+
+  const market = getMarketStatus();
+
   return (
     <header className={styles.header}>
       {/* Left logo section with new brandContainer and logoSubtitle */}
@@ -709,21 +753,35 @@ export default function Header({
         <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
       </div>
 
-      {/* Middle live sync display */}
-      <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} title="Sincronização com o MetaTrader 5">
-        {secondsAgo < 30 ? (
-          <span className={styles.syncStatusGreen}>
-            <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Conectado · Sync {secondsAgo}s atrás
-          </span>
-        ) : secondsAgo < 60 ? (
-          <span className={styles.syncStatusAmber}>
-            ⚠️ Lento · Último sync {secondsAgo}s atrás
-          </span>
-        ) : (
-          <span className={styles.syncStatusRed}>
-            ✕ Offline · Sem sinal {secondsAgo}s atrás
-          </span>
-        )}
+      {/* Middle live sync & market status display */}
+      <div className={`${styles.middleWidgetsContainer} ${styles.desktopOnly}`}>
+        <div className={styles.syncStatusBadgeContainer} title="Sincronização com o MetaTrader 5">
+          {secondsAgo < 30 ? (
+            <span className={styles.syncStatusGreen}>
+              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Conectado · Sync {secondsAgo}s atrás
+            </span>
+          ) : secondsAgo < 60 ? (
+            <span className={styles.syncStatusAmber}>
+              ⚠️ Lento · Último sync {secondsAgo}s atrás
+            </span>
+          ) : (
+            <span className={styles.syncStatusRed}>
+              ✕ Offline · Sem sinal {secondsAgo}s atrás
+            </span>
+          )}
+        </div>
+
+        <div className={styles.syncStatusBadgeContainer} title="Sessão do Mercado Forex (Horário UTC)">
+          {market.isOpen ? (
+            <span className={styles.marketStatusOpen}>
+              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
+            </span>
+          ) : (
+            <span className={styles.marketStatusClosed}>
+              <span className={styles.statusBullet}>●</span> Mercado Fechado · {market.countdown}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Right side connection info */}
