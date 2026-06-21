@@ -773,7 +773,7 @@ export default function Header({
       {/* Right side connection info */}
       <div className={styles.rightHeader}>
         {/* Market Status Display in upper right */}
-        <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
+        <div className={`${styles.syncStatusBadgeContainer} ${styles.headerMarketPill}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
           {market.isOpen ? (
             <span className={styles.marketStatusOpen}>
               <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
