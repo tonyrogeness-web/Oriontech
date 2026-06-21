@@ -741,37 +741,20 @@ export default function Header({
 
   return (
     <header className={styles.header}>
-      {/* Left logo section with new brandContainer and logoSubtitle */}
-      <div className={styles.brandContainer}>
-        <div className={styles.brand}>
-          <Activity size={24} className={styles.logoAccent} />
-          <span className={styles.logoText}>
-            ORION <span className={styles.desktopOnly}>HEDGE</span>
-          </span>
-          {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
-        </div>
-        <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
-      </div>
-
-      {/* Middle live sync & market status display */}
-      <div className={`${styles.middleWidgetsContainer} ${styles.desktopOnly}`}>
-        <div className={styles.syncStatusBadgeContainer} title="Sincronização com o MetaTrader 5">
-          {secondsAgo < 30 ? (
-            <span className={styles.syncStatusGreen}>
-              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Conectado · Sync {secondsAgo}s atrás
+      {/* Left logo & market status section */}
+      <div className={styles.logoAndMarketContainer}>
+        <div className={styles.brandContainer}>
+          <div className={styles.brand}>
+            <Activity size={24} className={styles.logoAccent} />
+            <span className={styles.logoText}>
+              ORION <span className={styles.desktopOnly}>HEDGE</span>
             </span>
-          ) : secondsAgo < 60 ? (
-            <span className={styles.syncStatusAmber}>
-              ⚠️ Lento · Último sync {secondsAgo}s atrás
-            </span>
-          ) : (
-            <span className={styles.syncStatusRed}>
-              ✕ Offline · Sem sinal {secondsAgo}s atrás
-            </span>
-          )}
+            {isMock && <span className="badge badge-info" style={{ marginLeft: "0.5rem", fontSize: "0.65rem" }}>MODO DEMO</span>}
+          </div>
+          <span className={styles.logoSubtitle}>v3.40 · PRO HEDGE</span>
         </div>
 
-        <div className={styles.syncStatusBadgeContainer} title="Sessão do Mercado Forex (Horário UTC)">
+        <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
           {market.isOpen ? (
             <span className={styles.marketStatusOpen}>
               <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
@@ -782,6 +765,23 @@ export default function Header({
             </span>
           )}
         </div>
+      </div>
+
+      {/* Middle live sync display */}
+      <div className={`${styles.syncStatusBadgeContainer} ${styles.desktopOnly}`} title="Sincronização com o MetaTrader 5">
+        {secondsAgo < 30 ? (
+          <span className={styles.syncStatusGreen}>
+            <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Conectado · Sync {secondsAgo}s atrás
+          </span>
+        ) : secondsAgo < 60 ? (
+          <span className={styles.syncStatusAmber}>
+            ⚠️ Lento · Último sync {secondsAgo}s atrás
+          </span>
+        ) : (
+          <span className={styles.syncStatusRed}>
+            ✕ Offline · Sem sinal {secondsAgo}s atrás
+          </span>
+        )}
       </div>
 
       {/* Right side connection info */}

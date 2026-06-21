@@ -363,30 +363,32 @@ function BasketCard({ b, currencyMode, brlRate, balance, loteBase, takeProfitLim
       <div className={styles.basketHeader}>
         <div className={styles.basketTitleGroup}>
           <span className={styles.basketSymbol}>{b.symbol}</span>
-          <span
-            className={`${styles.basketDirection} ${
-              isBuy ? styles.directionBuy : styles.directionSell
-            }`}
-          >
-            {isBuy
-              ? <ChevronUp size={9} style={{ display: "inline", marginRight: 1 }} />
-              : <ChevronDown size={9} style={{ display: "inline", marginRight: 1 }} />}
-            {b.direction}
-          </span>
-          {isAlert && (
-            <span className={styles.riskBadge}>
-              <AlertTriangle size={9} /> NÍVEL {level}
+          <div className={styles.directionAndLevelCol}>
+            <span
+              className={`${styles.basketDirection} ${
+                isBuy ? styles.directionBuy : styles.directionSell
+              }`}
+            >
+              {isBuy
+                ? <ChevronUp size={9} style={{ display: "inline", marginRight: 1 }} />
+                : <ChevronDown size={9} style={{ display: "inline", marginRight: 1 }} />}
+              {b.direction}
             </span>
-          )}
-          {isScheduled && (
-            <span className={styles.riskBadge} style={{ 
-              backgroundColor: "rgba(255, 193, 7, 0.15)", 
-              color: "var(--neon-gold)", 
-              borderColor: "rgba(255, 193, 7, 0.3)" 
-            }}>
-              <AlertTriangle size={9} /> S.O.S AGENDADO
-            </span>
-          )}
+            {isAlert && (
+              <span className={styles.riskBadge}>
+                <AlertTriangle size={9} /> NÍVEL {level}
+              </span>
+            )}
+            {isScheduled && (
+              <span className={styles.riskBadge} style={{ 
+                backgroundColor: "rgba(255, 193, 7, 0.15)", 
+                color: "var(--neon-gold)", 
+                borderColor: "rgba(255, 193, 7, 0.3)" 
+              }}>
+                <AlertTriangle size={9} /> S.O.S AGENDADO
+              </span>
+            )}
+          </div>
         </div>
         <div className={styles.basketProfit} style={{ color: profitColor }}>
           {isProfit ? "+" : "-"}{formatBasketProfit(b.totalProfit)}
