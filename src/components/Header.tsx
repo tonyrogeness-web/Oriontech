@@ -198,8 +198,8 @@ export default function Header({
     }
   });
 
-  // B. Drawdown — identico ao painel MT5 (verde <20%, amarelo 20-40%, vermelho >=40%)
-  if (maxDrawdown >= 40) {
+  // B. Drawdown — identico ao painel MT5 (verde <20%, amarelo 20-35%, vermelho >=35%)
+  if (maxDrawdown >= 35) {
     activeCriticals.push({
       id: "crit_dd_red",
       severity: "critical",
@@ -219,7 +219,7 @@ export default function Header({
     });
   }
 
-  // C. SoftStop — identico ao painel MT5 (verde <33%, amarelo 33-66%, vermelho >=66%, 100% = bloqueado)
+  // C. SoftStop — identico ao painel MT5 (verde <50%, amarelo 50-80%, vermelho >=80%, 100% = bloqueado)
   if (floatingPl < 0 && softStopLimit > 0) {
     const absLoss = Math.abs(floatingPl);
     const reachPct = (absLoss / softStopLimit) * 100;
@@ -232,18 +232,18 @@ export default function Header({
         createdAt: 0,
         read: false,
       });
-    } else if (reachPct >= 66) {
+    } else if (reachPct >= 80) {
       activeCriticals.push({
-        id: "crit_softstop_66",
+        id: "crit_softstop_80",
         severity: "critical",
         title: `🔴 SOFTSTOP CRÍTICO`,
         desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
-    } else if (reachPct >= 33) {
+    } else if (reachPct >= 50) {
       activeCriticals.push({
-        id: "crit_softstop_33",
+        id: "crit_softstop_50",
         severity: "warning",
         title: `🟡 SOFTSTOP ALERTA`,
         desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
@@ -580,9 +580,9 @@ export default function Header({
       return;
     }
     const prev = prevDrawdownRef.current;
-    if (prev < 20 && maxDrawdown >= 20 && maxDrawdown < 40) {
+    if (prev < 20 && maxDrawdown >= 20 && maxDrawdown < 35) {
       addToast("🟡 Alerta de Drawdown", `Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Amarela)`, "warning");
-    } else if (prev < 40 && maxDrawdown >= 40) {
+    } else if (prev < 35 && maxDrawdown >= 35) {
       addToast("🔴 Drawdown Crítico", `Perigo: Drawdown atingiu ${maxDrawdown.toFixed(1)}% (Zona Vermelha)`, "error");
     } else if (prev >= 20 && maxDrawdown < 20) {
       addToast("🟢 Risco Normalizado", `Drawdown reduziu para ${maxDrawdown.toFixed(1)}% (Zona Verde)`, "success");
@@ -606,9 +606,9 @@ export default function Header({
 
     const prev = prevSoftStopReachRef.current;
     if (floatingPl < 0) {
-      if (prev < 33 && reachPct >= 33 && reachPct < 66) {
+      if (prev < 50 && reachPct >= 50 && reachPct < 80) {
         addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
-      } else if (prev < 66 && reachPct >= 66 && reachPct < 100) {
+      } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
         addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
       } else if (prev < 100 && reachPct >= 100) {
         addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");

@@ -129,13 +129,13 @@ export default function KpiCards({
   let ddColorClass = styles.kpiBadgeGreen;
   let ddBorderClass = styles.kpiCardBorderGold;
   let ddGlowClass = styles.goldGlow;
-  if (maxDrawdown >= 10 && maxDrawdown < 20) {
+  if (maxDrawdown >= 20 && maxDrawdown < 35) {
     ddZone = "Zona Amarela";
     ddBadge = "ALERTA";
     ddColorClass = styles.kpiBadgeGold;
     ddBorderClass = styles.kpiCardBorderAmber;
     ddGlowClass = styles.amberGlow;
-  } else if (maxDrawdown >= 20) {
+  } else if (maxDrawdown >= 35) {
     ddZone = "Zona Vermelha";
     ddBadge = "CRÍTICO";
     ddColorClass = styles.kpiBadgeRed;
@@ -381,11 +381,11 @@ export default function KpiCards({
               <ShieldAlert size={14} />
             </div>
           </div>
-          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)" }}>
+          <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: maxDrawdown >= 35 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)" }}>
             {maxDrawdown.toFixed(1)}%
           </span>
           <span className={styles.kpiSubValueMockup}>
-            {ddZone} · Limite 40%
+            {ddZone} · Limite 50%
           </span>
           <span className={`${styles.kpiBadgeMockup} ${ddColorClass}`} style={{ marginBottom: "0.2rem" }}>
             {ddBadge}
@@ -395,17 +395,17 @@ export default function KpiCards({
             <div
               style={{
                 height: "100%",
-                width: `${Math.min(100, (maxDrawdown / 40) * 100)}%`,
-                background: maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)",
+                width: `${Math.min(100, (maxDrawdown / 50) * 100)}%`,
+                background: maxDrawdown >= 35 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)",
                 opacity: 0.8,
                 transition: "width 0.5s ease"
               }}
             />
-            <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
-            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+            <div style={{ position: "absolute", left: "40%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
+            <div style={{ position: "absolute", left: "70%", top: 0, bottom: 0, width: "1px", background: "var(--opacity-border)" }} />
           </div>
 
-          <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 20 ? "var(--neon-red)" : maxDrawdown >= 10 ? "var(--neon-amber)" : "var(--neon-gold)"} />
+          <Sparkline data={drawdownTrendHistory} color={maxDrawdown >= 35 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)"} />
         </div>
       </div>
 

@@ -134,33 +134,45 @@ export default function RiskManagement({
      1. PERDA FLUTUANTE — valor atual do P&L
   ═══════════════════════════════════════════════════════════════ */
   const plIsPositive = floatingPl >= 0;
-  const plColor      = plIsPositive ? "var(--neon-green)" : "var(--neon-red)";
-  const plStatus     = plIsPositive ? "POSITIVO" : "NEGATIVO";
-  const plIcon       = plIsPositive ? TrendingUp : TrendingDown;
+  const plLoss       = Math.max(0, -floatingPl);
+  const plBalancePct = (floatingPl < 0 && balance > 0) ? (plLoss / balance) * 100 : 0;
+  
+  const plStatus     = plIsPositive 
+    ? "POSITIVO" 
+    : plBalancePct >= 30 
+      ? "CRÍTICO" 
+      : plBalancePct >= 15 
+        ? "ALERTA" 
+        : "SEGURO";
+        
+  const plColor      = plIsPositive 
+    ? "var(--neon-green)" 
+    : plBalancePct >= 30 
+      ? "var(--neon-red)" 
+      : plBalancePct >= 15 
+        ? "var(--neon-gold)" 
+        : "var(--neon-green)";
+
+  const plIcon       = plIsPositive || plBalancePct < 15 ? TrendingUp : TrendingDown;
   const PlIcon       = plIcon;
 
-  const plLoss       = Math.max(0, -floatingPl);
-  // Floating loss percentage relative to total balance
-  const plBalancePct = (floatingPl < 0 && balance > 0) ? clamp(plLoss, balance) : 0;
-  // Dynamic color for the floating loss bar — mesmos limiares do Drawdown do painel MT5 (20%/40%, mesma metrica)
-  const plBarColor   = plBalancePct >= 40 ? "var(--neon-red)" : plBalancePct >= 20 ? "var(--neon-gold)" : "var(--neon-green)";
-  // Barra escalada com teto visual de 50%, igual a barra "Drawdown Local" do MT5
+  const plBarColor   = plColor;
   const plBarPct     = clamp(plBalancePct, 50);
 
   /* ═══════════════════════════════════════════════════════════════
      2. SOFT STOP — % do limite consumido
   ═══════════════════════════════════════════════════════════════ */
   const ssBarPct     = floatingPl < 0 ? clamp(plLoss, softStopLimit) : 0;
-  const ssColor      = ssBarPct >= 66 ? "var(--neon-red)" : ssBarPct >= 33 ? "var(--neon-gold)" : "var(--neon-green)";
-  const ssStatus     = ssBarPct >= 66 ? "CRÍTICO" : ssBarPct >= 33 ? "ALERTA" : "SEGURO";
+  const ssColor      = ssBarPct >= 80 ? "var(--neon-red)" : ssBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
+  const ssStatus     = ssBarPct >= 80 ? "CRÍTICO" : ssBarPct >= 50 ? "ALERTA" : "SEGURO";
   const ssHeadroom   = Math.max(0, softStopLimit - plLoss);
 
   /* ═══════════════════════════════════════════════════════════════
      3. REBAIXAMENTO (DRAWDOWN) — identico a barra "Drawdown Local" do painel MT5
   ═══════════════════════════════════════════════════════════════ */
   const ddBarPct     = clamp(maxDrawdown, 50);
-  const ddColor      = maxDrawdown >= 40 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)";
-  const ddStatus     = maxDrawdown >= 40 ? "CRÍTICO" : maxDrawdown >= 20 ? "ALERTA" : "SEGURO";
+  const ddColor      = maxDrawdown >= 35 ? "var(--neon-red)" : maxDrawdown >= 20 ? "var(--neon-gold)" : "var(--neon-green)";
+  const ddStatus     = maxDrawdown >= 35 ? "CRÍTICO" : maxDrawdown >= 20 ? "ALERTA" : "SEGURO";
   const ddHeadroom   = Math.max(0, 50 - maxDrawdown);
 
 
@@ -226,7 +238,7 @@ export default function RiskManagement({
 
           {/* Progress bar in relation to total balance */}
           <div style={{ margin: "0.45rem 0" }}>
-            <ZonedBar fillPct={plBarPct} fillColor={plBarColor} zone1={40} zone2={80} />
+            <ZonedBar fillPct={plBarPct} fillColor={plBarColor} zone1={30} zone2={60} />
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
@@ -270,7 +282,7 @@ export default function RiskManagement({
           </div>
 
           {/* Zoned bar */}
-          <ZonedBar fillPct={ssBarPct} fillColor={ssColor} zone1={33} zone2={66} />
+          <ZonedBar fillPct={ssBarPct} fillColor={ssColor} zone1={50} zone2={80} />
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
@@ -312,7 +324,7 @@ export default function RiskManagement({
           </div>
 
           {/* Zoned bar */}
-          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={40} zone2={80} />
+          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={40} zone2={70} />
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
