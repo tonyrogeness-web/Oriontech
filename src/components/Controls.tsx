@@ -346,7 +346,7 @@ export default function Controls({
     }
   };
 
-  const isPaused = status === "PAUSED";
+  const isPaused = status ? status.startsWith("PAUSED") : false;
 
   // Remaining session time display
   const sessionSecondsLeft = pinUnlockedUntil

@@ -115,7 +115,7 @@ export default function Header({
     read: boolean;
   }
 
-  const isActive = status === "RUNNING";
+  const isActive = status ? status.startsWith("RUNNING") : false;
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
@@ -133,6 +133,37 @@ export default function Header({
   // Sync timer state
   const [secondsAgo, setSecondsAgo] = useState(0);
   const [lastSyncStr, setLastSyncStr] = useState("--:--:--");
+
+  // Market session server-reported state
+  const [marketSecondsLeft, setMarketSecondsLeft] = useState<number | null>(null);
+  const [marketIsOpenServer, setMarketIsOpenServer] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (status && status.includes("|")) {
+      const parts = status.split("|");
+      if (parts.length >= 3) {
+        const isOpen = parts[1] === "true";
+        const seconds = parseInt(parts[2], 10);
+        if (!isNaN(seconds)) {
+          setMarketIsOpenServer(isOpen);
+          setMarketSecondsLeft(seconds);
+        }
+      }
+    } else {
+      setMarketIsOpenServer(null);
+      setMarketSecondsLeft(null);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMarketSecondsLeft((prev) => {
+        if (prev === null || prev <= 0) return prev;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Notifications states
   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([]);
@@ -697,6 +728,20 @@ export default function Header({
 
   // Calculate market status on each render
   const getMarketStatus = () => {
+    if (marketIsOpenServer !== null && marketSecondsLeft !== null) {
+      const isOpen = marketIsOpenServer;
+      const secondsToTransition = marketSecondsLeft;
+      const days = Math.floor(secondsToTransition / 86400);
+      const hours = Math.floor((secondsToTransition % 86400) / 3600);
+      const mins = Math.floor((secondsToTransition % 3600) / 60);
+
+      const countdown = isOpen
+        ? (days > 0 ? `Fecha em ${days}d ${hours}h` : hours > 0 ? `Fecha em ${hours}h ${mins}m` : `Fecha em ${mins}m`)
+        : (days > 0 ? `Abre ${days}d ${hours}h` : hours > 0 ? `Abre ${hours}h ${mins}m` : `Abre ${mins}m`);
+
+      return { isOpen, countdown };
+    }
+
     const date = new Date();
     const day = date.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const hour = date.getUTCHours();
