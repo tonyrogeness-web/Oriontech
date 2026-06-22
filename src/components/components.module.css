@@ -593,10 +593,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  font-size: 0.7rem;
+  padding: 0.6rem 0;
+  font-size: 0.62rem;
   color: var(--text-muted);
   border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.footerSection span {
+  white-space: nowrap;
 }
 
 .brlSubValue {
@@ -3174,22 +3180,93 @@
   letter-spacing: 0.08em;
 }
 .patrimonioPlBadge {
-  font-size: clamp(0.68rem, 1.8vw, 0.82rem);
+  font-size: clamp(0.66rem, 1.8vw, 0.78rem);
   font-weight: 700;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
   font-family: monospace;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: var(--transition-smooth);
 }
 .badgeGreen {
   color: var(--neon-green);
-  background: rgba(0, 230, 118, 0.1);
+  background: rgba(0, 230, 118, 0.08);
   border: 1px solid rgba(0, 230, 118, 0.2);
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.05);
 }
 .badgeRed {
   color: var(--neon-red);
-  background: rgba(255, 23, 68, 0.1);
+  background: rgba(255, 23, 68, 0.08);
   border: 1px solid rgba(255, 23, 68, 0.2);
+  box-shadow: 0 0 10px rgba(255, 23, 68, 0.05);
+}
+
+.livePulseDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.badgeGreen .livePulseDot {
+  background-color: var(--neon-green);
+  animation: pulseGreen 2s infinite;
+}
+
+.badgeRed .livePulseDot {
+  background-color: var(--neon-red);
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.6);
+  }
+  70% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 4px rgba(0, 230, 118, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+  }
+}
+
+@keyframes pulseRed {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.6);
+  }
+  70% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 4px rgba(255, 23, 68, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0);
+  }
+}
+
+.liveLabel {
+  opacity: 0.7;
+  font-weight: 500;
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.liveValue {
+  font-weight: 700;
+}
+
+.livePct {
+  opacity: 0.8;
+  font-weight: 500;
+  font-size: 0.9em;
 }
 
 .patrimonioUnifiedStackCard {

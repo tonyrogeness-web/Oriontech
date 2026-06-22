@@ -281,9 +281,13 @@ export default function KpiCards({
           </div>
           <span className={styles.patrimonioMainTitle}>Patrimônio</span>
         </div>
-        <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`} style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", padding: "0.25rem 0.65rem", lineHeight: 1.2, whiteSpace: "normal" }}>
-          <span>P/L Flut: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}</span>
-          <span style={{ fontSize: "0.68rem", opacity: 0.85, fontWeight: "normal" }}>
+        <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`}>
+          <span className={styles.livePulseDot}></span>
+          <span className={styles.liveLabel}>P/L Flut:</span>
+          <span className={styles.liveValue}>
+            {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
+          </span>
+          <span className={styles.livePct}>
             ({floatingPlPct >= 0 ? "+" : ""}{floatingPlPct.toFixed(2)}%)
           </span>
         </span>
