@@ -39,6 +39,7 @@ export async function POST(request: Request) {
       takeProfitLimit = 1.50,
       buySosScheduled = false,
       sellSosScheduled = false,
+      reserveFund = 0.0,
     } = payload;
 
     // 1. Verify token
@@ -135,6 +136,7 @@ export async function POST(request: Request) {
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
           buySosScheduled: Boolean(buySosScheduled),
           sellSosScheduled: Boolean(sellSosScheduled),
+          reserveFund: parseFloat(reserveFund) || 0.0,
         },
         create: {
           account: String(account),
@@ -160,6 +162,7 @@ export async function POST(request: Request) {
           takeProfitLimit: parseFloat(takeProfitLimit) || 1.50,
           buySosScheduled: Boolean(buySosScheduled),
           sellSosScheduled: Boolean(sellSosScheduled),
+          reserveFund: parseFloat(reserveFund) || 0.0,
         },
       });
     });

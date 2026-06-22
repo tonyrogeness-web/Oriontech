@@ -33,6 +33,7 @@ model AccountState {
   takeProfitLimit      Float    @default(1.50)
   buySosScheduled      Boolean  @default(false)
   sellSosScheduled     Boolean  @default(false)
+  reserveFund          Float    @default(0.0)
 }
 
 model ActiveTrade {

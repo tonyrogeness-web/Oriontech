@@ -25,6 +25,7 @@ interface KpiCardsProps {
   ddReached20?: boolean;
   equityCycleBase?: number;
   equityCycleTargetPct?: number;
+  reserveFund?: number;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
@@ -80,6 +81,7 @@ export default function KpiCards({
   ddReached20 = false,
   equityCycleBase = 0,
   equityCycleTargetPct = 5.0,
+  reserveFund = 0,
 }: KpiCardsProps) {
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
@@ -330,7 +332,7 @@ export default function KpiCards({
         </div>
 
         {/* Row 3: Desempenho (S. Líq e L. Líqui agrupados em bloco com glow lateral) */}
-        <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
+        <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
           <div className={`${styles.patrimonioPerformanceGroupBlock} ${netProfitCalc >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
             <div className={styles.patrimonioCombinedRowGrid}>
               {/* Sub-row 1: P. Líquido */}
@@ -365,6 +367,28 @@ export default function KpiCards({
             <div className={styles.patrimonioStackRowBadgeContainer}>
               <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`} style={{ marginTop: 0 }}>
                 {netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 4: Fundo Reserva */}
+        <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
+          <div className={styles.patrimonioOuterGroupBlock}>
+            <div className={styles.patrimonioRowContentGrid}>
+              <span className={styles.patrimonioStackRowLabel}>F. RESERVA</span>
+              <div className={styles.patrimonioStackRowValuesCenter}>
+                <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "#a855f7" }}>
+                  {formatValPrimary(reserveFund)}
+                </span>
+                <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                  {formatValSecondary(reserveFund)}
+                </span>
+              </div>
+            </div>
+            <div className={styles.patrimonioStackRowBadgeContainer}>
+              <span className={`${styles.kpiBadgeMockup}`} style={{ marginTop: 0, color: "#a855f7", borderColor: "rgba(168, 85, 247, 0.25)", background: "rgba(168, 85, 247, 0.08)" }}>
+                +{balance > 0 ? ((reserveFund / balance) * 100).toFixed(2) : "0.00"}%
               </span>
             </div>
           </div>

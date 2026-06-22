@@ -735,7 +735,7 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
                      }}
                   >
                     {/* Date label */}
-                    <div style={{ width: "45px", color: "var(--text-muted)", fontWeight: 600 }}>{day.label}</div>
+                    <div style={{ width: "45px", color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>{day.label}</div>
 
                     {/* Progress Bar Container */}
                     <div style={{ flex: 1, height: "6px", background: "var(--bg-card-gradient)", borderRadius: "3px", overflow: "hidden", position: "relative" }}>
@@ -752,8 +752,8 @@ export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5
                     </div>
 
                     {/* Right Info: Cumulative and daily badge */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", justifySelf: "flex-end" }}>
-                      <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", justifySelf: "flex-end", flexShrink: 0 }}>
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.78rem", whiteSpace: "nowrap" }}>
                         &Sigma; {formatVal(day.cumProfit, true)}
                       </span>
 

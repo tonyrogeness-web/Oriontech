@@ -820,12 +820,22 @@ export default function Header({
         {/* Market Status Display in upper right */}
         <div className={`${styles.syncStatusBadgeContainer} ${styles.headerMarketPill}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
           {market.isOpen ? (
-            <span className={styles.marketStatusOpen}>
-              <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto · {market.countdown}
+            <span className={styles.marketStatusOpen} style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-start" }}>
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto
+              </span>
+              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", paddingLeft: "11px" }}>
+                {market.countdown}
+              </span>
             </span>
           ) : (
-            <span className={styles.marketStatusClosed}>
-              <span className={styles.statusBullet}>●</span> Mercado Fechado · {market.countdown}
+            <span className={styles.marketStatusClosed} style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-start" }}>
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <span className={styles.statusBullet}>●</span> Mercado Fechado
+              </span>
+              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", paddingLeft: "11px" }}>
+                {market.countdown}
+              </span>
             </span>
           )}
         </div>

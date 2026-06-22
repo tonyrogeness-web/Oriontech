@@ -229,6 +229,7 @@ export default function DashboardPage() {
     account: "Carregando...",
     balance: 0, equity: 0, dailyProfit: 0, floatingPl: 0,
     totalProfit: 0, maxDrawdown: 0, status: "RUNNING", lastUpdated: "",
+    reserveFund: 0,
   };
 
   const trades = data?.trades || [];
@@ -280,6 +281,7 @@ export default function DashboardPage() {
           ddReached20={activeAccount.ddReached20}
           equityCycleBase={activeAccount.equityCycleBase}
           equityCycleTargetPct={activeAccount.equityCycleTargetPct}
+          reserveFund={activeAccount.reserveFund || 0}
         />
 
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>

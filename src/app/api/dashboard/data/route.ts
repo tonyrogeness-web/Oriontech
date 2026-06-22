@@ -24,6 +24,7 @@ function getMockData() {
     brlRate: 5.20,
     equityCycleBase: 10000.0,
     equityCycleTargetPct: 5.0,
+    reserveFund: 447.0,
   };
 
   const mockTrades = [
