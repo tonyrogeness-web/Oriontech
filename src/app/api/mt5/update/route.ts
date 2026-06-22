@@ -40,6 +40,8 @@ export async function POST(request: Request) {
       buySosScheduled = false,
       sellSosScheduled = false,
       reserveFund = 0.0,
+      reserveCutsCount = 0,
+      reserveCutsGasto = 0.0,
     } = payload;
 
     // 1. Verify token
@@ -137,6 +139,8 @@ export async function POST(request: Request) {
           buySosScheduled: Boolean(buySosScheduled),
           sellSosScheduled: Boolean(sellSosScheduled),
           reserveFund: parseFloat(reserveFund) || 0.0,
+          reserveCutsCount: parseInt(reserveCutsCount) || 0,
+          reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
         },
         create: {
           account: String(account),
@@ -163,6 +167,8 @@ export async function POST(request: Request) {
           buySosScheduled: Boolean(buySosScheduled),
           sellSosScheduled: Boolean(sellSosScheduled),
           reserveFund: parseFloat(reserveFund) || 0.0,
+          reserveCutsCount: parseInt(reserveCutsCount) || 0,
+          reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
         },
       });
     });

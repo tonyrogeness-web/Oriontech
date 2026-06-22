@@ -34,6 +34,8 @@ model AccountState {
   buySosScheduled      Boolean  @default(false)
   sellSosScheduled     Boolean  @default(false)
   reserveFund          Float    @default(0.0)
+  reserveCutsCount     Int      @default(0)
+  reserveCutsGasto     Float    @default(0.0)
 }
 
 model ActiveTrade {

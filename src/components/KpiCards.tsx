@@ -28,6 +28,8 @@ interface KpiCardsProps {
   equityCycleTargetPct?: number;
   reserveFund?: number;
   reserveCapPct?: number;
+  reserveCutsCount?: number;
+  reserveCutsGasto?: number;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
@@ -85,6 +87,8 @@ export default function KpiCards({
   equityCycleTargetPct = 5.0,
   reserveFund = 0,
   reserveCapPct = 2.0,
+  reserveCutsCount = 0,
+  reserveCutsGasto = 0.0,
 }: KpiCardsProps) {
   const [isReserveExpanded, setIsReserveExpanded] = useState(false);
 
@@ -448,6 +452,16 @@ export default function KpiCards({
                   borderRadius: '2px'
                 }} 
               />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Defesas / Cortes:</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{reserveCutsCount} vezes</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Total Queimado:</span>
+              <span style={{ fontWeight: 600, color: '#a855f7' }}>{formatValPrimary(reserveCutsGasto)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.70rem', color: 'var(--text-muted)', borderTop: '1px dashed var(--opacity-border)', paddingTop: '0.4rem', marginTop: '0.2rem' }}>

@@ -282,6 +282,8 @@ export default function DashboardPage() {
           equityCycleBase={activeAccount.equityCycleBase}
           equityCycleTargetPct={activeAccount.equityCycleTargetPct}
           reserveFund={activeAccount.reserveFund || 0}
+          reserveCutsCount={activeAccount.reserveCutsCount || 0}
+          reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
         />
 
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
