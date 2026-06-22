@@ -1,6 +1,7 @@
 "use client";
 
-import { Wallet, Coins, TrendingUp, Globe, ShieldAlert, Target, DollarSign } from "lucide-react";
+import { useState } from "react";
+import { Wallet, Coins, TrendingUp, Globe, ShieldAlert, Target, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
@@ -83,6 +84,8 @@ export default function KpiCards({
   equityCycleTargetPct = 5.0,
   reserveFund = 0,
 }: KpiCardsProps) {
+  const [isReserveExpanded, setIsReserveExpanded] = useState(false);
+
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
     const absVal = Math.abs(val);
@@ -375,10 +378,21 @@ export default function KpiCards({
         </div>
 
         {/* Row 4: Fundo Reserva */}
-        <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
+        <div 
+          className={styles.patrimonioStackRow} 
+          style={{ borderBottom: 'none', padding: 0, cursor: 'pointer' }}
+          onClick={() => setIsReserveExpanded(!isReserveExpanded)}
+        >
           <div className={`${styles.patrimonioPerformanceGroupBlock} ${styles.glowLeftPurple}`}>
             <div className={styles.patrimonioRowContentGrid}>
-              <span className={styles.patrimonioStackRowLabel}>F. RESERVA</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span className={styles.patrimonioStackRowLabel}>F. RESERVA</span>
+                {isReserveExpanded ? (
+                  <ChevronUp size={13} style={{ color: "var(--text-muted)", opacity: 0.8 }} />
+                ) : (
+                  <ChevronDown size={13} style={{ color: "var(--text-muted)", opacity: 0.8 }} />
+                )}
+              </div>
               <div className={styles.patrimonioStackRowValuesCenter}>
                 <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "#a855f7" }}>
                   {formatValPrimary(reserveFund)}
@@ -395,6 +409,53 @@ export default function KpiCards({
             </div>
           </div>
         </div>
+
+        {/* Expanded Reserve Fund details */}
+        {isReserveExpanded && (
+          <div style={{
+            padding: '0.75rem 1rem',
+            background: 'rgba(168, 85, 247, 0.03)',
+            borderLeft: '3px solid #a855f7',
+            borderRight: '1px solid var(--opacity-border)',
+            borderBottom: '1px solid var(--opacity-border)',
+            borderRadius: '0 0 8px 8px',
+            marginTop: '-1px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Teto do Fundo (Est. 2%):</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{formatValPrimary(balance * 0.02)}</span>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Progresso do Teto:</span>
+              <span style={{ fontWeight: 600, color: '#a855f7' }}>
+                {((reserveFund / (balance * 0.02 || 1)) * 100).toFixed(1)}%
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{ width: '100%', height: '4px', background: 'var(--opacity-divider)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div 
+                style={{ 
+                  height: '100%', 
+                  width: `${Math.min(100, (reserveFund / (balance * 0.02 || 1)) * 100)}%`, 
+                  background: '#a855f7',
+                  borderRadius: '2px'
+                }} 
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.70rem', color: 'var(--text-muted)', borderTop: '1px dashed var(--opacity-border)', paddingTop: '0.4rem', marginTop: '0.2rem' }}>
+              <span>Retenção p/ Ciclo: 10%</span>
+              <span>
+                Airbag: {maxDrawdown >= 35 ? "⚠️ CRÍTICO (ATIVO)" : maxDrawdown >= 20 ? "🟡 ALERTA" : "✓ SEGURO"}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── DRAWDOWN SECTION ── */}
