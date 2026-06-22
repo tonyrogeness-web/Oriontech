@@ -118,6 +118,7 @@ export default function RiskManagement({
   history = [],
   trades = [],
 }: RiskManagementProps) {
+  const [isSoftStopExpanded, setIsSoftStopExpanded] = React.useState(false);
 
   /* ── Formatter ────────────────────────────────────────────────── */
   const fmt = (val: number, keepSign = false) => {
