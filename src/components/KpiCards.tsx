@@ -250,10 +250,10 @@ export default function KpiCards({
         </div>
 
         {/* 3. L. Global */}
-        <div className={`${styles.kpiCardMockup} ${netProfitCalc >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
+        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>L. Global</span>
-            <div className={`${styles.kpiIconContainer} ${netProfitCalc >= 0 ? styles.greenGlow : styles.amberGlow}`}>
+            <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
               <Globe size={14} />
             </div>
           </div>
@@ -263,8 +263,8 @@ export default function KpiCards({
           <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.80rem" }}>
             Líq: {formatValPrimary(netProfitCalc)}
           </span>
-          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            {netProfitCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
+          <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {totalProfit >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
           </span>
           <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
@@ -287,40 +287,34 @@ export default function KpiCards({
 
       {/* Grid: 2x2 columns containing 4 separate cards */}
       <div className={styles.patrimonioUnifiedStackCard}>
-        {/* Row 1: Saldo Inicial */}
-        <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
-          <div className={`${styles.patrimonioOuterGroupBlock} ${styles.glowLeftMuted}`}>
-            <div className={styles.patrimonioRowContentGrid}>
-              <span className={styles.patrimonioStackRowLabel}>S. INICIAL</span>
-              <div className={styles.patrimonioStackRowValuesCenter}>
-                <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-muted)" }}>
-                  {formatValPrimary(startBalance)}
-                </span>
-                <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
-                  {formatValSecondary(startBalance)}
-                </span>
+        {/* Row 1: Saldo Inicial & Saldo Atual agrupados em bloco com glow lateral */}
+        <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
+          <div className={`${styles.patrimonioPerformanceGroupBlock} ${balanceDiffPct >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`} style={{ marginTop: 0 }}>
+            <div className={styles.patrimonioCombinedRowGrid}>
+              {/* Sub-row 1: S. INICIAL */}
+              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginRight: 0 }}>
+                <span className={styles.patrimonioStackRowLabel}>S. INICIAL</span>
+                <div className={styles.patrimonioStackRowValuesCenter}>
+                  <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--text-muted)" }}>
+                    {formatValPrimary(startBalance)}
+                  </span>
+                  <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                    {formatValSecondary(startBalance)}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className={styles.patrimonioStackRowBadgeContainer}>
-              <span className={`${styles.kpiBadgeMockup} ${styles.kpiBadgeMuted}`} style={{ marginTop: 0 }}>
-                BASE
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* Row 2: Saldo Atual */}
-        <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
-          <div className={`${styles.patrimonioOuterGroupBlock} ${balanceDiffPct >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
-            <div className={styles.patrimonioRowContentGrid}>
-              <span className={styles.patrimonioStackRowLabel}>S. ATUAL</span>
-              <div className={styles.patrimonioStackRowValuesCenter}>
-                <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--neon-gold)" }}>
-                  {formatValPrimary(balance)}
-                </span>
-                <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
-                  {formatValSecondary(balance)}
-                </span>
+              {/* Sub-row 2: S. ATUAL */}
+              <div className={styles.patrimonioRowContentGrid} style={{ borderBottom: 'none', padding: 0, marginTop: '0.45rem', marginRight: 0 }}>
+                <span className={styles.patrimonioStackRowLabel}>S. ATUAL</span>
+                <div className={styles.patrimonioStackRowValuesCenter}>
+                  <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: "var(--neon-gold)" }}>
+                    {formatValPrimary(balance)}
+                  </span>
+                  <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
+                    {formatValSecondary(balance)}
+                  </span>
+                </div>
               </div>
             </div>
             <div className={styles.patrimonioStackRowBadgeContainer}>
@@ -332,7 +326,7 @@ export default function KpiCards({
         </div>
 
         {/* Row 3: Desempenho (S. Líq e L. Líqui agrupados em bloco com glow lateral) */}
-        <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
+        <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
           <div className={`${styles.patrimonioPerformanceGroupBlock} ${netProfitCalc >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
             <div className={styles.patrimonioCombinedRowGrid}>
               {/* Sub-row 1: P. Líquido */}
@@ -374,7 +368,7 @@ export default function KpiCards({
 
         {/* Row 4: Fundo Reserva */}
         <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
-          <div className={`${styles.patrimonioOuterGroupBlock} ${styles.glowLeftPurple}`}>
+          <div className={`${styles.patrimonioPerformanceGroupBlock} ${styles.glowLeftPurple}`}>
             <div className={styles.patrimonioRowContentGrid}>
               <span className={styles.patrimonioStackRowLabel}>F. RESERVA</span>
               <div className={styles.patrimonioStackRowValuesCenter}>
