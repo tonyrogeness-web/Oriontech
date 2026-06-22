@@ -782,7 +782,88 @@ export default function Header({
     return { isOpen, countdown };
   };
 
-  const market = getMarketStatus();
+  // Calculate active Forex sessions dynamically (Sydney, Tokyo, London, New York)
+  const getForexSessions = () => {
+    const now = new Date();
+    const day = now.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const hour = now.getUTCHours();
+    const min = now.getUTCMinutes();
+
+    // Check if weekend (Friday 22:00 UTC to Sunday 22:00 UTC)
+    const isWeekend = 
+      day === 6 || // Saturday
+      (day === 5 && hour >= 22) || // Friday after 22:00
+      (day === 0 && hour < 22);   // Sunday before 22:00
+
+    if (isWeekend) {
+      let hoursLeft = 0;
+      if (day === 5) {
+        hoursLeft = (24 - hour) + 24 + 22;
+      } else if (day === 6) {
+        hoursLeft = (24 - hour) + 22;
+      } else if (day === 0) {
+        hoursLeft = 22 - hour;
+      }
+      const minsLeft = 60 - min;
+      const finalMins = minsLeft === 60 ? 0 : minsLeft;
+      const finalHours = minsLeft === 60 ? hoursLeft : hoursLeft - 1;
+      return {
+        isOpen: false,
+        active: "FECHADO",
+        countdown: `Abre: SYD em ${finalHours}h ${finalMins}m`
+      };
+    }
+
+    const activeList: string[] = [];
+    if (hour >= 22 || hour < 7) activeList.push("Sydney");
+    if (hour >= 0 && hour < 9) activeList.push("Tokyo");
+    if (hour >= 8 && hour < 17) activeList.push("Londres");
+    if (hour >= 13 && hour < 22) activeList.push("N.York");
+
+    const active = activeList.length > 0 ? activeList.join("/") : "FECHADO";
+
+    const openHours = [22, 0, 8, 13];
+    const names = ["SYD", "TOK", "LON", "NY"];
+    
+    let minDiff = 9999;
+    let nextName = "";
+
+    for (let i = 0; i < 4; i++) {
+      let diff = openHours[i] - hour;
+      if (diff <= 0) diff += 24;
+      
+      let isSessOpen = false;
+      if (i === 0 && (hour >= 22 || hour < 7)) isSessOpen = true;
+      if (i === 1 && (hour >= 0 && hour < 9)) isSessOpen = true;
+      if (i === 2 && (hour >= 8 && hour < 17)) isSessOpen = true;
+      if (i === 3 && (hour >= 13 && hour < 22)) isSessOpen = true;
+      
+      if (isSessOpen) continue;
+
+      const diffMins = diff * 60 - min;
+      if (diffMins < minDiff) {
+        minDiff = diffMins;
+        nextName = names[i];
+      }
+    }
+
+    if (nextName === "") {
+      nextName = "SYD";
+      minDiff = 12 * 60;
+    }
+
+    const hoursLeft = Math.floor(minDiff / 60);
+    const minsLeft = minDiff % 60;
+    const countdown = `Próx: ${nextName} em ${hoursLeft}h ${minsLeft}m`;
+
+    return {
+      isOpen: true,
+      active,
+      countdown
+    };
+  };
+
+  const sessions = getForexSessions();
 
   return (
     <header className={styles.header}>
@@ -819,13 +900,13 @@ export default function Header({
       <div className={styles.rightHeader}>
         {/* Market Status Display in upper right */}
         <div className={`${styles.syncStatusBadgeContainer} ${styles.headerMarketPill}`} style={{ border: "1px solid rgba(255, 255, 255, 0.05)" }} title="Sessão do Mercado Forex (Horário UTC)">
-          {market.isOpen ? (
+          {sessions.isOpen ? (
             <span className={styles.marketStatusOpen} style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-start" }}>
               <span style={{ display: "flex", alignItems: "center" }}>
-                <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> Mercado Aberto
+                <span className={`${styles.statusBullet} ${styles.bulletPulse}`}>●</span> {sessions.active}
               </span>
               <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", paddingLeft: "11px" }}>
-                {market.countdown}
+                {sessions.countdown}
               </span>
             </span>
           ) : (
@@ -834,7 +915,7 @@ export default function Header({
                 <span className={styles.statusBullet}>●</span> Mercado Fechado
               </span>
               <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", paddingLeft: "11px" }}>
-                {market.countdown}
+                {sessions.countdown}
               </span>
             </span>
           )}
