@@ -174,6 +174,7 @@ export default function KpiCards({
   // Lucro Global Líquido (Realizado + Flutuante)
   const netProfitCalc = totalProfit + floatingPl;
   const netProfitPctCalc = startBalance > 0 ? (netProfitCalc / startBalance) * 100 : 0;
+  const floatingPlPct = startBalance > 0 ? (floatingPl / startBalance) * 100 : 0;
 
   // 6. Ciclo Equity Calculations
   const targetPct = equityCycleTargetPct > 0 ? equityCycleTargetPct : 5.0;
@@ -250,21 +251,24 @@ export default function KpiCards({
         </div>
 
         {/* 3. L. Global */}
-        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
+        <div className={`${styles.kpiCardMockup} ${netProfitCalc >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>L. Global</span>
-            <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
+            <div className={`${styles.kpiIconContainer} ${netProfitCalc >= 0 ? styles.greenGlow : styles.amberGlow}`}>
               <Globe size={14} />
             </div>
           </div>
           <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
             {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
+            <span style={{ fontSize: "0.8rem", marginLeft: "0.45rem", color: "var(--text-muted)", fontWeight: "normal" }}>
+              ({balanceDiffPct >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%)
+            </span>
           </span>
           <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.80rem" }}>
             Líq: {formatValPrimary(netProfitCalc)}
           </span>
-          <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            {totalProfit >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
+          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {netProfitCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
           </span>
           <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
@@ -281,7 +285,7 @@ export default function KpiCards({
           <span className={styles.patrimonioMainTitle}>Patrimônio</span>
         </div>
         <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`}>
-          P/L Flutuante: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
+          P/L Flutuante: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)} ({floatingPlPct >= 0 ? "+" : ""}{floatingPlPct.toFixed(2)}%)
         </span>
       </div>
 
