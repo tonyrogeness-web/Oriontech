@@ -3167,6 +3167,8 @@
   margin-bottom: 1.2rem;
   border-bottom: 1px solid var(--opacity-divider);
   padding-bottom: 0.65rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 .patrimonioTitleGroup {
   display: flex;
@@ -3253,8 +3255,8 @@
 }
 
 .liveLabel {
-  opacity: 0.7;
-  font-weight: 500;
+  opacity: 0.9;
+  font-weight: 600;
   font-family: system-ui, -apple-system, sans-serif;
   letter-spacing: 0.02em;
 }
@@ -3264,9 +3266,9 @@
 }
 
 .livePct {
-  opacity: 0.95;
+  opacity: 1;
   font-weight: 700;
-  font-size: 0.9em;
+  font-size: 1em;
 }
 
 .patrimonioUnifiedStackCard {
@@ -3400,6 +3402,11 @@
 }
 
 @media (max-width: 480px) {
+  .patrimonioHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
   .patrimonioUnifiedStackCard {
     padding: 0.95rem 0.85rem;
   }
