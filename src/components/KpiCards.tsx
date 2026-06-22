@@ -174,6 +174,7 @@ export default function KpiCards({
   // Lucro Global Líquido (Realizado + Flutuante)
   const netProfitCalc = totalProfit + floatingPl;
   const netProfitPctCalc = startBalance > 0 ? (netProfitCalc / startBalance) * 100 : 0;
+  const floatingPlPct = startBalance > 0 ? (floatingPl / startBalance) * 100 : 0;
 
   // 6. Ciclo Equity Calculations
   const targetPct = equityCycleTargetPct > 0 ? equityCycleTargetPct : 5.0;
@@ -281,7 +282,7 @@ export default function KpiCards({
           <span className={styles.patrimonioMainTitle}>Patrimônio</span>
         </div>
         <span className={`${styles.patrimonioPlBadge} ${floatingPl >= 0 ? styles.badgeGreen : styles.badgeRed}`}>
-          P/L Flutuante: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)}
+          P/L Flut: {floatingPl >= 0 ? "+" : ""}{formatValPrimary(floatingPl)} ({floatingPlPct >= 0 ? "+" : ""}{floatingPlPct.toFixed(2)}%)
         </span>
       </div>
 

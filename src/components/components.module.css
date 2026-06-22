@@ -3174,7 +3174,7 @@
   letter-spacing: 0.08em;
 }
 .patrimonioPlBadge {
-  font-size: clamp(0.72rem, 2.1vw, 0.92rem);
+  font-size: clamp(0.68rem, 1.8vw, 0.82rem);
   font-weight: 700;
   padding: 0.25rem 0.65rem;
   border-radius: 6px;
