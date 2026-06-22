@@ -36,6 +36,7 @@ model AccountState {
   reserveFund          Float    @default(0.0)
   reserveCutsCount     Int      @default(0)
   reserveCutsGasto     Float    @default(0.0)
+  reserveCapPct        Float    @default(2.0)
 }
 
 model ActiveTrade {

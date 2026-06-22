@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       reserveFund = 0.0,
       reserveCutsCount = 0,
       reserveCutsGasto = 0.0,
+      reserveCapPct = 2.0,
     } = payload;
 
     // 1. Verify token
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
           reserveFund: parseFloat(reserveFund) || 0.0,
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
+          reserveCapPct: parseFloat(reserveCapPct) !== undefined && reserveCapPct !== null ? parseFloat(reserveCapPct) : 2.0,
         },
         create: {
           account: String(account),
@@ -169,6 +171,7 @@ export async function POST(request: Request) {
           reserveFund: parseFloat(reserveFund) || 0.0,
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
+          reserveCapPct: parseFloat(reserveCapPct) !== undefined && reserveCapPct !== null ? parseFloat(reserveCapPct) : 2.0,
         },
       });
     });

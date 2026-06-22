@@ -25,6 +25,9 @@ function getMockData() {
     equityCycleBase: 10000.0,
     equityCycleTargetPct: 5.0,
     reserveFund: 447.0,
+    reserveCutsCount: 0,
+    reserveCutsGasto: 0.0,
+    reserveCapPct: 2.0,
   };
 
   const mockTrades = [

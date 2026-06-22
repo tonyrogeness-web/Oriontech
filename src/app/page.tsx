@@ -284,6 +284,7 @@ export default function DashboardPage() {
           reserveFund={activeAccount.reserveFund || 0}
           reserveCutsCount={activeAccount.reserveCutsCount || 0}
           reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
+          reserveCapPct={activeAccount.reserveCapPct || 2.0}
         />
 
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
