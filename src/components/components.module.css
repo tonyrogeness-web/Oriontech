@@ -3195,8 +3195,8 @@
 .patrimonioUnifiedStackCard {
   background: var(--bg-card-gradient);
   border: 1px solid var(--border-light);
-  border-radius: 16px;
-  padding: 1.25rem;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   transition: var(--transition-smooth);
@@ -3279,9 +3279,9 @@
   background: rgba(255, 255, 255, 0.012);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
-  padding: 0.95rem 1rem;
+  padding: 0.55rem 0.85rem;
   width: 100%;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1);
   transition: var(--transition-smooth);
 }
@@ -3291,7 +3291,7 @@
   align-items: center;
   border: 1px solid transparent;
   border-left: 3px solid transparent;
-  padding: 0.95rem 1rem;
+  padding: 0.55rem 0.85rem;
   width: 100%;
   transition: var(--transition-smooth);
 }

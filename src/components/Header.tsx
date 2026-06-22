@@ -251,33 +251,33 @@ export default function Header({
   }
 
   // C. SoftStop — identico ao painel MT5 (verde <50%, amarelo 50-80%, vermelho >=80%, 100% = bloqueado)
-  if (floatingPl < 0 && softStopLimit > 0) {
-    const absLoss = Math.abs(floatingPl);
+  if (worstPl < 0 && softStopLimit > 0) {
+    const absLoss = Math.abs(worstPl);
     const reachPct = (absLoss / softStopLimit) * 100;
     if (reachPct >= 100) {
       activeCriticals.push({
-        id: "crit_softstop_blocked",
+        id: `crit_softstop_blocked_${worstSymbol}`,
         severity: "critical",
-        title: `🔴 SOFTSTOP ATIVADO — BLOQUEADO`,
-        desc: `Perda flutuante (${formatValue(absLoss)}) atingiu o limite de ${formatValue(softStopLimit)}. Novos cestos bloqueados!`,
+        title: `🔴 SOFTSTOP ATIVADO — BLOQUEADO (${worstSymbol})`,
+        desc: `Perda flutuante no par ${worstSymbol} (${formatValue(absLoss)}) atingiu o limite de ${formatValue(softStopLimit)}. Novos cestos bloqueados!`,
         createdAt: 0,
         read: false,
       });
     } else if (reachPct >= 80) {
       activeCriticals.push({
-        id: "crit_softstop_80",
+        id: `crit_softstop_80_${worstSymbol}`,
         severity: "critical",
-        title: `🔴 SOFTSTOP CRÍTICO`,
-        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
+        title: `🔴 SOFTSTOP CRÍTICO — ${worstSymbol}`,
+        desc: `Rebaixamento no par ${worstSymbol} atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
     } else if (reachPct >= 50) {
       activeCriticals.push({
-        id: "crit_softstop_50",
+        id: `crit_softstop_50_${worstSymbol}`,
         severity: "warning",
-        title: `🟡 SOFTSTOP ALERTA`,
-        desc: `Rebaixamento acumulado atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
+        title: `🟡 SOFTSTOP ALERTA — ${worstSymbol}`,
+        desc: `Rebaixamento no par ${worstSymbol} atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
         createdAt: 0,
         read: false,
       });
@@ -624,29 +624,50 @@ export default function Header({
   // SoftStop changes tracker
   const isFirstSoftStopRef = useRef(true);
   const prevSoftStopReachRef = useRef<number>(0);
+  const prevWorstSymbolRef = useRef<string>("GLOBAL");
   useEffect(() => {
-    if (floatingPl === undefined || softStopLimit === undefined || softStopLimit <= 0) return;
-    const absLoss = Math.abs(floatingPl);
+    if (!trades || softStopLimit === undefined || softStopLimit <= 0) return;
+
+    // Group trades by symbol
+    const symbolPl: Record<string, number> = {};
+    trades.forEach((t) => {
+      const sym = t.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
+      symbolPl[sym] = (symbolPl[sym] || 0) + t.currentProfit;
+    });
+
+    // Find worst performing symbol
+    let wSymbol = "GLOBAL";
+    let wPl = 0;
+    Object.entries(symbolPl).forEach(([sym, pl]) => {
+      if (pl < wPl) {
+        wPl = pl;
+        wSymbol = sym;
+      }
+    });
+
+    const absLoss = Math.abs(wPl);
     const reachPct = (absLoss / softStopLimit) * 100;
 
     if (isFirstSoftStopRef.current) {
       isFirstSoftStopRef.current = false;
       prevSoftStopReachRef.current = reachPct;
+      prevWorstSymbolRef.current = wSymbol;
       return;
     }
 
     const prev = prevSoftStopReachRef.current;
-    if (floatingPl < 0) {
+    if (wPl < 0) {
       if (prev < 50 && reachPct >= 50 && reachPct < 80) {
-        addToast("🟡 Alerta SoftStop", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
+        addToast(`🟡 Alerta SoftStop — ${wSymbol}`, `Rebaixamento no par ${wSymbol} atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
       } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
-        addToast("🔴 SoftStop Crítico", `Rebaixamento atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
+        addToast(`🔴 SoftStop Crítico — ${wSymbol}`, `Rebaixamento no par ${wSymbol} atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
       } else if (prev < 100 && reachPct >= 100) {
-        addToast("🛑 SoftStop Ativado", `Limite de perda atingido (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");
+        addToast(`🛑 SoftStop Ativado — ${wSymbol}`, `Limite de perda atingido no par ${wSymbol} (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");
       }
     }
     prevSoftStopReachRef.current = reachPct;
-  }, [floatingPl, softStopLimit, addToast]);
+    prevWorstSymbolRef.current = wSymbol;
+  }, [trades, softStopLimit, addToast]);
 
   // Trailing active / peak cycle tracker
   const isFirstTrailingActiveRef = useRef(true);

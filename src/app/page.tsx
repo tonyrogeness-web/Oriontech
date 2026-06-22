@@ -295,6 +295,7 @@ export default function DashboardPage() {
             currencyMode={currencyMode}
             brlRate={brlRate}
             history={history}
+            trades={trades}
           />
         </div>
 

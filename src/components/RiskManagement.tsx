@@ -19,6 +19,7 @@ interface RiskManagementProps {
   currencyMode?: "CENT" | "BRL";
   brlRate?: number;
   history?: PerformancePoint[];
+  trades?: any[];
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -115,6 +116,7 @@ export default function RiskManagement({
   currencyMode = "CENT",
   brlRate = 5.45,
   history = [],
+  trades = [],
 }: RiskManagementProps) {
 
   /* ── Formatter ────────────────────────────────────────────────── */
@@ -160,12 +162,58 @@ export default function RiskManagement({
   const plBarPct     = clamp(plBalancePct, 50);
 
   /* ═══════════════════════════════════════════════════════════════
-     2. SOFT STOP — % do limite consumido
+     2. SOFT STOP — % do limite consumido por par (Worst-Offender)
   ═══════════════════════════════════════════════════════════════ */
-  const ssBarPct     = floatingPl < 0 ? clamp(plLoss, softStopLimit) : 0;
-  const ssColor      = ssBarPct >= 80 ? "var(--neon-red)" : ssBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
-  const ssStatus     = ssBarPct >= 80 ? "CRÍTICO" : ssBarPct >= 50 ? "ALERTA" : "SEGURO";
-  const ssHeadroom   = Math.max(0, softStopLimit - plLoss);
+  const symbolStats = React.useMemo(() => {
+    if (!trades || trades.length === 0) return [];
+    
+    // Group trades by symbol
+    const symbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
+    return symbols.map(sym => {
+      const symTrades = trades.filter((t: any) => t.symbol === sym);
+      const symPl = symTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
+      const symLoss = Math.max(0, -symPl);
+      const symBarPct = symPl < 0 ? clamp(symLoss, softStopLimit) : 0;
+      const cleanSym = sym.toUpperCase().replace(/C$/i, "").replace("/", "");
+      
+      const symColor = symBarPct >= 80 ? "var(--neon-red)" : symBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
+      const symStatus = symBarPct >= 80 ? "CRÍTICO" : symBarPct >= 50 ? "ALERTA" : "SEGURO";
+
+      return {
+        symbol: cleanSym,
+        floatingPl: symPl,
+        loss: symLoss,
+        barPct: symBarPct,
+        color: symColor,
+        status: symStatus,
+      };
+    }).sort((a, b) => b.loss - a.loss); // Worst performing first
+  }, [trades, softStopLimit]);
+
+  // Find worst status for global references
+  let ssStatus = "SEGURO";
+  let ssColor = "var(--neon-green)";
+  let ssBarPct = 0;
+  let worstPlLoss = 0;
+
+  if (symbolStats.length > 0) {
+    const hasCritical = symbolStats.some(s => s.status === "CRÍTICO");
+    const hasAlert = symbolStats.some(s => s.status === "ALERTA");
+    
+    if (hasCritical) {
+      ssStatus = "CRÍTICO";
+      ssColor = "var(--neon-red)";
+    } else if (hasAlert) {
+      ssStatus = "ALERTA";
+      ssColor = "var(--neon-gold)";
+    }
+    
+    const worstPair = symbolStats[0]; // worst-offender
+    worstPlLoss = worstPair.loss;
+    ssBarPct = worstPair.barPct;
+  }
+
+  const ssHeadroom   = Math.max(0, softStopLimit - worstPlLoss);
 
   /* ═══════════════════════════════════════════════════════════════
      3. REBAIXAMENTO (DRAWDOWN) — identico a barra "Drawdown Local" do painel MT5
@@ -261,9 +309,9 @@ export default function RiskManagement({
         {/* ═══════════════════════════════════════════════════════
             SEÇÃO 2 — SOFT STOP
         ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {/* Label row */}
-          <div className={styles.riskHeaderRow}>
+          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
               <AlertTriangle size={12} style={{ color: ssColor }} />
               <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SOFT STOP</span>
@@ -271,31 +319,42 @@ export default function RiskManagement({
             <Pill label={ssStatus} color={ssColor} />
           </div>
 
-          {/* Values (Dynamic theme colors) */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
-            <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
-              {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>consumido</span>
-            </span>
-            <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
-            </span>
-          </div>
-
-          {/* Zoned bar */}
-          <ZonedBar fillPct={ssBarPct} fillColor={ssColor} zone1={50} zone2={80} />
-
-          {/* Footer */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-              <strong style={{ color: ssColor }}>{ssBarPct.toFixed(1)}%</strong> do limite
-            </span>
-            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
-              ↳ {fmt(ssHeadroom)} disponíveis
-            </span>
-          </div>
-
-          {/* Sparkline */}
-          <RiskSparkline data={sparkProfit.map((v) => (v < 0 ? Math.abs(v) : 0))} color={ssColor} />
+          {symbolStats.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+              {symbolStats.map((stat) => {
+                const headroom = Math.max(0, softStopLimit - stat.loss);
+                return (
+                  <div key={stat.symbol} style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
+                      <span style={{ fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.02em" }}>{stat.symbol}</span>
+                      <span style={{ fontFamily: "monospace", color: stat.color, fontWeight: 700 }}>
+                        {fmt(-stat.floatingPl)} / {fmt(softStopLimit)} ({stat.barPct.toFixed(0)}%)
+                      </span>
+                    </div>
+                    <ZonedBar fillPct={stat.barPct} fillColor={stat.color} zone1={50} zone2={80} />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                      <span>Disponível: {fmt(headroom)}</span>
+                      <span style={{ color: stat.color, fontWeight: 600 }}>{stat.status}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
+                <span style={{ fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.02em" }}>Nenhum par ativo</span>
+                <span style={{ fontFamily: "monospace", color: "var(--neon-green)", fontWeight: 700 }}>
+                  0,00 / {fmt(softStopLimit)} (0%)
+                </span>
+              </div>
+              <ZonedBar fillPct={0} fillColor="var(--neon-green)" zone1={50} zone2={80} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                <span>Disponível: {fmt(softStopLimit)}</span>
+                <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>SEGURO</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <Divider />
