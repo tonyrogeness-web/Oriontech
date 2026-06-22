@@ -142,7 +142,7 @@ export async function POST(request: Request) {
           reserveFund: parseFloat(reserveFund) || 0.0,
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
-          reserveCapPct: parseFloat(reserveCapPct) !== undefined && reserveCapPct !== null ? parseFloat(reserveCapPct) : 2.0,
+          reserveCapPct: parseFloat(reserveCapPct) || 2.0,
         },
         create: {
           account: String(account),
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
           reserveFund: parseFloat(reserveFund) || 0.0,
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
-          reserveCapPct: parseFloat(reserveCapPct) !== undefined && reserveCapPct !== null ? parseFloat(reserveCapPct) : 2.0,
+          reserveCapPct: parseFloat(reserveCapPct) || 2.0,
         },
       });
     });

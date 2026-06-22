@@ -230,6 +230,7 @@ export default function DashboardPage() {
     balance: 0, equity: 0, dailyProfit: 0, floatingPl: 0,
     totalProfit: 0, maxDrawdown: 0, status: "RUNNING", lastUpdated: "",
     reserveFund: 0,
+    reserveCapPct: 2.0,
   };
 
   const trades = data?.trades || [];
