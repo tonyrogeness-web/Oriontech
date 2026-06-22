@@ -27,6 +27,7 @@ interface KpiCardsProps {
   equityCycleBase?: number;
   equityCycleTargetPct?: number;
   reserveFund?: number;
+  reserveCapPct?: number;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
@@ -83,6 +84,7 @@ export default function KpiCards({
   equityCycleBase = 0,
   equityCycleTargetPct = 5.0,
   reserveFund = 0,
+  reserveCapPct = 2.0,
 }: KpiCardsProps) {
   const [isReserveExpanded, setIsReserveExpanded] = useState(false);
 
@@ -425,14 +427,14 @@ export default function KpiCards({
             gap: '0.5rem',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Teto do Fundo (Est. 2%):</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{formatValPrimary(balance * 0.02)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Teto do Fundo ({reserveCapPct.toFixed(1)}%):</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{formatValPrimary(balance * (reserveCapPct / 100))}</span>
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>Progresso do Teto:</span>
               <span style={{ fontWeight: 600, color: '#a855f7' }}>
-                {((reserveFund / (balance * 0.02 || 1)) * 100).toFixed(1)}%
+                {((reserveFund / (balance * (reserveCapPct / 100) || 1)) * 100).toFixed(1)}%
               </span>
             </div>
 
@@ -441,7 +443,7 @@ export default function KpiCards({
               <div 
                 style={{ 
                   height: '100%', 
-                  width: `${Math.min(100, (reserveFund / (balance * 0.02 || 1)) * 100)}%`, 
+                  width: `${Math.min(100, (reserveFund / (balance * (reserveCapPct / 100) || 1)) * 100)}%`, 
                   background: '#a855f7',
                   borderRadius: '2px'
                 }} 
