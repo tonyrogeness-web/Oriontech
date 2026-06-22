@@ -251,24 +251,21 @@ export default function KpiCards({
         </div>
 
         {/* 3. L. Global */}
-        <div className={`${styles.kpiCardMockup} ${netProfitCalc >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
+        <div className={`${styles.kpiCardMockup} ${totalProfit >= 0 ? styles.kpiCardBorderGreen : styles.kpiCardBorderAmber} ${styles.kpiCardLarge}`}>
           <div className={styles.kpiHeaderRow}>
             <span className={styles.kpiLabelMockup}>L. Global</span>
-            <div className={`${styles.kpiIconContainer} ${netProfitCalc >= 0 ? styles.greenGlow : styles.amberGlow}`}>
+            <div className={`${styles.kpiIconContainer} ${totalProfit >= 0 ? styles.greenGlow : styles.amberGlow}`}>
               <Globe size={14} />
             </div>
           </div>
           <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
             {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
-            <span style={{ fontSize: "0.8rem", marginLeft: "0.45rem", color: "var(--text-muted)", fontWeight: "normal" }}>
-              ({balanceDiffPct >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%)
-            </span>
           </span>
           <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.80rem" }}>
-            Líq: {formatValPrimary(netProfitCalc)}
+            Líq: {formatValPrimary(netProfitCalc)} ({netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%)
           </span>
-          <span className={`${styles.kpiBadgeMockup} ${netProfitCalc >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
-            {netProfitCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%
+          <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
+            {totalProfit >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
           </span>
           <Sparkline data={globalProfitHistory} color={totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)"} />
         </div>
