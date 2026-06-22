@@ -289,7 +289,7 @@ export default function KpiCards({
       <div className={styles.patrimonioUnifiedStackCard}>
         {/* Row 1: Saldo Inicial */}
         <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
-          <div className={styles.patrimonioOuterGroupBlock}>
+          <div className={`${styles.patrimonioOuterGroupBlock} ${styles.glowLeftMuted}`}>
             <div className={styles.patrimonioRowContentGrid}>
               <span className={styles.patrimonioStackRowLabel}>S. INICIAL</span>
               <div className={styles.patrimonioStackRowValuesCenter}>
@@ -311,7 +311,7 @@ export default function KpiCards({
 
         {/* Row 2: Saldo Atual */}
         <div className={styles.patrimonioStackRow} style={{ padding: 0 }}>
-          <div className={styles.patrimonioOuterGroupBlock}>
+          <div className={`${styles.patrimonioOuterGroupBlock} ${balanceDiffPct >= 0 ? styles.glowLeftGreen : styles.glowLeftRed}`}>
             <div className={styles.patrimonioRowContentGrid}>
               <span className={styles.patrimonioStackRowLabel}>S. ATUAL</span>
               <div className={styles.patrimonioStackRowValuesCenter}>
@@ -374,7 +374,7 @@ export default function KpiCards({
 
         {/* Row 4: Fundo Reserva */}
         <div className={styles.patrimonioStackRow} style={{ borderBottom: 'none', padding: 0 }}>
-          <div className={styles.patrimonioOuterGroupBlock}>
+          <div className={`${styles.patrimonioOuterGroupBlock} ${styles.glowLeftPurple}`}>
             <div className={styles.patrimonioRowContentGrid}>
               <span className={styles.patrimonioStackRowLabel}>F. RESERVA</span>
               <div className={styles.patrimonioStackRowValuesCenter}>

@@ -3303,6 +3303,14 @@
   border-left: 3px solid var(--neon-red);
   box-shadow: inset 4px 0 10px -4px rgba(255, 23, 68, 0.15);
 }
+.glowLeftMuted {
+  border-left: 3px solid var(--text-muted);
+  box-shadow: inset 4px 0 10px -4px rgba(255, 255, 255, 0.05);
+}
+.glowLeftPurple {
+  border-left: 3px solid #a855f7;
+  box-shadow: inset 4px 0 10px -4px rgba(168, 85, 247, 0.15);
+}
 
 @media (max-width: 640px) {
   .patrimonioUnifiedCard {
