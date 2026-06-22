@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, AlertTriangle } from "lucide-react";
+import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
