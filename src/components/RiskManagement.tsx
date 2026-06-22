@@ -307,60 +307,7 @@ export default function RiskManagement({
         <Divider />
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 2 — SOFT STOP
-        ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {/* Label row */}
-          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-              <AlertTriangle size={12} style={{ color: ssColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SOFT STOP</span>
-            </div>
-            <Pill label={ssStatus} color={ssColor} />
-          </div>
-
-          {symbolStats.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-              {symbolStats.map((stat) => {
-                const headroom = Math.max(0, softStopLimit - stat.loss);
-                return (
-                  <div key={stat.symbol} style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
-                      <span style={{ fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.02em" }}>{stat.symbol}</span>
-                      <span style={{ fontFamily: "monospace", color: stat.color, fontWeight: 700 }}>
-                        {fmt(-stat.floatingPl)} / {fmt(softStopLimit)} ({stat.barPct.toFixed(0)}%)
-                      </span>
-                    </div>
-                    <ZonedBar fillPct={stat.barPct} fillColor={stat.color} zone1={50} zone2={80} />
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                      <span>Disponível: {fmt(headroom)}</span>
-                      <span style={{ color: stat.color, fontWeight: 600 }}>{stat.status}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
-                <span style={{ fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.02em" }}>Nenhum par ativo</span>
-                <span style={{ fontFamily: "monospace", color: "var(--neon-green)", fontWeight: 700 }}>
-                  0,00 / {fmt(softStopLimit)} (0%)
-                </span>
-              </div>
-              <ZonedBar fillPct={0} fillColor="var(--neon-green)" zone1={50} zone2={80} />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                <span>Disponível: {fmt(softStopLimit)}</span>
-                <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>SEGURO</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Divider />
-
-        {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 3 — REBAIXAMENTO (DRAWDOWN)
+            SEÇÃO 2 — REBAIXAMENTO (DRAWDOWN)
         ═══════════════════════════════════════════════════════ */}
         <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
           {/* Label row */}
@@ -397,6 +344,87 @@ export default function RiskManagement({
 
           {/* Sparkline */}
           <RiskSparkline data={sparkBal} color={ddColor} />
+        </div>
+
+        <Divider />
+
+        {/* ═══════════════════════════════════════════════════════
+            SEÇÃO 3 — SOFT STOP
+        ═══════════════════════════════════════════════════════ */}
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {/* Label row */}
+          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsSoftStopExpanded(!isSoftStopExpanded)}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <AlertTriangle size={12} style={{ color: ssColor }} />
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SOFT STOP</span>
+              {isSoftStopExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
+            </div>
+            <Pill label={ssStatus} color={ssColor} />
+          </div>
+
+          {!isSoftStopExpanded ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+              {/* Values (Dynamic theme colors) */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
+                <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
+                  {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>consumido</span>
+                </span>
+                <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                  limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
+                </span>
+              </div>
+
+              {/* Zoned bar */}
+              <ZonedBar fillPct={clamp(plLoss, softStopLimit)} fillColor={ssColor} zone1={50} zone2={80} />
+
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  <strong style={{ color: ssColor }}>{clamp(plLoss, softStopLimit).toFixed(1)}%</strong> do limite
+                </span>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+                  ↳ {fmt(Math.max(0, softStopLimit - plLoss))} disponíveis
+                </span>
+              </div>
+            </div>
+          ) : (
+            symbolStats.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                {symbolStats.map((stat) => {
+                  const headroom = Math.max(0, softStopLimit - stat.loss);
+                  return (
+                    <div key={stat.symbol} style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
+                        <span style={{ fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.02em" }}>{stat.symbol}</span>
+                        <span style={{ fontFamily: "monospace", color: stat.color, fontWeight: 700 }}>
+                          {fmt(-stat.floatingPl)} / {fmt(softStopLimit)} ({stat.barPct.toFixed(0)}%)
+                        </span>
+                      </div>
+                      <ZonedBar fillPct={stat.barPct} fillColor={stat.color} zone1={50} zone2={80} />
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                        <span>Disponível: {fmt(headroom)}</span>
+                        <span style={{ color: stat.color, fontWeight: 600 }}>{stat.status}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
+                  <span style={{ fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.02em" }}>Nenhum par ativo</span>
+                  <span style={{ fontFamily: "monospace", color: "var(--neon-green)", fontWeight: 700 }}>
+                    0,00 / {fmt(softStopLimit)} (0%)
+                  </span>
+                </div>
+                <ZonedBar fillPct={0} fillColor="var(--neon-green)" zone1={50} zone2={80} />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                  <span>Disponível: {fmt(softStopLimit)}</span>
+                  <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>SEGURO</span>
+                </div>
+              </div>
+            )
+          )}
         </div>
 
 
