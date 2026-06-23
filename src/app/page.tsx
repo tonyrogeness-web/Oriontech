@@ -239,6 +239,7 @@ export default function DashboardPage() {
   };
 
   const trades = data?.trades || [];
+  const symbolStates = data?.symbolStates || [];
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
@@ -317,6 +318,7 @@ export default function DashboardPage() {
             sgDistMultipl={activeAccount.sgDistMultipl !== undefined ? activeAccount.sgDistMultipl : 1.0}
             sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
             sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
+            symbolStates={symbolStates}
           />
         </div>
 

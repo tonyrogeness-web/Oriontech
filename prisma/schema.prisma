@@ -82,3 +82,17 @@ model CommandQueue {
   createdAt     DateTime  @default(now())
   executedAt    DateTime?
 }
+
+model SymbolState {
+  id            Int      @id @default(autoincrement())
+  account       String
+  symbol        String
+  sgScore       Float    @default(100.0)
+  sgScoreMin    Float    @default(40.0)
+  sgDistMultipl Float    @default(1.0)
+  sgLoteFator   Float    @default(1.0)
+  sgBloqueado   Boolean  @default(false)
+  lastUpdated   DateTime @updatedAt
+
+  @@unique([account, symbol])
+}

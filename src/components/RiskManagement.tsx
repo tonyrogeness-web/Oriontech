@@ -24,6 +24,14 @@ interface RiskManagementProps {
   sgDistMultipl?: number;
   sgLoteFator?: number;
   sgBloqueado?: boolean;
+  symbolStates?: Array<{
+    symbol: string;
+    sgScore: number;
+    sgScoreMin: number;
+    sgDistMultipl: number;
+    sgLoteFator: number;
+    sgBloqueado: boolean;
+  }>;
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -125,6 +133,7 @@ export default function RiskManagement({
   sgDistMultipl = 1.0,
   sgLoteFator = 1.0,
   sgBloqueado = false,
+  symbolStates = [],
 }: RiskManagementProps) {
   const [isSGExpanded, setIsSGExpanded] = React.useState(false);
 
@@ -382,6 +391,36 @@ export default function RiskManagement({
                 <span>Fator de Redução de Lote (LoteX):</span>
                 <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{(sgLoteFator * 100).toFixed(0)}%</span>
               </div>
+              {(() => {
+                const activeSymbolsWithTrades = Array.from(new Set(trades.map((t: any) => t.symbol)));
+                const activeSymbolStates = symbolStates.filter((s: any) => activeSymbolsWithTrades.includes(s.symbol));
+                if (activeSymbolStates.length === 0) return null;
+                return (
+                  <div style={{ borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.3rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.68rem", color: "var(--text-muted)", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "0.1rem" }}>
+                      POR SÍMBOLO
+                    </div>
+                    {activeSymbolStates.map((s: any) => {
+                      const statusText = s.sgBloqueado ? "BLOQUEADO" : s.sgScore < 60.0 ? "RESTRITO" : "OK";
+                      const statusColor = s.sgBloqueado ? "var(--neon-red)" : s.sgScore < 60.0 ? "var(--neon-amber)" : "var(--neon-green)";
+                      const indicator = s.sgBloqueado ? "🔴" : s.sgScore < 60.0 ? "⚠️" : "✓";
+                      return (
+                        <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", fontFamily: "monospace", fontSize: "0.72rem", alignItems: "center" }}>
+                          <span style={{ fontWeight: "bold", color: "var(--text-primary)" }}>{s.symbol}</span>
+                          <div style={{ display: "flex", gap: "0.6rem", color: "var(--text-muted)" }}>
+                            <span>{s.sgScore.toFixed(0)}/{s.sgScoreMin.toFixed(0)}</span>
+                            <span>D:{s.sgDistMultipl.toFixed(2)}x</span>
+                            <span>L:{(s.sgLoteFator * 100).toFixed(0)}%</span>
+                          </div>
+                          <span style={{ color: statusColor, fontWeight: 700, fontSize: "0.68rem" }}>
+                            {indicator} {statusText}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
                 O Smart Gate modula as recompras dinamicamente baseando-se no Drawdown flutuante de cada cesto.
               </div>

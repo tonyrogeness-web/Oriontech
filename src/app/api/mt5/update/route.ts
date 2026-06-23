@@ -186,6 +186,29 @@ export async function POST(request: Request) {
           sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
         },
       });
+
+      // 4b. Upsert SymbolState — SmartGate por par
+      if (symbol) {
+        await tx.symbolState.upsert({
+          where: { account_symbol: { account: String(account), symbol: String(symbol) } },
+          update: {
+            sgScore: parseFloat(sgScore) || 100.0,
+            sgScoreMin: parseFloat(sgScoreMin) || 40.0,
+            sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
+            sgLoteFator: parseFloat(sgLoteFator) || 1.0,
+            sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
+          },
+          create: {
+            account: String(account),
+            symbol: String(symbol),
+            sgScore: parseFloat(sgScore) || 100.0,
+            sgScoreMin: parseFloat(sgScoreMin) || 40.0,
+            sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
+            sgLoteFator: parseFloat(sgLoteFator) || 1.0,
+            sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
+          },
+        });
+      }
     });
 
     // 5. Upsert PerformanceHistory

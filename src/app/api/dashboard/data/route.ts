@@ -90,12 +90,18 @@ function getMockData() {
     { date: new Date().toISOString(), profit: 154.2, balance: 10383.4, equity: 10233.4, gain: 180.0, loss: -25.8 },
   ];
 
+  const mockSymbolStates = [
+    { id: 1, account: "88812345 (DEMO - DB OFFLINE)", symbol: "EURUSD", sgScore: 73.0, sgScoreMin: 73.0, sgDistMultipl: 1.32, sgLoteFator: 0.75, sgBloqueado: false, lastUpdated: new Date() },
+    { id: 2, account: "88812345 (DEMO - DB OFFLINE)", symbol: "GBPUSD", sgScore: 91.0, sgScoreMin: 40.0, sgDistMultipl: 1.00, sgLoteFator: 1.00, sgBloqueado: false, lastUpdated: new Date() },
+  ];
+
   return {
     isMock: true,
     accounts: [mockAccount],
     trades: mockTrades,
     history: mockHistory,
     pendingCommandsCount: 0,
+    symbolStates: mockSymbolStates,
   };
 }
 
@@ -143,6 +149,11 @@ export async function GET() {
       where: { status: "PENDING", account: String(primaryAccount.account) },
     });
 
+    const symbolStates = await prisma.symbolState.findMany({
+      where: { account: String(primaryAccount.account) },
+      orderBy: { lastUpdated: "desc" },
+    });
+
     // Filtro de data: ignorar histórico anterior a data configurada por env ou 16/06/2026
     const envCutoff = process.env.HISTORY_CUTOFF_DATE || "2026-06-16";
     const [cyr, cmo, cdy] = envCutoff.split("-").map(Number);
@@ -164,6 +175,7 @@ export async function GET() {
       trades,
       history: cleanHistory,
       pendingCommandsCount,
+      symbolStates,
     });
   } catch (error: any) {
     console.error("Dashboard Data Fetch Error (falling back to mock data):", error);
