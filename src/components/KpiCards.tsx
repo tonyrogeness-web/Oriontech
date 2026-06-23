@@ -298,8 +298,8 @@ export default function KpiCards({
           <span className={`${styles.kpiValueMockup} tabular-nums`} style={{ color: totalProfit >= 0 ? "var(--neon-green)" : "var(--neon-amber)" }}>
             {totalProfit >= 0 ? "+" : ""}{formatValPrimary(totalProfit)}
           </span>
-          <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.80rem" }}>
-            Líq: {formatValPrimary(netProfitCalc)} ({netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(2)}%)
+          <span className={`${styles.kpiSubValueMockup} tabular-nums`} style={{ fontSize: "0.72rem" }}>
+            Líq: {formatValPrimary(netProfitCalc)} ({netProfitPctCalc >= 0 ? "+" : ""}{netProfitPctCalc.toFixed(1)}%)
           </span>
           <span className={`${styles.kpiBadgeMockup} ${totalProfit >= 0 ? styles.kpiBadgeGreen : styles.kpiBadgeRed}`}>
             {totalProfit >= 0 ? "+" : ""}{balanceDiffPct.toFixed(2)}%
