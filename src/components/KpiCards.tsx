@@ -29,6 +29,7 @@ interface KpiCardsProps {
   reserveFund?: number;
   reserveCapPct?: number;
   reserveCutsCount?: number;
+  reserveCutsGasto?: number;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */

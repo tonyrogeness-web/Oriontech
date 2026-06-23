@@ -392,8 +392,16 @@ export default function RiskManagement({
                 <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{(sgLoteFator * 100).toFixed(0)}%</span>
               </div>
               {(() => {
-                const activeSymbolsWithTrades = Array.from(new Set(trades.map((t: any) => t.symbol)));
-                const activeSymbolStates = symbolStates.filter((s: any) => activeSymbolsWithTrades.includes(s.symbol));
+                const cleanSymbol = (sym: string) => {
+                  if (!sym) return "";
+                  return sym.toUpperCase().replace(/(CENT|c|\.c)$/i, "").replace("/", "").trim();
+                };
+                const activeSymbolsCleaned = Array.from(
+                  new Set(trades.map((t: any) => cleanSymbol(t.symbol)))
+                );
+                const activeSymbolStates = symbolStates.filter((s: any) =>
+                  activeSymbolsCleaned.includes(cleanSymbol(s.symbol))
+                );
                 if (activeSymbolStates.length === 0) return null;
                 return (
                   <div style={{ borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.3rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -406,7 +414,7 @@ export default function RiskManagement({
                       const indicator = s.sgBloqueado ? "🔴" : s.sgScore < 60.0 ? "⚠️" : "✓";
                       return (
                         <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", fontFamily: "monospace", fontSize: "0.72rem", alignItems: "center" }}>
-                          <span style={{ fontWeight: "bold", color: "var(--text-primary)" }}>{s.symbol}</span>
+                          <span style={{ fontWeight: "bold", color: "var(--text-primary)" }}>{cleanSymbol(s.symbol)}</span>
                           <div style={{ display: "flex", gap: "0.6rem", color: "var(--text-muted)" }}>
                             <span>{s.sgScore.toFixed(0)}/{s.sgScoreMin.toFixed(0)}</span>
                             <span>D:{s.sgDistMultipl.toFixed(2)}x</span>

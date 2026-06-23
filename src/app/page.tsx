@@ -295,11 +295,6 @@ export default function DashboardPage() {
           reserveCutsCount={activeAccount.reserveCutsCount || 0}
           reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
           reserveCapPct={activeAccount.reserveCapPct || 2.0}
-          sgScore={activeAccount.sgScore !== undefined ? activeAccount.sgScore : 100.0}
-          sgScoreMin={activeAccount.sgScoreMin !== undefined ? activeAccount.sgScoreMin : 40.0}
-          sgDistMultipl={activeAccount.sgDistMultipl !== undefined ? activeAccount.sgDistMultipl : 1.0}
-          sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
-          sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
         />
 
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
