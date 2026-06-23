@@ -152,7 +152,7 @@ export async function POST(request: Request) {
           sgScoreMin: parseFloat(sgScoreMin) || 40.0,
           sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
           sgLoteFator: parseFloat(sgLoteFator) || 1.0,
-          sgBloqueado: sgBloqueado !== undefined ? Boolean(sgBloqueado) : false,
+          sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
         },
         create: {
           account: String(account),
@@ -186,7 +186,7 @@ export async function POST(request: Request) {
           sgScoreMin: parseFloat(sgScoreMin) || 40.0,
           sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
           sgLoteFator: parseFloat(sgLoteFator) || 1.0,
-          sgBloqueado: sgBloqueado !== undefined ? Boolean(sgBloqueado) : false,
+          sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
         },
       });
     });
