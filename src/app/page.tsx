@@ -1,5 +1,6 @@
 "use client";
 
+// Vercel rebuild trigger: 2026-06-23
 import React, { useState, useEffect } from "react";
 import { Activity } from "lucide-react";
 import Header from "@/components/Header";
