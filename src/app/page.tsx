@@ -292,10 +292,6 @@ export default function DashboardPage() {
           ddReached20={activeAccount.ddReached20}
           equityCycleBase={activeAccount.equityCycleBase}
           equityCycleTargetPct={activeAccount.equityCycleTargetPct}
-          reserveFund={activeAccount.reserveFund || 0}
-          reserveCutsCount={activeAccount.reserveCutsCount || 0}
-          reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
-          reserveCapPct={activeAccount.reserveCapPct || 2.0}
         />
 
         <div className={styles.mainGrid} style={{ marginBottom: "1.25rem" }}>
@@ -315,6 +311,13 @@ export default function DashboardPage() {
             sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
             sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
             symbolStates={symbolStates}
+            reserveFund={activeAccount.reserveFund || 0}
+            reserveCapPct={activeAccount.reserveCapPct || 2.0}
+            reserveCutsCount={activeAccount.reserveCutsCount || 0}
+            reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
+            buySosScheduled={activeAccount.buySosScheduled}
+            sellSosScheduled={activeAccount.sellSosScheduled}
+            loteBase={activeAccount.loteBase || 0.012}
           />
         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, AlertTriangle, ChevronDown, ChevronUp, Wallet, Shield } from "lucide-react";
 import styles from "./components.module.css";
 
 interface PerformancePoint {
@@ -32,6 +32,13 @@ interface RiskManagementProps {
     sgLoteFator: number;
     sgBloqueado: boolean;
   }>;
+  reserveFund?: number;
+  reserveCapPct?: number;
+  reserveCutsCount?: number;
+  reserveCutsGasto?: number;
+  buySosScheduled?: boolean;
+  sellSosScheduled?: boolean;
+  loteBase?: number;
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -134,8 +141,17 @@ export default function RiskManagement({
   sgLoteFator = 1.0,
   sgBloqueado = false,
   symbolStates = [],
+  reserveFund = 0,
+  reserveCapPct = 2.0,
+  reserveCutsCount = 0,
+  reserveCutsGasto = 0.0,
+  buySosScheduled = false,
+  sellSosScheduled = false,
+  loteBase = 0.012,
 }: RiskManagementProps) {
   const [isSGExpanded, setIsSGExpanded] = React.useState(false);
+  const [isReserveExpanded, setIsReserveExpanded] = React.useState(false);
+  const [isDefesaExpanded, setIsDefesaExpanded] = React.useState(false);
 
   /* ── Formatter ────────────────────────────────────────────────── */
   const fmt = (val: number, keepSign = false) => {
@@ -241,7 +257,49 @@ export default function RiskManagement({
       <div className={styles.riskItemList}>
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 1 — PERDA FLUTUANTE
+            SEÇÃO 1 — REBAIXAMENTO (DRAWDOWN)
+        ═══════════════════════════════════════════════════════ */}
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
+          {/* Label row */}
+          <div className={styles.riskHeaderRow}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <TrendingDown size={12} style={{ color: ddColor }} />
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>REBAIXAMENTO (DRAWDOWN)</span>
+            </div>
+            <Pill label={ddStatus} color={ddColor} />
+          </div>
+
+          {/* Values (Dynamic theme colors) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
+            <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
+              {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>atual</span>
+            </span>
+            <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>50.00%</span>
+            </span>
+          </div>
+
+          {/* Zoned bar */}
+          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={40} zone2={70} />
+
+          {/* Footer */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
+            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+              <strong style={{ color: ddColor }}>{ddBarPct.toFixed(1)}%</strong> do limite atingido
+            </span>
+            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
+              ↳ {ddHeadroom.toFixed(2)}% disponíveis
+            </span>
+          </div>
+
+          {/* Sparkline */}
+          <RiskSparkline data={sparkBal} color={ddColor} />
+        </div>
+
+        <Divider />
+
+        {/* ═══════════════════════════════════════════════════════
+            SEÇÃO 2 — PERDA FLUTUANTE
         ═══════════════════════════════════════════════════════ */}
         <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
           {/* Label row */}
@@ -286,49 +344,168 @@ export default function RiskManagement({
         <Divider />
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 2 — REBAIXAMENTO (DRAWDOWN)
+            SEÇÃO 3 — FUNDO DE RESERVA (F. RESERVA)
         ═══════════════════════════════════════════════════════ */}
-        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65 }}>
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {/* Label row */}
-          <div className={styles.riskHeaderRow}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-              <TrendingDown size={12} style={{ color: ddColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>REBAIXAMENTO (DRAWDOWN)</span>
+          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsReserveExpanded(!isReserveExpanded)}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <Wallet size={12} style={{ color: "#a855f7" }} />
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>F. RESERVA</span>
+              {isReserveExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
             </div>
-            <Pill label={ddStatus} color={ddColor} />
+            <Pill label={reserveFund > 0 ? "ATIVO" : "INATIVO"} color={reserveFund > 0 ? "#a855f7" : "var(--text-muted)"} />
           </div>
 
-          {/* Values (Dynamic theme colors) */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.35rem 0 0.45rem" }}>
-            <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
-              {maxDrawdown.toFixed(2)}% <span style={{ color: ddColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>atual</span>
-            </span>
-            <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-              limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>50.00%</span>
-            </span>
-          </div>
+          {!isReserveExpanded ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+              {/* Values */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
+                <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "#a855f7", fontFamily: "monospace" }}>
+                  {fmt(reserveFund)}
+                </span>
+                <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                  teto <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{reserveCapPct.toFixed(1)}%</span>
+                </span>
+              </div>
 
-          {/* Zoned bar */}
-          <ZonedBar fillPct={ddBarPct} fillColor={ddColor} zone1={40} zone2={70} />
+              {/* Progress bar in relation to ceiling */}
+              {(() => {
+                const limitVal = balance * (reserveCapPct / 100) || 1;
+                const ratioPct = Math.min(100, Math.max(0, (reserveFund / limitVal) * 100));
+                return (
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <ZonedBar fillPct={ratioPct} fillColor="#a855f7" zone1={50} zone2={80} />
+                  </div>
+                );
+              })()}
 
-          {/* Footer */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem" }}>
-            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-              <strong style={{ color: ddColor }}>{ddBarPct.toFixed(1)}%</strong> do limite atingido
-            </span>
-            <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
-              ↳ {ddHeadroom.toFixed(2)}% disponíveis
-            </span>
-          </div>
-
-          {/* Sparkline */}
-          <RiskSparkline data={sparkBal} color={ddColor} />
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  Cortes/Defesas: <strong style={{ color: "var(--text-secondary)" }}>{reserveCutsCount}</strong>
+                </span>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  Total Queimado: <strong style={{ color: "var(--text-secondary)" }}>{fmt(reserveCutsGasto)}</strong>
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Fundo de Reserva:</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#a855f7" }}>{fmt(reserveFund)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Teto Máximo ({reserveCapPct.toFixed(1)}%):</span>
+                <span style={{ fontFamily: "monospace" }}>{fmt(balance * (reserveCapPct / 100))}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Progresso do Teto:</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#a855f7" }}>
+                  {((reserveFund / (balance * (reserveCapPct / 100) || 1)) * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Total de Cortes (Airbag):</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{reserveCutsCount} vezes</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Prejuízo Coberto / Queimado:</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--neon-red)" }}>{fmt(reserveCutsGasto)}</span>
+              </div>
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
+                O Fundo de Reserva é alimentado com a retenção de 10% dos lucros de ciclos normais para realizar cortes parciais na pior ordem em momentos de estresse (Airbag).
+              </div>
+            </div>
+          )}
         </div>
 
         <Divider />
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 3 — SMART GATE
+            SEÇÃO 4 — SISTEMA DE DEFESA (DEFESA)
+        ═══════════════════════════════════════════════════════ */}
+        <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {/* Label row */}
+          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsDefesaExpanded(!isDefesaExpanded)}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <Shield size={12} style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)" }} />
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SISTEMA DE DEFESA</span>
+              {isDefesaExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
+            </div>
+            <Pill 
+              label={(buySosScheduled || sellSosScheduled) ? "DEFESA!" : "MONITORANDO"} 
+              color={(buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)"} 
+            />
+          </div>
+
+          {!isDefesaExpanded ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              {/* Summary info */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", margin: "0.1rem 0" }}>
+                <span style={{ color: "var(--text-secondary)" }}>SOS Zero a Zero:</span>
+                <span style={{ fontWeight: 700, color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                  {buySosScheduled || sellSosScheduled ? "ATIVADO" : "Aguardando"}
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem" }}>
+                <span style={{ color: "var(--text-secondary)" }}>Hedge Parcial:</span>
+                <span style={{ fontWeight: 700, color: (trades.filter(t => t.type === "BUY").length >= 5 || trades.filter(t => t.type === "SELL").length >= 5) ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                  {(trades.filter(t => t.type === "BUY").length >= 5 || trades.filter(t => t.type === "SELL").length >= 5) ? "ATIVO" : "Monitorando"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              {/* Detailed stats */}
+              {(() => {
+                const buyCount = trades.filter((t: any) => t.type === "BUY").length;
+                const sellCount = trades.filter((t: any) => t.type === "SELL").length;
+                return (
+                  <>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>SOS Buy (Zero a Zero):</span>
+                      <span style={{ fontWeight: 700, color: buySosScheduled ? "var(--neon-red)" : "var(--text-muted)" }}>
+                        {buySosScheduled ? "ATIVADO" : (buyCount >= 5 ? "AGUARDANDO DD > 10%" : `Aguardando Nível (${buyCount}/5)`)}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>SOS Sell (Zero a Zero):</span>
+                      <span style={{ fontWeight: 700, color: sellSosScheduled ? "var(--neon-red)" : "var(--text-muted)" }}>
+                        {sellSosScheduled ? "ATIVADO" : (sellCount >= 5 ? "AGUARDANDO DD > 10%" : `Aguardando Nível (${sellCount}/5)`)}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.2rem" }}>
+                      <span>Hedge Parcial Buy (Alt 1):</span>
+                      <span style={{ fontWeight: 700, color: buyCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                        {buyCount >= 5 ? `ATIVO (Custo Coberto por Sell)` : `Aguardando (${buyCount}/5)`}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Hedge Parcial Sell (Alt 1):</span>
+                      <span style={{ fontWeight: 700, color: sellCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                        {sellCount >= 5 ? `ATIVO (Custo Coberto por Buy)` : `Aguardando (${sellCount}/5)`}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Lote Base Atual:</span>
+                      <span style={{ fontFamily: "monospace" }}>{(loteBase || 0.012).toFixed(3)}</span>
+                    </div>
+                  </>
+                );
+              })()}
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
+                A Defesa é composta pelo Hedge Parcial (queima lucro do cesto oposto para fechar a pior ordem) e pelo Break Even SOS (reduz o TP do cesto para empate rápido em momentos de alto rebaixamento).
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Divider />
+
+        {/* ═══════════════════════════════════════════════════════
+            SEÇÃO 5 — SMART GATE
         ═══════════════════════════════════════════════════════ */}
         <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {/* Label row */}
@@ -435,9 +612,6 @@ export default function RiskManagement({
             </div>
           )}
         </div>
-
-
-      </div>
     </div>
   );
 }
