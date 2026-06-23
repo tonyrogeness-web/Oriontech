@@ -242,7 +242,6 @@ export default function DashboardPage() {
   const history = data?.history || [];
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
-  const dynamicSoftStopLimit = activeAccount.softStopLimit || 400.0;
 
   return (
     <div className={isFlashActive ? styles.syncFlash : ""}>
@@ -263,7 +262,11 @@ export default function DashboardPage() {
           maxDrawdown={activeAccount.maxDrawdown}
           floatingPl={activeAccount.floatingPl}
           balance={activeAccount.balance}
-          softStopLimit={dynamicSoftStopLimit}
+          sgScore={activeAccount.sgScore !== undefined ? activeAccount.sgScore : 100.0}
+          sgScoreMin={activeAccount.sgScoreMin !== undefined ? activeAccount.sgScoreMin : 40.0}
+          sgDistMultipl={activeAccount.sgDistMultipl !== undefined ? activeAccount.sgDistMultipl : 1.0}
+          sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
+          sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
           newsActive={activeAccount.newsActive}
           newsName={activeAccount.newsName}
           newsFrozen={activeAccount.newsFrozen}
@@ -304,12 +307,16 @@ export default function DashboardPage() {
             floatingPl={activeAccount.floatingPl}
             maxDrawdown={activeAccount.maxDrawdown}
             tradesCount={trades.length}
-            softStopLimit={dynamicSoftStopLimit}
             balance={activeAccount.balance}
             currencyMode={currencyMode}
             brlRate={brlRate}
             history={history}
             trades={trades}
+            sgScore={activeAccount.sgScore !== undefined ? activeAccount.sgScore : 100.0}
+            sgScoreMin={activeAccount.sgScoreMin !== undefined ? activeAccount.sgScoreMin : 40.0}
+            sgDistMultipl={activeAccount.sgDistMultipl !== undefined ? activeAccount.sgDistMultipl : 1.0}
+            sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
+            sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
           />
         </div>
 

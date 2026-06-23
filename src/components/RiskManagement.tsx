@@ -14,12 +14,16 @@ interface RiskManagementProps {
   floatingPl: number;
   maxDrawdown: number;
   tradesCount: number;
-  softStopLimit?: number;
   balance?: number;
   currencyMode?: "CENT" | "BRL";
   brlRate?: number;
   history?: PerformancePoint[];
   trades?: any[];
+  sgScore?: number;
+  sgScoreMin?: number;
+  sgDistMultipl?: number;
+  sgLoteFator?: number;
+  sgBloqueado?: boolean;
 }
 
 /* ── Mini Sparkline SVG ─────────────────────────────────────────── */
@@ -111,14 +115,18 @@ export default function RiskManagement({
   floatingPl = 0,
   maxDrawdown = 0,
   tradesCount = 0,
-  softStopLimit = 400.0,
   balance = 0,
   currencyMode = "CENT",
   brlRate = 5.45,
   history = [],
   trades = [],
+  sgScore = 100.0,
+  sgScoreMin = 40.0,
+  sgDistMultipl = 1.0,
+  sgLoteFator = 1.0,
+  sgBloqueado = false,
 }: RiskManagementProps) {
-  const [isSoftStopExpanded, setIsSoftStopExpanded] = React.useState(false);
+  const [isSGExpanded, setIsSGExpanded] = React.useState(false);
 
   /* ── Formatter ────────────────────────────────────────────────── */
   const fmt = (val: number, keepSign = false) => {
@@ -163,58 +171,19 @@ export default function RiskManagement({
   const plBarPct     = clamp(plBalancePct, 50);
 
   /* ═══════════════════════════════════════════════════════════════
-     2. SOFT STOP — % do limite consumido por par (Worst-Offender)
+     2. SMART GATE — status e score de segurança (Worst-Offender)
   ═══════════════════════════════════════════════════════════════ */
-  const symbolStats = React.useMemo(() => {
-    if (!trades || trades.length === 0) return [];
-    
-    // Group trades by symbol
-    const symbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
-    return symbols.map(sym => {
-      const symTrades = trades.filter((t: any) => t.symbol === sym);
-      const symPl = symTrades.reduce((sum, t) => sum + (t.currentProfit || 0), 0);
-      const symLoss = Math.max(0, -symPl);
-      const symBarPct = symPl < 0 ? clamp(symLoss, softStopLimit) : 0;
-      const cleanSym = sym.toUpperCase().replace(/C$/i, "").replace("/", "");
-      
-      const symColor = symBarPct >= 80 ? "var(--neon-red)" : symBarPct >= 50 ? "var(--neon-gold)" : "var(--neon-green)";
-      const symStatus = symBarPct >= 80 ? "CRÍTICO" : symBarPct >= 50 ? "ALERTA" : "SEGURO";
+  const sgStatus = sgBloqueado
+    ? "CRÍTICO"
+    : sgScore < 60.0
+      ? "ALERTA"
+      : "SEGURO";
 
-      return {
-        symbol: cleanSym,
-        floatingPl: symPl,
-        loss: symLoss,
-        barPct: symBarPct,
-        color: symColor,
-        status: symStatus,
-      };
-    }).sort((a, b) => b.loss - a.loss); // Worst performing first
-  }, [trades, softStopLimit]);
-
-  // Find worst status for global references
-  let ssStatus = "SEGURO";
-  let ssColor = "var(--neon-green)";
-  let ssBarPct = 0;
-  let worstPlLoss = 0;
-
-  if (symbolStats.length > 0) {
-    const hasCritical = symbolStats.some(s => s.status === "CRÍTICO");
-    const hasAlert = symbolStats.some(s => s.status === "ALERTA");
-    
-    if (hasCritical) {
-      ssStatus = "CRÍTICO";
-      ssColor = "var(--neon-red)";
-    } else if (hasAlert) {
-      ssStatus = "ALERTA";
-      ssColor = "var(--neon-gold)";
-    }
-    
-    const worstPair = symbolStats[0]; // worst-offender
-    worstPlLoss = worstPair.loss;
-    ssBarPct = worstPair.barPct;
-  }
-
-  const ssHeadroom   = Math.max(0, softStopLimit - worstPlLoss);
+  const sgColor = sgBloqueado
+    ? "var(--neon-red)"
+    : sgScore < 60.0
+      ? "var(--neon-gold)"
+      : "var(--neon-green)";
 
   /* ═══════════════════════════════════════════════════════════════
      3. REBAIXAMENTO (DRAWDOWN) — identico a barra "Drawdown Local" do painel MT5
@@ -227,8 +196,8 @@ export default function RiskManagement({
 
 
   /* ── Worst state → card border ───────────────────────────────── */
-  const isCritical = ssStatus === "CRÍTICO" || ddStatus === "CRÍTICO";
-  const isAlert    = ssStatus === "ALERTA"   || ddStatus === "ALERTA";
+  const isCritical = sgStatus === "CRÍTICO" || ddStatus === "CRÍTICO";
+  const isAlert    = sgStatus === "ALERTA"   || ddStatus === "ALERTA";
   const cardBorder = isCritical
     ? styles.kpiCardBorderRed
     : isAlert
@@ -350,81 +319,73 @@ export default function RiskManagement({
         <Divider />
 
         {/* ═══════════════════════════════════════════════════════
-            SEÇÃO 3 — SOFT STOP
+            SEÇÃO 3 — SMART GATE
         ═══════════════════════════════════════════════════════ */}
         <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {/* Label row */}
-          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsSoftStopExpanded(!isSoftStopExpanded)}>
+          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsSGExpanded(!isSGExpanded)}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <AlertTriangle size={12} style={{ color: ssColor }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SOFT STOP</span>
-              {isSoftStopExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
+              <AlertTriangle size={12} style={{ color: sgColor }} />
+              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SMART GATE</span>
+              {isSGExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
             </div>
-            <Pill label={ssStatus} color={ssColor} />
+            <Pill label={sgStatus} color={sgColor} />
           </div>
 
-          {!isSoftStopExpanded ? (
+          {!isSGExpanded ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              {/* Values (Dynamic theme colors) */}
+              {/* Values */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
                 <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace" }}>
-                  {fmt(plLoss)} <span style={{ color: ssColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>consumido</span>
+                  {sgScore.toFixed(1)} <span style={{ color: sgColor, fontSize: "clamp(0.7rem, 2vw, 0.82rem)", fontWeight: 500 }}>score</span>
                 </span>
                 <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                  limite <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{fmt(softStopLimit)}</span>
+                  mínimo <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{sgScoreMin.toFixed(1)}</span>
                 </span>
               </div>
 
               {/* Zoned bar */}
-              <ZonedBar fillPct={clamp(plLoss, softStopLimit)} fillColor={ssColor} zone1={50} zone2={80} />
+              <div style={{ position: "relative", width: "100%" }}>
+                <ZonedBar fillPct={sgScore} fillColor={sgColor} zone1={40} zone2={60} />
+                <div style={{ position: "absolute", left: `${sgScoreMin}%`, top: 0, bottom: 0, width: "2px", background: "var(--text-primary)", boxShadow: "0 0 4px #fff" }} />
+              </div>
 
               {/* Footer */}
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
                 <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-                  <strong style={{ color: ssColor }}>{clamp(plLoss, softStopLimit).toFixed(1)}%</strong> do limite
+                  DistX: <strong style={{ color: sgDistMultipl > 1.0 ? "var(--neon-gold)" : "var(--text-secondary)" }}>{sgDistMultipl.toFixed(2)}x</strong>
                 </span>
-                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--neon-green)", fontWeight: 700, fontFamily: "monospace" }}>
-                  ↳ {fmt(Math.max(0, softStopLimit - plLoss))} disponíveis
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  LoteX: <strong style={{ color: sgLoteFator < 1.0 ? "var(--neon-gold)" : "var(--text-secondary)" }}>{(sgLoteFator * 100).toFixed(0)}%</strong>
                 </span>
               </div>
             </div>
           ) : (
-            symbolStats.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                {symbolStats.map((stat) => {
-                  const headroom = Math.max(0, softStopLimit - stat.loss);
-                  return (
-                    <div key={stat.symbol} style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
-                        <span style={{ fontWeight: 800, color: "var(--text-secondary)", letterSpacing: "0.02em" }}>{stat.symbol}</span>
-                        <span style={{ fontFamily: "monospace", color: stat.color, fontWeight: 700 }}>
-                          {fmt(-stat.floatingPl)} / {fmt(softStopLimit)} ({stat.barPct.toFixed(0)}%)
-                        </span>
-                      </div>
-                      <ZonedBar fillPct={stat.barPct} fillColor={stat.color} zone1={50} zone2={80} />
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                        <span>Disponível: {fmt(headroom)}</span>
-                        <span style={{ color: stat.color, fontWeight: 600 }}>{stat.status}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Status da Grade:</span>
+                <span style={{ fontWeight: 700, color: sgColor }}>{sgBloqueado ? "BLOQUEADO (RECOMPRAS SUSPENSAS)" : sgScore < 60 ? "RESTRIÇÃO ATIVA" : "LIBERADO"}</span>
               </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", alignItems: "baseline" }}>
-                  <span style={{ fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.02em" }}>Nenhum par ativo</span>
-                  <span style={{ fontFamily: "monospace", color: "var(--neon-green)", fontWeight: 700 }}>
-                    0,00 / {fmt(softStopLimit)} (0%)
-                  </span>
-                </div>
-                <ZonedBar fillPct={0} fillColor="var(--neon-green)" zone1={50} zone2={80} />
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                  <span>Disponível: {fmt(softStopLimit)}</span>
-                  <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>SEGURO</span>
-                </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Score Atual:</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{sgScore.toFixed(1)} / 100.0</span>
               </div>
-            )
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Score Mínimo:</span>
+                <span style={{ fontFamily: "monospace" }}>{sgScoreMin.toFixed(1)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Multiplicador de Distância (DistX):</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{sgDistMultipl.toFixed(2)}x</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Fator de Redução de Lote (LoteX):</span>
+                <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{(sgLoteFator * 100).toFixed(0)}%</span>
+              </div>
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
+                O Smart Gate modula as recompras dinamicamente baseando-se no Drawdown flutuante de cada cesto.
+              </div>
+            </div>
           )}
         </div>
 

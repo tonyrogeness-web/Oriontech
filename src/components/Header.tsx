@@ -25,7 +25,15 @@ interface HeaderProps {
   maxDrawdown?: number;
   floatingPl?: number;
   balance?: number;
-  softStopLimit?: number;
+  reserveFund?: number;
+  reserveCapPct?: number;
+  reserveCutsCount?: number;
+  reserveCutsGasto?: number;
+  sgScore?: number;
+  sgScoreMin?: number;
+  sgDistMultipl?: number;
+  sgLoteFator?: number;
+  sgBloqueado?: boolean;
   newsActive?: boolean;
   newsName?: string;
   newsFrozen?: boolean;
@@ -44,7 +52,11 @@ export default function Header({
   maxDrawdown = 0,
   floatingPl = 0,
   balance = 0,
-  softStopLimit = 400.0,
+  sgScore = 100.0,
+  sgScoreMin = 40.0,
+  sgDistMultipl = 1.0,
+  sgLoteFator = 1.0,
+  sgBloqueado = false,
   newsActive = false,
   newsName = "",
   newsFrozen = false,
@@ -250,38 +262,25 @@ export default function Header({
     });
   }
 
-  // C. SoftStop — identico ao painel MT5 (verde <50%, amarelo 50-80%, vermelho >=80%, 100% = bloqueado)
-  if (worstPl < 0 && softStopLimit > 0) {
-    const absLoss = Math.abs(worstPl);
-    const reachPct = (absLoss / softStopLimit) * 100;
-    if (reachPct >= 100) {
-      activeCriticals.push({
-        id: `crit_softstop_blocked_${worstSymbol}`,
-        severity: "critical",
-        title: `🔴 SOFTSTOP ATIVADO — BLOQUEADO (${worstSymbol})`,
-        desc: `Perda flutuante no par ${worstSymbol} (${formatValue(absLoss)}) atingiu o limite de ${formatValue(softStopLimit)}. Novos cestos bloqueados!`,
-        createdAt: 0,
-        read: false,
-      });
-    } else if (reachPct >= 80) {
-      activeCriticals.push({
-        id: `crit_softstop_80_${worstSymbol}`,
-        severity: "critical",
-        title: `🔴 SOFTSTOP CRÍTICO — ${worstSymbol}`,
-        desc: `Rebaixamento no par ${worstSymbol} atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
-        createdAt: 0,
-        read: false,
-      });
-    } else if (reachPct >= 50) {
-      activeCriticals.push({
-        id: `crit_softstop_50_${worstSymbol}`,
-        severity: "warning",
-        title: `🟡 SOFTSTOP ALERTA — ${worstSymbol}`,
-        desc: `Rebaixamento no par ${worstSymbol} atingiu ${reachPct.toFixed(1)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`,
-        createdAt: 0,
-        read: false,
-      });
-    }
+  // C. Smart Gate Alert/Critical checks
+  if (sgBloqueado) {
+    activeCriticals.push({
+      id: `crit_sg_blocked`,
+      severity: "critical",
+      title: `🔴 SMART GATE BLOQUEADO`,
+      desc: `O filtro Smart Gate está ativo e bloqueando novas recompras (Score: ${sgScore.toFixed(1)} / Mínimo: ${sgScoreMin.toFixed(1)})`,
+      createdAt: 0,
+      read: false,
+    });
+  } else if (sgScore < 60.0) {
+    activeCriticals.push({
+      id: `crit_sg_warning`,
+      severity: "warning",
+      title: `🟡 SMART GATE RESTRITO`,
+      desc: `Filtro Smart Gate em nível de atenção (Score: ${sgScore.toFixed(1)} / Mínimo: ${sgScoreMin.toFixed(1)})`,
+      createdAt: 0,
+      read: false,
+    });
   }
 
   // D. Filtro de Notícias Ativo
@@ -621,53 +620,36 @@ export default function Header({
     prevDrawdownRef.current = maxDrawdown;
   }, [maxDrawdown, addToast]);
 
-  // SoftStop changes tracker
-  const isFirstSoftStopRef = useRef(true);
-  const prevSoftStopReachRef = useRef<number>(0);
-  const prevWorstSymbolRef = useRef<string>("GLOBAL");
+  // SmartGate status changes tracker
+  const isFirstSGRef = useRef(true);
+  const prevSGBloqueadoRef = useRef<boolean>(false);
+  const prevSGScoreRef = useRef<number>(100.0);
   useEffect(() => {
-    if (!trades || softStopLimit === undefined || softStopLimit <= 0) return;
+    if (sgScore === undefined) return;
 
-    // Group trades by symbol
-    const symbolPl: Record<string, number> = {};
-    trades.forEach((t) => {
-      const sym = t.symbol.toUpperCase().replace(/C$/i, "").replace("/", "");
-      symbolPl[sym] = (symbolPl[sym] || 0) + t.currentProfit;
-    });
-
-    // Find worst performing symbol
-    let wSymbol = "GLOBAL";
-    let wPl = 0;
-    Object.entries(symbolPl).forEach(([sym, pl]) => {
-      if (pl < wPl) {
-        wPl = pl;
-        wSymbol = sym;
-      }
-    });
-
-    const absLoss = Math.abs(wPl);
-    const reachPct = (absLoss / softStopLimit) * 100;
-
-    if (isFirstSoftStopRef.current) {
-      isFirstSoftStopRef.current = false;
-      prevSoftStopReachRef.current = reachPct;
-      prevWorstSymbolRef.current = wSymbol;
+    if (isFirstSGRef.current) {
+      isFirstSGRef.current = false;
+      prevSGBloqueadoRef.current = sgBloqueado;
+      prevSGScoreRef.current = sgScore;
       return;
     }
 
-    const prev = prevSoftStopReachRef.current;
-    if (wPl < 0) {
-      if (prev < 50 && reachPct >= 50 && reachPct < 80) {
-        addToast(`🟡 Alerta SoftStop — ${wSymbol}`, `Rebaixamento no par ${wSymbol} atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "warning");
-      } else if (prev < 80 && reachPct >= 80 && reachPct < 100) {
-        addToast(`🔴 SoftStop Crítico — ${wSymbol}`, `Rebaixamento no par ${wSymbol} atingiu ${reachPct.toFixed(0)}% do limite de perda (${formatValue(absLoss)} de ${formatValue(softStopLimit)})`, "error");
-      } else if (prev < 100 && reachPct >= 100) {
-        addToast(`🛑 SoftStop Ativado — ${wSymbol}`, `Limite de perda atingido no par ${wSymbol} (${formatValue(absLoss)} / ${formatValue(softStopLimit)}). Novas ordens bloqueadas!`, "error");
-      }
+    const prevBloqueado = prevSGBloqueadoRef.current;
+    const prevScore = prevSGScoreRef.current;
+
+    if (!prevBloqueado && sgBloqueado) {
+      addToast("🛑 Smart Gate Bloqueado", `O score do Smart Gate atingiu ${sgScore.toFixed(1)} (abaixo do mínimo de ${sgScoreMin.toFixed(1)}). Recompras suspensas!`, "error");
+    } else if (prevBloqueado && !sgBloqueado) {
+      addToast("🟢 Smart Gate Liberado", `O score do Smart Gate subiu para ${sgScore.toFixed(1)} (mínimo ${sgScoreMin.toFixed(1)}). Recompras reativadas!`, "success");
+    } else if (prevScore >= 60.0 && sgScore < 60.0 && !sgBloqueado) {
+      addToast("🟡 Smart Gate Restrito", `Atenção: Smart Gate entrou em estado de restrição parcial (Score: ${sgScore.toFixed(1)} / Mínimo: ${sgScoreMin.toFixed(1)})`, "warning");
+    } else if (prevScore < 60.0 && sgScore >= 60.0 && !sgBloqueado) {
+      addToast("🟢 Smart Gate Normalizado", `Smart Gate retornou ao estado normalizado de operação (Score: ${sgScore.toFixed(1)})`, "success");
     }
-    prevSoftStopReachRef.current = reachPct;
-    prevWorstSymbolRef.current = wSymbol;
-  }, [trades, softStopLimit, addToast]);
+
+    prevSGBloqueadoRef.current = sgBloqueado;
+    prevSGScoreRef.current = sgScore;
+  }, [sgScore, sgScoreMin, sgBloqueado, addToast]);
 
   // Trailing active / peak cycle tracker
   const isFirstTrailingActiveRef = useRef(true);
