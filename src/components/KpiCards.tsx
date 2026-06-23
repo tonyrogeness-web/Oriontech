@@ -29,12 +29,6 @@ interface KpiCardsProps {
   reserveFund?: number;
   reserveCapPct?: number;
   reserveCutsCount?: number;
-  reserveCutsGasto?: number;
-  sgScore?: number;
-  sgScoreMin?: number;
-  sgDistMultipl?: number;
-  sgLoteFator?: number;
-  sgBloqueado?: boolean;
 }
 
 /* ── Sparkline component inside KpiCards.tsx ── */
@@ -94,14 +88,8 @@ export default function KpiCards({
   reserveCapPct = 2.0,
   reserveCutsCount = 0,
   reserveCutsGasto = 0.0,
-  sgScore = 100.0,
-  sgScoreMin = 40.0,
-  sgDistMultipl = 1.0,
-  sgLoteFator = 1.0,
-  sgBloqueado = false,
 }: KpiCardsProps) {
   const [isReserveExpanded, setIsReserveExpanded] = useState(false);
-  const [isSGExpanded, setIsSGExpanded] = useState(false);
 
   // Format primary value (main display)
   const formatValPrimary = (val: number) => {
@@ -238,22 +226,7 @@ export default function KpiCards({
   const isProfitPositive = profitNet >= 0;
   const profitColor = isProfitPositive ? "var(--neon-green)" : "var(--neon-red)";
 
-  let sgBadge = "LIBERADO";
-  let sgGlowClass = styles.glowLeftGreen;
-  let sgBadgeColor = "var(--neon-green)";
-  let sgBadgeStyle = { color: "var(--neon-green)", borderColor: "rgba(0, 200, 83, 0.25)", background: "rgba(0, 200, 83, 0.08)" };
 
-  if (sgBloqueado) {
-    sgBadge = "BLOQUEADO";
-    sgGlowClass = styles.glowLeftRed;
-    sgBadgeColor = "var(--neon-red)";
-    sgBadgeStyle = { color: "var(--neon-red)", borderColor: "rgba(255, 82, 82, 0.25)", background: "rgba(255, 82, 82, 0.08)" };
-  } else if (sgScore < 60.0) {
-    sgBadge = "RESTRITO";
-    sgGlowClass = styles.glowLeftAmber;
-    sgBadgeColor = "var(--neon-amber)";
-    sgBadgeStyle = { color: "var(--neon-amber)", borderColor: "rgba(224, 155, 0, 0.25)", background: "rgba(224, 155, 0, 0.08)" };
-  }
 
   return (
     <>
@@ -501,106 +474,7 @@ export default function KpiCards({
           </div>
         )}
 
-        {/* Row 5: Smart Gate */}
-        <div 
-          className={styles.patrimonioStackRow} 
-          style={{ borderBottom: 'none', padding: 0, cursor: 'pointer', borderTop: '1px solid var(--opacity-divider)' }}
-          onClick={() => setIsSGExpanded(!isSGExpanded)}
-        >
-          <div className={`${styles.patrimonioPerformanceGroupBlock} ${sgGlowClass}`} style={{ marginTop: '0.5rem' }}>
-            <div className={styles.patrimonioRowContentGrid}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span className={styles.patrimonioStackRowLabel}>SMART GATE</span>
-                {isSGExpanded ? (
-                  <ChevronUp size={13} style={{ color: "var(--text-muted)", opacity: 0.8 }} />
-                ) : (
-                  <ChevronDown size={13} style={{ color: "var(--text-muted)", opacity: 0.8 }} />
-                )}
-              </div>
-              <div className={styles.patrimonioStackRowValuesCenter}>
-                <span className={`${styles.patrimonioStackRowValue} tabular-nums`} style={{ color: sgBadgeColor }}>
-                  {sgScore.toFixed(1)}
-                </span>
-                <span className={`${styles.patrimonioStackRowSubValue} tabular-nums`}>
-                  Mín: {sgScoreMin.toFixed(1)}
-                </span>
-              </div>
-            </div>
-            <div className={styles.patrimonioStackRowBadgeContainer}>
-              <span className={`${styles.kpiBadgeMockup}`} style={{ marginTop: 0, ...sgBadgeStyle }}>
-                {sgBadge}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* Expanded Smart Gate details */}
-        {isSGExpanded && (
-          <div style={{
-            padding: '0.75rem 1rem',
-            background: sgBloqueado ? 'rgba(255, 82, 82, 0.03)' : sgScore < 60 ? 'rgba(224, 155, 0, 0.03)' : 'rgba(0, 200, 83, 0.03)',
-            borderLeft: `3px solid ${sgBadgeColor}`,
-            borderRight: '1px solid var(--opacity-border)',
-            borderBottom: '1px solid var(--opacity-border)',
-            borderRadius: '0 0 8px 8px',
-            marginTop: '-1px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Score Atual:</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{sgScore.toFixed(1)} / 100.0</span>
-            </div>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Score Mínimo Exigido:</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{sgScoreMin.toFixed(1)}</span>
-            </div>
-
-            {/* Progress bar */}
-            <div style={{ width: '100%', height: '8px', background: 'var(--opacity-divider)', borderRadius: '4px', position: 'relative', overflow: 'hidden' }}>
-              <div 
-                style={{ 
-                  height: '100%', 
-                  width: `${Math.min(100, sgScore)}%`, 
-                  background: sgBadgeColor,
-                  borderRadius: '4px'
-                }} 
-              />
-              {/* Marker for minimum score */}
-              <div 
-                style={{ 
-                  position: 'absolute', 
-                  left: `${sgScoreMin}%`, 
-                  top: 0, 
-                  bottom: 0, 
-                  width: '2px', 
-                  background: 'var(--text-primary)',
-                  boxShadow: '0 0 4px rgba(255,255,255,0.8)'
-                }} 
-                title={`Mínimo: ${sgScoreMin}`}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '0.15rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Espaçamento Grade (DistX):</span>
-              <span style={{ fontWeight: 600, color: sgDistMultipl > 1.0 ? 'var(--neon-amber)' : 'var(--text-secondary)' }}>{sgDistMultipl.toFixed(2)}x</span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Fator de Lote (LoteX):</span>
-              <span style={{ fontWeight: 600, color: sgLoteFator < 1.0 ? 'var(--neon-amber)' : 'var(--text-secondary)' }}>{(sgLoteFator * 100).toFixed(0)}%</span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.70rem', color: 'var(--text-muted)', borderTop: '1px dashed var(--opacity-border)', paddingTop: '0.4rem', marginTop: '0.2rem' }}>
-              <span>Status: {sgBloqueado ? "🔴 BLOQUEADO" : sgScore < 60 ? "🟡 RESTRITO" : "🟢 LIBERADO"}</span>
-              <span>
-                Smart Gate: {sgBloqueado ? "FILTRO DE DRAWDOWN ATIVO" : "OPERANTE"}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── DRAWDOWN SECTION ── */}
