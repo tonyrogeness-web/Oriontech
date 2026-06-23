@@ -28,6 +28,11 @@ function getMockData() {
     reserveCutsCount: 0,
     reserveCutsGasto: 0.0,
     reserveCapPct: 2.0,
+    sgScore: 85.0,
+    sgScoreMin: 40.0,
+    sgDistMultipl: 1.0,
+    sgLoteFator: 1.0,
+    sgBloqueado: false,
   };
 
   const mockTrades = [

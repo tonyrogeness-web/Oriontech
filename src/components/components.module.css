@@ -3390,6 +3390,10 @@
   border-left: 3px solid #a855f7;
   box-shadow: inset 4px 0 10px -4px rgba(168, 85, 247, 0.15);
 }
+.glowLeftAmber {
+  border-left: 3px solid var(--neon-amber);
+  box-shadow: inset 4px 0 10px -4px rgba(224, 155, 0, 0.15);
+}
 
 @media (max-width: 640px) {
   .patrimonioUnifiedCard {

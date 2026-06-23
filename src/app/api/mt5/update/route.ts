@@ -43,6 +43,11 @@ export async function POST(request: Request) {
       reserveCutsCount = 0,
       reserveCutsGasto = 0.0,
       reserveCapPct = 2.0,
+      sgScore = 100.0,
+      sgScoreMin = 40.0,
+      sgDistMultipl = 1.0,
+      sgLoteFator = 1.0,
+      sgBloqueado = false,
     } = payload;
 
     // 1. Verify token
@@ -143,6 +148,11 @@ export async function POST(request: Request) {
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
           reserveCapPct: parseFloat(reserveCapPct) || 2.0,
+          sgScore: parseFloat(sgScore) || 100.0,
+          sgScoreMin: parseFloat(sgScoreMin) || 40.0,
+          sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
+          sgLoteFator: parseFloat(sgLoteFator) || 1.0,
+          sgBloqueado: sgBloqueado !== undefined ? Boolean(sgBloqueado) : false,
         },
         create: {
           account: String(account),
@@ -172,6 +182,11 @@ export async function POST(request: Request) {
           reserveCutsCount: parseInt(reserveCutsCount) || 0,
           reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
           reserveCapPct: parseFloat(reserveCapPct) || 2.0,
+          sgScore: parseFloat(sgScore) || 100.0,
+          sgScoreMin: parseFloat(sgScoreMin) || 40.0,
+          sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
+          sgLoteFator: parseFloat(sgLoteFator) || 1.0,
+          sgBloqueado: sgBloqueado !== undefined ? Boolean(sgBloqueado) : false,
         },
       });
     });

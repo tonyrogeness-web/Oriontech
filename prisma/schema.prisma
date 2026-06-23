@@ -37,6 +37,11 @@ model AccountState {
   reserveCutsCount     Int      @default(0)
   reserveCutsGasto     Float    @default(0.0)
   reserveCapPct        Float    @default(2.0)
+  sgScore              Float    @default(100.0)
+  sgScoreMin           Float    @default(40.0)
+  sgDistMultipl        Float    @default(1.0)
+  sgLoteFator          Float    @default(1.0)
+  sgBloqueado          Boolean  @default(false)
 }
 
 model ActiveTrade {
