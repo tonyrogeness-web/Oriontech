@@ -633,6 +633,7 @@ export default function RiskManagement({
             </div>
           )}
         </div>
+      </div>
     </div>
   );
 }
