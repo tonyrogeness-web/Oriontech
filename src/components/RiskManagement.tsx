@@ -477,41 +477,52 @@ export default function RiskManagement({
                 const sellCount = trades.filter((t: any) => t.type === "SELL").length;
                 return (
                   <>
+                    {/* HEDGE PARCIAL */}
+                    <div style={{ fontWeight: 700, fontSize: "0.68rem", color: "#a855f7", letterSpacing: "0.04em", textTransform: "uppercase", marginTop: "0.2rem", marginBottom: "0.1rem" }}>
+                      Hedge Parcial (Alt 1)
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Cesto Buy:</span>
+                      <span style={{ fontWeight: 700, color: buyCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                        {buyCount >= 5 ? "ATIVO (Coberto por Sell)" : `Aguardando (${buyCount}/5)`}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Cesto Sell:</span>
+                      <span style={{ fontWeight: 700, color: sellCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
+                        {sellCount >= 5 ? "ATIVO (Coberto por Buy)" : `Aguardando (${sellCount}/5)`}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Total de Cortes:</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{hpCutsCount} vezes</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Lucro Queimado:</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--neon-red)" }}>{fmt(hpCutsGasto)}</span>
+                    </div>
+
+                    {/* BREAK EVEN SOS */}
+                    <div style={{ fontWeight: 700, fontSize: "0.68rem", color: "var(--neon-blue)", letterSpacing: "0.04em", textTransform: "uppercase", marginTop: "0.4rem", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginBottom: "0.1rem" }}>
+                      Break Even SOS (Alt 2)
+                    </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span>SOS Buy (Zero a Zero):</span>
                       <span style={{ fontWeight: 700, color: buySosScheduled ? "var(--neon-red)" : "var(--text-muted)" }}>
-                        {buySosScheduled ? "ATIVADO" : (buyCount >= 5 ? "AGUARDANDO DD > 10%" : `Aguardando Nível (${buyCount}/5)`)}
+                        {buySosScheduled ? "ATIVADO" : (buyCount >= 5 ? "Aguardando DD > 10%" : `Aguardando Nível (${buyCount}/5)`)}
                       </span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span>SOS Sell (Zero a Zero):</span>
                       <span style={{ fontWeight: 700, color: sellSosScheduled ? "var(--neon-red)" : "var(--text-muted)" }}>
-                        {sellSosScheduled ? "ATIVADO" : (sellCount >= 5 ? "AGUARDANDO DD > 10%" : `Aguardando Nível (${sellCount}/5)`)}
+                        {sellSosScheduled ? "ATIVADO" : (sellCount >= 5 ? "Aguardando DD > 10%" : `Aguardando Nível (${sellCount}/5)`)}
                       </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.2rem" }}>
-                      <span>Hedge Parcial Buy (Alt 1):</span>
-                      <span style={{ fontWeight: 700, color: buyCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
-                        {buyCount >= 5 ? `ATIVO (Custo Coberto por Sell)` : `Aguardando (${buyCount}/5)`}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span>Hedge Parcial Sell (Alt 1):</span>
-                      <span style={{ fontWeight: 700, color: sellCount >= 5 ? "var(--neon-amber)" : "var(--text-muted)" }}>
-                        {sellCount >= 5 ? `ATIVO (Custo Coberto por Buy)` : `Aguardando (${sellCount}/5)`}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+
+                    {/* DADOS GERAIS */}
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.4rem" }}>
                       <span>Lote Base Atual:</span>
                       <span style={{ fontFamily: "monospace" }}>{(loteBase || 0.012).toFixed(3)}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.2rem" }}>
-                      <span>Total de Cortes (Hedge):</span>
-                      <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{hpCutsCount} vezes</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span>Lucro Queimado (Hedge):</span>
-                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--neon-red)" }}>{fmt(hpCutsGasto)}</span>
                     </div>
                   </>
                 );
