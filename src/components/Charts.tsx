@@ -18,7 +18,7 @@ interface ChartsProps {
 }
 
 export default function Charts({ history = [], currencyMode = "BRL", brlRate = 5.45 }: ChartsProps) {
-  const [timeframe, setTimeframe] = useState<"Dia" | "7D" | "30D" | "Mês">("7D");
+  const [timeframe, setTimeframe] = useState<"Dia" | "7D" | "30D" | "Mês">("Mês");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
