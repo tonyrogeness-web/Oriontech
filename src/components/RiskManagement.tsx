@@ -444,19 +444,20 @@ export default function RiskManagement({
             const buyCount = Object.values(symbolOrderCounts).reduce((max: number, c: any) => Math.max(max, c.buy), 0);
             const sellCount = Object.values(symbolOrderCounts).reduce((max: number, c: any) => Math.max(max, c.sell), 0);
             const worstLevel = Math.max(buyCount, sellCount);
+            const isDefesaActive = worstLevel >= 5 || buySosScheduled || sellSosScheduled;
 
             return (
               <>
                 {/* Label row */}
                 <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsDefesaExpanded(!isDefesaExpanded)}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Shield size={12} style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)" }} />
+                    <Shield size={12} style={{ color: isDefesaActive ? "var(--neon-amber)" : "var(--neon-green)" }} />
                     <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SISTEMA DE DEFESA</span>
                     {isDefesaExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
                   </div>
                   <Pill 
-                    label={(buySosScheduled || sellSosScheduled) ? "DEFESA!" : "MONITORANDO"} 
-                    color={(buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)"} 
+                    label={isDefesaActive ? "DEFESA!" : "MONITORANDO"} 
+                    color={isDefesaActive ? "var(--neon-amber)" : "var(--neon-green)"} 
                   />
                 </div>
 
