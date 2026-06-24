@@ -1892,6 +1892,13 @@
   box-shadow: 0 0 10px var(--neon-green-glow);
 }
 
+.btnControlMockup:disabled {
+  opacity: 0.25 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .btnControlZerar {
   border-color: var(--neon-gold);
   color: var(--neon-gold);
