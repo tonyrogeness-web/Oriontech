@@ -431,71 +431,67 @@ export default function RiskManagement({
             SEÇÃO 4 — SISTEMA DE DEFESA (DEFESA)
         ═══════════════════════════════════════════════════════ */}
         <div className={styles.riskItem} style={{ position: "relative", minHeight: 65, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {/* Label row */}
-          <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsDefesaExpanded(!isDefesaExpanded)}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Shield size={12} style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)" }} />
-              <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SISTEMA DE DEFESA</span>
-              {isDefesaExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
-            </div>
-            <Pill 
-              label={(buySosScheduled || sellSosScheduled) ? "DEFESA!" : "MONITORANDO"} 
-              color={(buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)"} 
-            />
-          </div>
+          {/* Group by symbol to count levels accurately (not summing different pairs together) */}
+          {(() => {
+            const symbolOrderCounts = trades.reduce((acc: Record<string, { buy: number; sell: number }>, t: any) => {
+              const sym = t.symbol || "unknown";
+              if (!acc[sym]) acc[sym] = { buy: 0, sell: 0 };
+              if (t.type === "BUY") acc[sym].buy++;
+              if (t.type === "SELL") acc[sym].sell++;
+              return acc;
+            }, {});
 
-          {!isDefesaExpanded ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              {/* Values */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
-                <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: hpCutsGasto > 0 ? "var(--neon-red)" : "var(--text-secondary)", fontFamily: "monospace" }}>
-                  {fmt(hpCutsGasto)}
-                </span>
-                {(() => {
-                  const buyCount = trades.filter((t: any) => t.type === "BUY").length;
-                  const sellCount = trades.filter((t: any) => t.type === "SELL").length;
-                  const worstLevel = Math.max(buyCount, sellCount);
-                  return (
-                    <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                      grade <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{worstLevel}/5</span>
-                    </span>
-                  );
-                })()}
-              </div>
+            const buyCount = Object.values(symbolOrderCounts).reduce((max: number, c: any) => Math.max(max, c.buy), 0);
+            const sellCount = Object.values(symbolOrderCounts).reduce((max: number, c: any) => Math.max(max, c.sell), 0);
+            const worstLevel = Math.max(buyCount, sellCount);
 
-              {/* Progress bar in relation to triggering level N5 */}
-              {(() => {
-                const buyCount = trades.filter((t: any) => t.type === "BUY").length;
-                const sellCount = trades.filter((t: any) => t.type === "SELL").length;
-                const worstLevel = Math.max(buyCount, sellCount);
-                const ratioPct = Math.min(100, Math.max(0, (worstLevel / 5) * 100));
-                return (
-                  <div style={{ position: "relative", width: "100%" }}>
-                    <ZonedBar fillPct={ratioPct} fillColor={worstLevel >= 5 ? "var(--neon-amber)" : "var(--neon-green)"} zone1={50} zone2={80} />
+            return (
+              <>
+                {/* Label row */}
+                <div className={styles.riskHeaderRow} style={{ marginBottom: "0.15rem", cursor: "pointer" }} onClick={() => setIsDefesaExpanded(!isDefesaExpanded)}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Shield size={12} style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)" }} />
+                    <span className={styles.riskSectionLabel} style={{ fontSize: "clamp(0.68rem, 1.8vw, 0.8rem)" }}>SISTEMA DE DEFESA</span>
+                    {isDefesaExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
                   </div>
-                );
-              })()}
+                  <Pill 
+                    label={(buySosScheduled || sellSosScheduled) ? "DEFESA!" : "MONITORANDO"} 
+                    color={(buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--neon-green)"} 
+                  />
+                </div>
 
-              {/* Footer */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
-                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-                  Cortes/Defesas: <strong style={{ color: "var(--text-secondary)" }}>{hpCutsCount}</strong>
-                </span>
-                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-                  SOS: <strong style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-red)" : "var(--text-muted)" }}>
-                    {buySosScheduled || sellSosScheduled ? "ATIVADO" : "Aguardando"}
-                  </strong>
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-              {/* Detailed stats */}
-              {(() => {
-                const buyCount = trades.filter((t: any) => t.type === "BUY").length;
-                const sellCount = trades.filter((t: any) => t.type === "SELL").length;
-                return (
-                  <>
+                {!isDefesaExpanded ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                    {/* Values */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
+                      <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: hpCutsGasto > 0 ? "var(--neon-red)" : "var(--text-secondary)", fontFamily: "monospace" }}>
+                        {fmt(hpCutsGasto)}
+                      </span>
+                      <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                        grade <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{worstLevel}/5</span>
+                      </span>
+                    </div>
+
+                    {/* Progress bar in relation to triggering level N5 */}
+                    <div style={{ position: "relative", width: "100%" }}>
+                      <ZonedBar fillPct={Math.min(100, Math.max(0, (worstLevel / 5) * 100))} fillColor={worstLevel >= 5 ? "var(--neon-amber)" : "var(--neon-green)"} zone1={50} zone2={80} />
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
+                      <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                        Cortes/Defesas: <strong style={{ color: "var(--text-secondary)" }}>{hpCutsCount}</strong>
+                      </span>
+                      <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                        SOS: <strong style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-red)" : "var(--text-muted)" }}>
+                          {buySosScheduled || sellSosScheduled ? "ATIVADO" : "Aguardando"}
+                        </strong>
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                    {/* Detailed stats */}
                     {/* HEDGE PARCIAL */}
                     <div style={{ fontWeight: 700, fontSize: "0.68rem", color: "#a855f7", letterSpacing: "0.04em", textTransform: "uppercase", marginTop: "0.2rem", marginBottom: "0.1rem" }}>
                       Hedge Parcial (Alt 1)
@@ -543,14 +539,14 @@ export default function RiskManagement({
                       <span>Lote Base Atual:</span>
                       <span style={{ fontFamily: "monospace" }}>{(loteBase || 0.012).toFixed(3)}</span>
                     </div>
-                  </>
-                );
-              })()}
-              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
-                A Defesa é composta pelo Hedge Parcial (queima lucro do cesto oposto para fechar a pior ordem) e pelo Break Even SOS (reduz o TP do cesto para empate rápido em momentos de alto rebaixamento).
-              </div>
-            </div>
-          )}
+                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.15rem" }}>
+                      A Defesa é composta pelo Hedge Parcial (queima lucro do cesto oposto para fechar a pior ordem) e pelo Break Even SOS (reduz o TP do cesto para empate rápido em momentos de alto rebaixamento).
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <Divider />
