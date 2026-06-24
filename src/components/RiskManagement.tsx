@@ -445,27 +445,46 @@ export default function RiskManagement({
           </div>
 
           {!isDefesaExpanded ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              {/* Summary info */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", margin: "0.1rem 0" }}>
-                <span style={{ color: "var(--text-secondary)" }}>SOS Zero a Zero:</span>
-                <span style={{ fontWeight: 700, color: (buySosScheduled || sellSosScheduled) ? "var(--neon-amber)" : "var(--text-muted)" }}>
-                  {buySosScheduled || sellSosScheduled ? "ATIVADO" : "Aguardando"}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+              {/* Values */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "0.1rem 0 0.2rem" }}>
+                <span style={{ fontSize: "clamp(0.85rem, 2.2vw, 1.05rem)", fontWeight: 700, color: hpCutsGasto > 0 ? "var(--neon-red)" : "var(--text-secondary)", fontFamily: "monospace" }}>
+                  {fmt(hpCutsGasto)}
                 </span>
+                {(() => {
+                  const buyCount = trades.filter((t: any) => t.type === "BUY").length;
+                  const sellCount = trades.filter((t: any) => t.type === "SELL").length;
+                  const worstLevel = Math.max(buyCount, sellCount);
+                  return (
+                    <span style={{ fontSize: "clamp(0.7rem, 2vw, 0.82rem)", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                      grade <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{worstLevel}/5</span>
+                    </span>
+                  );
+                })()}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Hedge Parcial:</span>
-                <span style={{ fontWeight: 700, color: (trades.filter(t => t.type === "BUY").length >= 5 || trades.filter(t => t.type === "SELL").length >= 5) ? "var(--neon-amber)" : "var(--text-muted)" }}>
-                  {(trades.filter(t => t.type === "BUY").length >= 5 || trades.filter(t => t.type === "SELL").length >= 5) ? "ATIVO" : "Monitorando"}
-                </span>
-              </div>
+
+              {/* Progress bar in relation to triggering level N5 */}
+              {(() => {
+                const buyCount = trades.filter((t: any) => t.type === "BUY").length;
+                const sellCount = trades.filter((t: any) => t.type === "SELL").length;
+                const worstLevel = Math.max(buyCount, sellCount);
+                const ratioPct = Math.min(100, Math.max(0, (worstLevel / 5) * 100));
+                return (
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <ZonedBar fillPct={ratioPct} fillColor={worstLevel >= 5 ? "var(--neon-amber)" : "var(--neon-green)"} zone1={50} zone2={80} />
+                  </div>
+                );
+              })()}
+
               {/* Footer */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.25rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.2rem" }}>
                 <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
                   Cortes/Defesas: <strong style={{ color: "var(--text-secondary)" }}>{hpCutsCount}</strong>
                 </span>
                 <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
-                  Total Queimado: <strong style={{ color: "var(--text-secondary)" }}>{fmt(hpCutsGasto)}</strong>
+                  SOS: <strong style={{ color: (buySosScheduled || sellSosScheduled) ? "var(--neon-red)" : "var(--text-muted)" }}>
+                    {buySosScheduled || sellSosScheduled ? "ATIVADO" : "Aguardando"}
+                  </strong>
                 </span>
               </div>
             </div>
