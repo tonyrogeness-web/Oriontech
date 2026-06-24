@@ -94,6 +94,11 @@ model SymbolState {
   sgDistMultipl Float    @default(1.0)
   sgLoteFator   Float    @default(1.0)
   sgBloqueado   Boolean  @default(false)
+  reserveFund   Float    @default(0.0)
+  reserveCutsCount Int   @default(0)
+  reserveCutsGasto Float   @default(0.0)
+  hpCutsCount   Int      @default(0)
+  hpCutsGasto   Float    @default(0.0)
   lastUpdated   DateTime @updatedAt
 
   @@unique([account, symbol])

@@ -245,6 +245,21 @@ export default function DashboardPage() {
   const pendingCommandsCount = data?.pendingCommandsCount || 0;
   const activeSymbols = Array.from(new Set(trades.map((t: any) => t.symbol))) as string[];
 
+  // Aggregated symbol stats (prevents multi-symbol overwriting conflicts)
+  const activeSymbolStates = symbolStates.filter((s: any) => String(s.account) === String(activeAccount.account));
+  const totalReserveFund = activeSymbolStates.reduce((sum: number, s: any) => sum + (s.reserveFund || 0), 0);
+  const totalReserveCutsCount = activeSymbolStates.reduce((sum: number, s: any) => sum + (s.reserveCutsCount || 0), 0);
+  const totalReserveCutsGasto = activeSymbolStates.reduce((sum: number, s: any) => sum + (s.reserveCutsGasto || 0), 0);
+  const totalHpCutsCount = activeSymbolStates.reduce((sum: number, s: any) => sum + (s.hpCutsCount || 0), 0);
+  const totalHpCutsGasto = activeSymbolStates.reduce((sum: number, s: any) => sum + (s.hpCutsGasto || 0), 0);
+
+  const hasSymbolStats = activeSymbolStates.length > 0;
+  const reserveFundVal = hasSymbolStats ? totalReserveFund : (activeAccount.reserveFund || 0);
+  const reserveCutsCountVal = hasSymbolStats ? totalReserveCutsCount : (activeAccount.reserveCutsCount || 0);
+  const reserveCutsGastoVal = hasSymbolStats ? totalReserveCutsGasto : (activeAccount.reserveCutsGasto || 0.0);
+  const hpCutsCountVal = hasSymbolStats ? totalHpCutsCount : (activeAccount.hpCutsCount || 0);
+  const hpCutsGastoVal = hasSymbolStats ? totalHpCutsGasto : (activeAccount.hpCutsGasto || 0.0);
+
   return (
     <div className={isFlashActive ? styles.syncFlash : ""}>
       {/* Barra de progresso de sincronização */}
@@ -311,12 +326,12 @@ export default function DashboardPage() {
             sgLoteFator={activeAccount.sgLoteFator !== undefined ? activeAccount.sgLoteFator : 1.0}
             sgBloqueado={activeAccount.sgBloqueado !== undefined ? activeAccount.sgBloqueado : false}
             symbolStates={symbolStates}
-            reserveFund={activeAccount.reserveFund || 0}
+            reserveFund={reserveFundVal}
             reserveCapPct={activeAccount.reserveCapPct || 2.0}
-            reserveCutsCount={activeAccount.reserveCutsCount || 0}
-            reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
-            hpCutsCount={activeAccount.hpCutsCount || 0}
-            hpCutsGasto={activeAccount.hpCutsGasto || 0.0}
+            reserveCutsCount={reserveCutsCountVal}
+            reserveCutsGasto={reserveCutsGastoVal}
+            hpCutsCount={hpCutsCountVal}
+            hpCutsGasto={hpCutsGastoVal}
             buySosScheduled={activeAccount.buySosScheduled}
             sellSosScheduled={activeAccount.sellSosScheduled}
             loteBase={activeAccount.loteBase || 0.012}

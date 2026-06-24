@@ -203,6 +203,11 @@ export async function POST(request: Request) {
             sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
             sgLoteFator: parseFloat(sgLoteFator) || 1.0,
             sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
+            reserveFund: parseFloat(reserveFund) || 0.0,
+            reserveCutsCount: parseInt(reserveCutsCount) || 0,
+            reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
+            hpCutsCount: parseInt(hpCutsCount) || 0,
+            hpCutsGasto: parseFloat(hpCutsGasto) || 0.0,
           },
           create: {
             account: String(account),
@@ -212,6 +217,11 @@ export async function POST(request: Request) {
             sgDistMultipl: parseFloat(sgDistMultipl) || 1.0,
             sgLoteFator: parseFloat(sgLoteFator) || 1.0,
             sgBloqueado: sgBloqueado === true || sgBloqueado === "true",
+            reserveFund: parseFloat(reserveFund) || 0.0,
+            reserveCutsCount: parseInt(reserveCutsCount) || 0,
+            reserveCutsGasto: parseFloat(reserveCutsGasto) || 0.0,
+            hpCutsCount: parseInt(hpCutsCount) || 0,
+            hpCutsGasto: parseFloat(hpCutsGasto) || 0.0,
           },
         });
       }
