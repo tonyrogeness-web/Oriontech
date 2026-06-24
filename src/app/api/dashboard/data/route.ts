@@ -28,6 +28,8 @@ function getMockData() {
     reserveCutsCount: 0,
     reserveCutsGasto: 0.0,
     reserveCapPct: 2.0,
+    hpCutsCount: 0,
+    hpCutsGasto: 0.0,
     sgScore: 85.0,
     sgScoreMin: 40.0,
     sgDistMultipl: 1.0,

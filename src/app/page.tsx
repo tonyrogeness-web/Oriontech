@@ -315,6 +315,8 @@ export default function DashboardPage() {
             reserveCapPct={activeAccount.reserveCapPct || 2.0}
             reserveCutsCount={activeAccount.reserveCutsCount || 0}
             reserveCutsGasto={activeAccount.reserveCutsGasto || 0.0}
+            hpCutsCount={activeAccount.hpCutsCount || 0}
+            hpCutsGasto={activeAccount.hpCutsGasto || 0.0}
             buySosScheduled={activeAccount.buySosScheduled}
             sellSosScheduled={activeAccount.sellSosScheduled}
             loteBase={activeAccount.loteBase || 0.012}

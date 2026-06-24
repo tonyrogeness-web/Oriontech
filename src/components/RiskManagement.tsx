@@ -36,6 +36,8 @@ interface RiskManagementProps {
   reserveCapPct?: number;
   reserveCutsCount?: number;
   reserveCutsGasto?: number;
+  hpCutsCount?: number;
+  hpCutsGasto?: number;
   buySosScheduled?: boolean;
   sellSosScheduled?: boolean;
   loteBase?: number;
@@ -145,6 +147,8 @@ export default function RiskManagement({
   reserveCapPct = 2.0,
   reserveCutsCount = 0,
   reserveCutsGasto = 0.0,
+  hpCutsCount = 0,
+  hpCutsGasto = 0.0,
   buySosScheduled = false,
   sellSosScheduled = false,
   loteBase = 0.012,
@@ -455,6 +459,15 @@ export default function RiskManagement({
                   {(trades.filter(t => t.type === "BUY").length >= 5 || trades.filter(t => t.type === "SELL").length >= 5) ? "ATIVO" : "Monitorando"}
                 </span>
               </div>
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.25rem" }}>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  Cortes/Defesas: <strong style={{ color: "var(--text-secondary)" }}>{hpCutsCount}</strong>
+                </span>
+                <span style={{ fontSize: "clamp(0.68rem, 1.6vw, 0.78rem)", color: "var(--text-muted)" }}>
+                  Total Queimado: <strong style={{ color: "var(--text-secondary)" }}>{fmt(hpCutsGasto)}</strong>
+                </span>
+              </div>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.75rem", color: "var(--text-secondary)" }}>
@@ -491,6 +504,14 @@ export default function RiskManagement({
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span>Lote Base Atual:</span>
                       <span style={{ fontFamily: "monospace" }}>{(loteBase || 0.012).toFixed(3)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--opacity-border)", paddingTop: "0.4rem", marginTop: "0.2rem" }}>
+                      <span>Total de Cortes (Hedge):</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{hpCutsCount} vezes</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>Lucro Queimado (Hedge):</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--neon-red)" }}>{fmt(hpCutsGasto)}</span>
                     </div>
                   </>
                 );
